@@ -27,6 +27,10 @@
         {
           "name": "inject-context",
           "description": "대용량 파일 구조 인식 청킹 및 컨텍스트 주입"
+        },
+        {
+          "name": "optimize-command",
+          "description": "프롬프트 엔지니어링 3원칙으로 커맨드 최적화"
         }
       ]
     }

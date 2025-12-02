@@ -28,6 +28,7 @@ Claude Code 생산성 향상을 위한 스마트 커맨드 플러그인입니다
 | `/claude-md` | CLAUDE.md 생성/분석/구조화 | Opus |
 | `/continue-task` | Opus로 복잡한 작업 실행 | Opus |
 | `/inject-context` | 대용량 파일 컨텍스트 주입 | Haiku |
+| `/optimize-command` | 커맨드 프롬프트 최적화 | 기본 |
 
 ## 커맨드 상세
 
@@ -103,6 +104,20 @@ Opus 모델을 활용하여 복잡한 멀티스텝 작업을 실행합니다.
 /inject-context src/api.ts "API 엔드포인트 분석"
 ```
 
+### /optimize-command
+
+프롬프트 엔지니어링 3원칙으로 커맨드를 최적화합니다.
+
+**3원칙**:
+1. 목적 정확성 (Purpose Accuracy) - 정확한 동작 보장
+2. 영어 로직 (English Logic) - 토큰 효율성
+3. 한국어 TUI (Korean TUI) - 사용자 경험
+
+**사용법**:
+```bash
+/optimize-command commands/my-command.md
+```
+
 ## 프로젝트 구조
 
 ```
@@ -110,14 +125,12 @@ claude-integration/
 ├── .claude-plugin/
 │   ├── plugin.json        # 마켓플레이스용 플러그인 메타데이터
 │   └── marketplace.json   # 마켓플레이스 정의
-├── commands/              # 배포용 슬래시 커맨드
+├── commands/              # 슬래시 커맨드 (5개)
 │   ├── git-commit.md
 │   ├── claude-md.md
 │   ├── continue-task.md
-│   └── inject-context.md
-├── .claude/
-│   └── commands/          # 프로젝트 로컬 커맨드
-│       └── optimize-command.md
+│   ├── inject-context.md
+│   └── optimize-command.md
 ├── CLAUDE.md              # 프로젝트 컨텍스트
 ├── plugin.json            # 루트 플러그인 설정
 ├── LICENSE                # MIT 라이선스
