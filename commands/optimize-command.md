@@ -8,6 +8,7 @@ allowed-tools:
   - Edit
   - Glob
   - AskUserQuestion
+model: claude-sonnet-4-5-20250514
 ---
 
 # Command Optimizer

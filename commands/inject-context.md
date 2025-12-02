@@ -9,6 +9,7 @@ allowed-tools:
   - Grep
   - AskUserQuestion
   - SlashCommand
+model: claude-3-5-haiku-20241022
 ---
 
 # Intelligent File Context Loader

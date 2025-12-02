@@ -8,6 +8,7 @@ allowed-tools:
   - Grep
   - AskUserQuestion
   - TodoWrite
+model: claude-sonnet-4-5-20250514
 ---
 
 # Context-Aware Task Recommender
