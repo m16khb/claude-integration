@@ -26,11 +26,14 @@ claude-integration/
 
 ## 주요 커맨드
 
-| 커맨드        | 설명                             |
-| ------------- | -------------------------------- |
-| `/git-commit` | Conventional Commits 커밋        |
-| `/claude-sync`| 코드베이스 변경 감지 및 MD 동기화 |
-| `/factory`    | 컴포넌트 생성기                  |
+| 커맨드 | 설명 |
+|--------|------|
+| `/git-commit` | Conventional Commits 커밋 |
+| `/claude-sync` | 코드베이스 변경 감지 및 MD 동기화 |
+| `/factory` | 컴포넌트 생성기 |
+| `/continue-context` | 현재 컨텍스트 분석 후 다음 작업 추천 |
+| `/inject-context` | 대용량 파일 구조 인식 청킹 및 컨텍스트 주입 |
+| `/setup-statusline` | YAML 설정 기반 status line 환경 구성 |
 
 ## 설치
 
