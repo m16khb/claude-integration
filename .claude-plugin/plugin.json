@@ -43,6 +43,10 @@
     "factory": {
       "description": "Agent, Skill, Command 컴포넌트 생성기 (Anthropic 2025 스키마)",
       "source": "./commands/factory.md"
+    },
+    "claude-sync": {
+      "description": "코드베이스 변경 감지 및 CLAUDE.md 자동 동기화",
+      "source": "./commands/claude-sync.md"
     }
   },
   "agents": {
