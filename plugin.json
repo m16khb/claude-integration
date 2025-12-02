@@ -8,19 +8,19 @@
   "commands": {
     "git-commit": {
       "description": "스마트 Git 커밋 (인자: push - 커밋 후 푸시)",
-      "file": "commands/git-commit.md"
+      "file": ".claude/commands/git-commit.md"
     },
     "claude-md": {
       "description": "CLAUDE.md 생성, 분석, 구조화",
-      "file": "commands/claude-md.md"
+      "file": ".claude/commands/claude-md.md"
     },
     "continue-task": {
       "description": "Opus 모델로 복잡한 작업 계속 실행",
-      "file": "commands/continue-task.md"
+      "file": ".claude/commands/continue-task.md"
     },
     "inject-context": {
       "description": "대용량 파일 분할 로드 및 컨텍스트 주입",
-      "file": "commands/inject-context.md"
+      "file": ".claude/commands/inject-context.md"
     }
   }
 }
