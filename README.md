@@ -26,8 +26,9 @@ Claude Code 생산성 향상을 위한 스마트 커맨드 플러그인입니다
 | ------------------- | ------------------------------- | ----- |
 | `/git-commit`       | Git Flow 기반 스마트 커밋       | 기본  |
 | `/claude-md`        | CLAUDE.md 생성/분석/구조화      | Opus  |
-| `/continue-context` | 컨텍스트 분석 및 다음 작업 추천 | Opus  |
+| `/continue-context` | 컨텍스트 분석 및 다음 작업 추천 | 기본  |
 | `/inject-context`   | 대용량 파일 컨텍스트 주입       | Haiku |
+| `/setup-statusline` | Status line 환경 자동 구성      | Opus  |
 
 ## 커맨드 상세
 
@@ -119,6 +120,27 @@ WHAT/WHY/HOW 프레임워크 기반으로 CLAUDE.md를 관리합니다.
 /inject-context src/api.ts "API 엔드포인트 분석"
 ```
 
+### /setup-statusline
+
+Claude Code status line 환경을 YAML 기반으로 자동 구성합니다.
+
+**특징**:
+
+- Single Source of Truth 아키텍처 (YAML → Shell)
+- 크로스 플랫폼 지원 (macOS/Linux)
+- 이모지 지원 자동 감지
+- 터미널별 자동 설정 (zsh, bash)
+
+**사용법**:
+
+```bash
+# 기본 설정 (대화형)
+/setup-statusline
+
+# 설정 파일 지정
+/setup-statusline ~/.claude/statusline.yaml
+```
+
 ## 프로젝트 구조
 
 ```
@@ -131,9 +153,14 @@ claude-integration/
 │   ├── claude-md.md
 │   ├── continue-context.md
 │   ├── inject-context.md
-│   └── optimize-command.md
+│   └── setup-statusline.md
+├── templates/             # 템플릿 파일
+│   ├── statusline.sh      # Status line 스크립트
+│   └── statusline-config.yaml
+├── agent_docs/            # 상세 개발 문서
+│   ├── command-writing.md
+│   └── development.md
 ├── CLAUDE.md              # 프로젝트 컨텍스트
-├── plugin.json            # 루트 플러그인 설정
 ├── LICENSE                # MIT 라이선스
 └── README.md
 ```

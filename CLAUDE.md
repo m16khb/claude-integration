@@ -32,8 +32,18 @@ claude-integration/
 | `/inject-context <file>` | 대용량 파일 청크 로드 | haiku |
 | `/setup-statusline [config]` | YAML 설정 기반 status line 환경 구성 | opus |
 
+## 설치 및 사용 (HOW)
+
+```bash
+# 방법 1: 마켓플레이스 추가 후 설치 (권장)
+/plugin marketplace add m16khb/claude-integration
+/plugin install claude-integration
+
+# 방법 2: 직접 설치
+/plugin add m16khb/claude-integration
+```
+
 ## 상세 문서
 
 - [agent_docs/command-writing.md](agent_docs/command-writing.md) - 커맨드 작성 가이드
 - [agent_docs/development.md](agent_docs/development.md) - 개발 가이드
-- [.claude/commands/CLAUDE.md](.claude/commands/CLAUDE.md) - 커맨드 상세 가이드
