@@ -1,6 +1,8 @@
 # Claude Code Status Line Configuration
 # 이 파일을 프로젝트 루트에 복사하여 커스터마이징하세요
 # Usage: /setup-statusline [config-path]
+#
+# Supported platforms: macOS, Linux, Windows (Git Bash/WSL)
 
 statusline:
   enabled: true
@@ -29,6 +31,15 @@ statusline:
       cost: "38;5;220"             # Gold - 비용 정보
       separator: "38;5;240"        # Dark Gray - 구분자
 
+  # Emoji configuration
+  emoji:
+    enabled: true
+    icons:
+      model: "🤖"      # 모델 아이콘
+      directory: "📂"  # 디렉토리 아이콘
+      branch: "🌿"     # 브랜치 아이콘
+      cost: "💰"       # 비용 아이콘
+
   # Caching configuration (performance optimization)
   cache:
     git_ttl_seconds: 5           # Git 명령 결과 캐시
@@ -37,7 +48,7 @@ statusline:
 
   # Information display settings
   display:
-    model: true                  # 모델명 (O 4.5, S 4.5, H 4.5)
+    model: true                  # 모델명 (Opus 4.5, Sonnet 4.5)
     duration: true               # 세션 경과 시간
     directory: true              # 프로젝트명/디렉토리
     branch: true                 # Git 브랜치
@@ -50,14 +61,6 @@ statusline:
     max_branch_length: 25        # 브랜치명 최대 길이
     truncate_with: "…"           # 말줄임 표시
     separator: " │ "             # 섹션 구분자
-
-  # Model name aliases (간결한 표시)
-  model_aliases:
-    "claude-opus-4-5-20251101": "O 4.5"
-    "claude-sonnet-4-5-20250929": "S 4.5"
-    "claude-haiku-4-5-20251001": "H 4.5"
-    "claude-sonnet-4-20250514": "S 4"
-    "claude-3-5-sonnet": "S 3.5"
 
   # Error handling
   error_handling:

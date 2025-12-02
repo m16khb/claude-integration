@@ -5,9 +5,11 @@
 # 이 스크립트는 Claude Code의 stdin으로 전달되는 JSON 데이터를 파싱하여
 # 커스터마이징된 status line을 출력합니다.
 #
+# Supported platforms: macOS, Linux, Windows (Git Bash/WSL)
+#
 # Input JSON format:
 # {
-#   "model": "claude-opus-4-5-20251101",
+#   "model": {"id": "claude-opus-4-5-20251101", "display_name": "Opus 4.5"},
 #   "workspaceDirs": ["/path/to/project"],
 #   "version": "1.0.0",
 #   "costs": { "total": 0.05 }
@@ -23,6 +25,9 @@ MODE="${STATUSLINE_MODE:-extended}"
 # Colors enabled
 COLORS_ENABLED="${STATUSLINE_COLORS:-true}"
 
+# Emoji enabled
+EMOJI_ENABLED="${STATUSLINE_EMOJI:-true}"
+
 # Color palette (ANSI escape codes)
 COLOR_MODEL="${COLOR_MODEL:-38;5;33}"
 COLOR_FEATURE="${COLOR_FEATURE:-38;5;226}"
@@ -36,7 +41,12 @@ COLOR_UNTRACKED="${COLOR_UNTRACKED:-38;5;196}"
 COLOR_DURATION="${COLOR_DURATION:-38;5;245}"
 COLOR_COST="${COLOR_COST:-38;5;220}"
 COLOR_SEP="${COLOR_SEP:-38;5;240}"
-COLOR_RESET="\e[0m"
+
+# Emoji settings
+EMOJI_MODEL="${EMOJI_MODEL:-🤖}"
+EMOJI_DIR="${EMOJI_DIR:-📂}"
+EMOJI_BRANCH="${EMOJI_BRANCH:-🌿}"
+EMOJI_COST="${EMOJI_COST:-💰}"
 
 # Display settings
 SHOW_MODEL="${SHOW_MODEL:-true}"
@@ -54,18 +64,66 @@ SEPARATOR="${SEPARATOR:- │ }"
 
 # Cache settings
 GIT_CACHE_TTL="${GIT_CACHE_TTL:-5}"
-CACHE_DIR="${CACHE_DIR:-/tmp/claude-statusline-cache}"
+
+# Cross-platform cache directory
+if [[ -n "$TMPDIR" ]]; then
+    CACHE_DIR="${CACHE_DIR:-$TMPDIR/claude-statusline-cache}"
+elif [[ -n "$TEMP" ]]; then
+    # Windows
+    CACHE_DIR="${CACHE_DIR:-$TEMP/claude-statusline-cache}"
+else
+    CACHE_DIR="${CACHE_DIR:-/tmp/claude-statusline-cache}"
+fi
+
+# ============================================================================
+# CROSS-PLATFORM HELPERS
+# ============================================================================
+
+# Cross-platform file modification time (seconds since epoch)
+get_file_mtime() {
+    local file="$1"
+    if [[ "$(uname)" == "Darwin" ]]; then
+        # macOS
+        stat -f %m "$file" 2>/dev/null
+    elif [[ "$(uname)" == "Linux" ]] || [[ "$(uname)" =~ MINGW|MSYS|CYGWIN ]]; then
+        # Linux / Git Bash / WSL
+        stat -c %Y "$file" 2>/dev/null
+    else
+        echo 0
+    fi
+}
+
+# Cross-platform hash for cache key
+get_hash() {
+    local input="$1"
+    if command -v md5sum >/dev/null 2>&1; then
+        echo "$input" | md5sum | cut -c1-8
+    elif command -v md5 >/dev/null 2>&1; then
+        # macOS
+        echo "$input" | md5 | cut -c1-8
+    else
+        # Fallback: simple hash
+        echo "$input" | cksum | cut -d' ' -f1
+    fi
+}
 
 # ============================================================================
 # HELPER FUNCTIONS
 # ============================================================================
 
-# ANSI color wrapper
+# ANSI color wrapper (printf 사용으로 subshell 캡처 시에도 이스케이프 유지)
 color() {
     if [[ "$COLORS_ENABLED" == "true" ]]; then
-        echo -e "\e[${1}m${2}${COLOR_RESET}"
+        printf '\033[%sm%s\033[0m' "$1" "$2"
     else
-        echo -n "$2"
+        printf '%s' "$2"
+    fi
+}
+
+# Emoji wrapper
+emoji() {
+    if [[ "$EMOJI_ENABLED" == "true" ]]; then
+        printf '%s ' "$1"
     fi
 }
 
@@ -87,12 +145,16 @@ cached() {
     shift 2
     local cmd="$*"
 
-    mkdir -p "$CACHE_DIR"
+    mkdir -p "$CACHE_DIR" 2>/dev/null
     local cache_file="$CACHE_DIR/$key"
 
     # Check if cache is valid
     if [[ -f "$cache_file" ]]; then
-        local cache_age=$(($(date +%s) - $(stat -f %m "$cache_file" 2>/dev/null || stat -c %Y "$cache_file" 2>/dev/null || echo 0)))
+        local file_mtime
+        file_mtime=$(get_file_mtime "$cache_file")
+        local now
+        now=$(date +%s)
+        local cache_age=$((now - file_mtime))
         if [[ $cache_age -lt $ttl ]]; then
             cat "$cache_file"
             return
@@ -102,7 +164,7 @@ cached() {
     # Execute and cache
     local result
     result=$(eval "$cmd" 2>/dev/null)
-    echo "$result" > "$cache_file"
+    echo "$result" > "$cache_file" 2>/dev/null
     echo "$result"
 }
 
@@ -115,19 +177,34 @@ INPUT=$(cat)
 
 # Extract model name
 get_model() {
-    local model
-    model=$(echo "$INPUT" | jq -r '.model // empty' 2>/dev/null)
+    local model_id display_name
 
-    # Apply aliases
-    case "$model" in
-        "claude-opus-4-5-20251101")    echo "O 4.5" ;;
-        "claude-sonnet-4-5-20250929")  echo "S 4.5" ;;
-        "claude-haiku-4-5-20251001")   echo "H 4.5" ;;
-        "claude-sonnet-4-20250514")    echo "S 4" ;;
-        "claude-3-5-sonnet"*)          echo "S 3.5" ;;
-        "claude-3-opus"*)              echo "O 3" ;;
-        "claude-3-haiku"*)             echo "H 3" ;;
-        *)                             echo "${model:-Claude}" ;;
+    # model이 객체인 경우: {"id": "...", "display_name": "..."}
+    # model이 문자열인 경우: "claude-opus-4-5-20251101"
+    if echo "$INPUT" | jq -e '.model | type == "object"' >/dev/null 2>&1; then
+        model_id=$(echo "$INPUT" | jq -r '.model.id // empty' 2>/dev/null)
+        display_name=$(echo "$INPUT" | jq -r '.model.display_name // empty' 2>/dev/null)
+    else
+        model_id=$(echo "$INPUT" | jq -r '.model // empty' 2>/dev/null)
+        display_name=""
+    fi
+
+    # display_name이 있으면 그대로 사용
+    if [[ -n "$display_name" ]]; then
+        echo "$display_name"
+        return
+    fi
+
+    # model_id에서 읽기 쉬운 이름 추출
+    case "$model_id" in
+        "claude-opus-4-5-20251101")    echo "Opus 4.5" ;;
+        "claude-sonnet-4-5-20250929")  echo "Sonnet 4.5" ;;
+        "claude-haiku-4-5-20251001")   echo "Haiku 4.5" ;;
+        "claude-sonnet-4-20250514")    echo "Sonnet 4" ;;
+        "claude-3-5-sonnet"*)          echo "Sonnet 3.5" ;;
+        "claude-3-opus"*)              echo "Opus 3" ;;
+        "claude-3-haiku"*)             echo "Haiku 3" ;;
+        *)                             echo "${model_id:-Claude}" ;;
     esac
 }
 
@@ -136,13 +213,17 @@ get_directory() {
     local dir
     dir=$(echo "$INPUT" | jq -r '.workspaceDirs[0] // empty' 2>/dev/null)
     if [[ -n "$dir" ]]; then
-        truncate "$(basename "$dir")" "$MAX_DIR_LENGTH"
+        # Cross-platform basename
+        local base="${dir##*/}"
+        truncate "$base" "$MAX_DIR_LENGTH"
     fi
 }
 
 # Get git branch with caching
 get_branch() {
-    cached "branch_$(pwd | md5sum | cut -c1-8 2>/dev/null || echo 'default')" "$GIT_CACHE_TTL" \
+    local cache_key
+    cache_key="branch_$(get_hash "$(pwd)")"
+    cached "$cache_key" "$GIT_CACHE_TTL" \
         "git branch --show-current 2>/dev/null || git rev-parse --short HEAD 2>/dev/null"
 }
 
@@ -161,8 +242,10 @@ get_branch_color() {
 
 # Get git status counts with caching
 get_git_status() {
+    local cache_key
+    cache_key="status_$(get_hash "$(pwd)")"
     local status
-    status=$(cached "status_$(pwd | md5sum | cut -c1-8 2>/dev/null || echo 'default')" "$GIT_CACHE_TTL" \
+    status=$(cached "$cache_key" "$GIT_CACHE_TTL" \
         "git status --porcelain 2>/dev/null")
 
     if [[ -z "$status" ]]; then
@@ -211,14 +294,22 @@ build_statusline() {
     if [[ "$SHOW_MODEL" == "true" ]]; then
         local model
         model=$(get_model)
-        [[ -n "$model" ]] && parts+=("$(color "$COLOR_MODEL" "$model")")
+        if [[ -n "$model" ]]; then
+            local model_display
+            model_display="$(emoji "$EMOJI_MODEL")$(color "$COLOR_MODEL" "$model")"
+            parts+=("$model_display")
+        fi
     fi
 
     # Directory
     if [[ "$SHOW_DIRECTORY" == "true" ]]; then
         local dir
         dir=$(get_directory)
-        [[ -n "$dir" ]] && parts+=("$dir")
+        if [[ -n "$dir" ]]; then
+            local dir_display
+            dir_display="$(emoji "$EMOJI_DIR")$dir"
+            parts+=("$dir_display")
+        fi
     fi
 
     # Branch
@@ -230,7 +321,9 @@ build_statusline() {
             branch_color=$(get_branch_color "$branch")
             local display_branch
             display_branch=$(truncate "$branch" "$MAX_BRANCH_LENGTH")
-            parts+=("$(color "$branch_color" "$display_branch")")
+            local branch_display
+            branch_display="$(emoji "$EMOJI_BRANCH")$(color "$branch_color" "$display_branch")"
+            parts+=("$branch_display")
         fi
     fi
 
@@ -245,7 +338,11 @@ build_statusline() {
     if [[ "$SHOW_COST" == "true" ]]; then
         local cost
         cost=$(get_cost)
-        [[ -n "$cost" ]] && parts+=("$(color "$COLOR_COST" "$cost")")
+        if [[ -n "$cost" ]]; then
+            local cost_display
+            cost_display="$(emoji "$EMOJI_COST")$(color "$COLOR_COST" "$cost")"
+            parts+=("$cost_display")
+        fi
     fi
 
     # Join with separator
@@ -263,7 +360,7 @@ build_statusline() {
         fi
     done
 
-    echo -e "$output"
+    printf '%s\n' "$output"
 }
 
 # ============================================================================
@@ -275,8 +372,8 @@ set -o pipefail
 
 # Build and output status line
 if result=$(build_statusline 2>/dev/null); then
-    echo "$result"
+    printf '%s' "$result"
 else
     # Graceful degradation - output nothing on error
-    echo ""
+    printf ''
 fi
