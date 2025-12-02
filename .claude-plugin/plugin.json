@@ -25,6 +25,10 @@
     "inject-context": {
       "description": "대용량 파일 구조 인식 청킹 및 컨텍스트 주입",
       "source": "./commands/inject-context.md"
+    },
+    "setup-statusline": {
+      "description": "YAML 설정 기반 status line 환경 구성",
+      "source": "./commands/setup-statusline.md"
     }
   }
 }

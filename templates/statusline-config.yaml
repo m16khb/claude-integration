@@ -1,0 +1,65 @@
+# Claude Code Status Line Configuration
+# 이 파일을 프로젝트 루트에 복사하여 커스터마이징하세요
+# Usage: /setup-statusline [config-path]
+
+statusline:
+  enabled: true
+
+  # Display mode: compact (80 chars) | extended (120 chars) | minimal (40 chars)
+  mode: "extended"
+
+  # Refresh interval in milliseconds (Claude Code API limitation: 300ms minimum)
+  refresh_interval_ms: 300
+
+  # Color configuration
+  colors:
+    enabled: true
+    theme: "auto"  # auto | light | dark | high-contrast
+    palette:
+      model: "38;5;33"             # Blue - 모델명
+      feature_branch: "38;5;226"   # Yellow - feature/* 브랜치
+      develop_branch: "38;5;51"    # Cyan - develop 브랜치
+      main_branch: "38;5;46"       # Green - main/master 브랜치
+      hotfix_branch: "38;5;196"    # Red - hotfix/* 브랜치
+      release_branch: "38;5;208"   # Orange - release/* 브랜치
+      staged: "38;5;46"            # Green - staged 파일
+      modified: "38;5;208"         # Orange - modified 파일
+      untracked: "38;5;196"        # Red - untracked 파일
+      duration: "38;5;245"         # Gray - 경과 시간
+      cost: "38;5;220"             # Gold - 비용 정보
+      separator: "38;5;240"        # Dark Gray - 구분자
+
+  # Caching configuration (performance optimization)
+  cache:
+    git_ttl_seconds: 5           # Git 명령 결과 캐시
+    metrics_ttl_seconds: 10      # 세션 메트릭 캐시
+    version_ttl_seconds: 60      # 버전 정보 캐시
+
+  # Information display settings
+  display:
+    model: true                  # 모델명 (O 4.5, S 4.5, H 4.5)
+    duration: true               # 세션 경과 시간
+    directory: true              # 프로젝트명/디렉토리
+    branch: true                 # Git 브랜치
+    git_status: true             # Git 변경 상태 (+3 ~2 ?1)
+    cost: false                  # API 비용 (선택적)
+
+  # Format configuration
+  format:
+    max_dir_length: 20           # 디렉토리명 최대 길이
+    max_branch_length: 25        # 브랜치명 최대 길이
+    truncate_with: "…"           # 말줄임 표시
+    separator: " │ "             # 섹션 구분자
+
+  # Model name aliases (간결한 표시)
+  model_aliases:
+    "claude-opus-4-5-20251101": "O 4.5"
+    "claude-sonnet-4-5-20250929": "S 4.5"
+    "claude-haiku-4-5-20251001": "H 4.5"
+    "claude-sonnet-4-20250514": "S 4"
+    "claude-3-5-sonnet": "S 3.5"
+
+  # Error handling
+  error_handling:
+    graceful_degradation: true   # 에러 시 기본값 반환
+    fallback_text: ""            # 에러 시 표시할 텍스트 (빈 문자열 권장)

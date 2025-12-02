@@ -14,8 +14,10 @@
 
 ```
 claude-integration/
-├── plugin.json              # 플러그인 메타데이터 및 커맨드 등록
-├── .claude/commands/        # 슬래시 커맨드 정의 파일
+├── .claude-plugin/
+│   └── plugin.json          # 플러그인 메타데이터 및 커맨드 등록
+├── commands/                # 슬래시 커맨드 정의 파일
+├── templates/               # 템플릿 파일 (statusline 등)
 ├── agent_docs/              # 상세 개발 문서
 └── README.md
 ```
@@ -24,10 +26,11 @@ claude-integration/
 
 | 커맨드 | 설명 | 모델 |
 |--------|------|------|
-| `/git-commit [push]` | Conventional Commits 형식 커밋 | default |
+| `/git-commit [push]` | Conventional Commits 형식 커밋 | haiku |
 | `/claude-md [action]` | CLAUDE.md 생성/분석/구조화 | default |
-| `/continue-task <task>` | 복잡한 작업을 Opus로 실행 | opus |
+| `/continue-context [focus]` | 현재 컨텍스트 분석 및 다음 작업 추천 | default |
 | `/inject-context <file>` | 대용량 파일 청크 로드 | haiku |
+| `/setup-statusline [config]` | YAML 설정 기반 status line 환경 구성 | opus |
 
 ## 상세 문서
 
