@@ -157,24 +157,45 @@ colors:
 
 ---
 
+## PHASE 6: Follow-up TUI (Required)
+
+```
+AskUserQuestion:
+  question: "Status line 설정이 완료되었습니다. 다음 작업을 선택하세요."
+  header: "후속"
+  options:
+    - label: "설정 커스터마이징"
+      description: "statusline.yaml 파일을 열어 설정을 수정합니다"
+    - label: "테스트 재실행"
+      description: "status line 스크립트를 다시 테스트합니다"
+    - label: "완료"
+      description: "작업을 종료합니다"
+```
+
+---
+
 ## ERROR HANDLING
 
-| Error | Response |
-|-------|----------|
-| Plugin not found | Glob search, show manual install guide |
-| settings.json missing | Create new file with statusLine config |
-| Permission denied | Guide user to run with appropriate permissions |
-| Test fails | Check jq installation, verify script syntax |
+| Error | Detection | Response |
+|-------|-----------|----------|
+| Plugin not found | Glob returns empty | "플러그인 템플릿을 찾을 수 없습니다. 수동 설치 가이드를 확인하세요." |
+| settings.json missing | File not exists | "settings.json이 없습니다. 새로 생성합니다." |
+| Permission denied | Write/chmod fails | "권한 오류: 적절한 권한으로 다시 실행하세요." |
+| Test fails | Script output invalid | "테스트 실패: jq 설치 확인 및 스크립트 문법 검증이 필요합니다." |
+| Template copy fails | cp command fails | "템플릿 복사 실패: 디스크 공간 및 권한을 확인하세요." |
 
 ---
 
 ## EXECUTE NOW
 
-1. **Glob** find plugin templates directory
-2. **Read** template files from plugin
-3. **Write** templates to `~/.claude/` (exact copy)
-4. **Bash** chmod +x the script
-5. **Read** existing `~/.claude/settings.json`
-6. **Write** merged settings.json with statusLine config
-7. **Bash** test the script
-8. **Report** in Korean
+```
+1. GLOB find plugin templates directory
+2. READ template files from plugin
+3. WRITE templates to ~/.claude/ (exact copy)
+4. BASH chmod +x the script
+5. READ existing ~/.claude/settings.json
+6. WRITE merged settings.json with statusLine config
+7. BASH test the script
+8. REPORT in Korean
+9. SHOW follow-up TUI ← REQUIRED
+```
