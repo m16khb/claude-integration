@@ -215,6 +215,37 @@ cached() {
 }
 
 # =============================================================================
+# JSON PARSER (Pure Bash - No jq dependency)
+# Extracts simple JSON string values
+# =============================================================================
+
+json_get() {
+    local json="$1" key="$2"
+    local value=""
+
+    # Handle nested keys like "workspace.current_dir" or "model.id"
+    if [[ "$key" == *.* ]]; then
+        local parent="${key%%.*}"
+        local child="${key#*.}"
+        # Extract parent object first, then get child
+        # Simple regex extraction for nested object
+        if [[ "$json" =~ \"${parent}\"[[:space:]]*:[[:space:]]*\{([^}]*)\} ]]; then
+            local inner="${BASH_REMATCH[1]}"
+            if [[ "$inner" =~ \"${child}\"[[:space:]]*:[[:space:]]*\"([^\"]+)\" ]]; then
+                value="${BASH_REMATCH[1]}"
+            fi
+        fi
+    else
+        # Top-level key with string value
+        if [[ "$json" =~ \"${key}\"[[:space:]]*:[[:space:]]*\"([^\"]+)\" ]]; then
+            value="${BASH_REMATCH[1]}"
+        fi
+    fi
+
+    echo "$value"
+}
+
+# =============================================================================
 # DATA EXTRACTION
 # =============================================================================
 
@@ -223,14 +254,17 @@ INPUT=$(cat)
 get_model() {
     local model_id display_name
 
-    if echo "$INPUT" | jq -e '.model | type == "object"' &>/dev/null; then
-        model_id=$(echo "$INPUT" | jq -r '.model.id // empty')
-        display_name=$(echo "$INPUT" | jq -r '.model.display_name // empty')
-    else
-        model_id=$(echo "$INPUT" | jq -r '.model // empty')
-    fi
-
+    # Try to get display_name from model object first
+    display_name=$(json_get "$INPUT" "model.display_name")
     [[ -n "$display_name" ]] && { echo "$display_name"; return; }
+
+    # Try model.id (object format)
+    model_id=$(json_get "$INPUT" "model.id")
+
+    # Try model (string format)
+    if [[ -z "$model_id" ]]; then
+        model_id=$(json_get "$INPUT" "model")
+    fi
 
     case "$model_id" in
         *opus-4-5*)    echo "Opus 4.5" ;;
@@ -246,7 +280,16 @@ get_model() {
 
 get_directory() {
     local dir
-    dir=$(echo "$INPUT" | jq -r '.workspace.current_dir // .cwd // .workspaceDirs[0] // empty' 2>/dev/null)
+
+    # Try different possible keys
+    dir=$(json_get "$INPUT" "workspace.current_dir")
+    [[ -z "$dir" ]] && dir=$(json_get "$INPUT" "cwd")
+
+    # Handle workspaceDirs array (get first element)
+    if [[ -z "$dir" && "$INPUT" =~ \"workspaceDirs\"[[:space:]]*:[[:space:]]*\[\"([^\"]+)\" ]]; then
+        dir="${BASH_REMATCH[1]}"
+    fi
+
     [[ -n "$dir" ]] && truncate "${dir/#$HOME/~}" "$MAX_DIR_LENGTH"
 }
 
@@ -286,14 +329,22 @@ get_git_status() {
 
     local result=""
     [[ $staged -gt 0 ]] && result+="$(color "$COLOR_STAGED" "+$staged")"
-    [[ $modified -gt 0 ]] && result+="$(color "$COLOR_MODIFIED" "!$modified")"
-    [[ $untracked -gt 0 ]] && result+="$(color "$COLOR_UNTRACKED" "?$untracked")"
+    [[ $modified -gt 0 ]] && { [[ -n "$result" ]] && result+=" "; result+="$(color "$COLOR_MODIFIED" "!$modified")"; }
+    [[ $untracked -gt 0 ]] && { [[ -n "$result" ]] && result+=" "; result+="$(color "$COLOR_UNTRACKED" "?$untracked")"; }
     echo "$result"
 }
 
 get_cost() {
-    local cost
-    cost=$(echo "$INPUT" | jq -r '.cost.total_cost_usd // .costs.total // empty' 2>/dev/null)
+    local cost=""
+
+    # Try cost.total_cost_usd
+    if [[ "$INPUT" =~ \"total_cost_usd\"[[:space:]]*:[[:space:]]*([0-9.]+) ]]; then
+        cost="${BASH_REMATCH[1]}"
+    # Try costs.total
+    elif [[ "$INPUT" =~ \"total\"[[:space:]]*:[[:space:]]*([0-9.]+) ]]; then
+        cost="${BASH_REMATCH[1]}"
+    fi
+
     [[ -n "$cost" && "$cost" != "0" ]] && printf "\$%.2f" "$cost"
 }
 

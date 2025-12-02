@@ -1,7 +1,7 @@
 ---
 name: setup-statusline
 description: 'YAML 설정 기반 status line 환경 구성'
-allowed-tools: Read, Write, Bash(cp *), Bash(chmod *), Bash(mkdir *)
+allowed-tools: Read, Write, Bash(cp *), Bash(chmod *), Bash(mkdir *), Bash(uname *)
 model: claude-opus-4-5-20251101
 ---
 
@@ -9,69 +9,49 @@ model: claude-opus-4-5-20251101
 
 ## MISSION
 
-Configure Claude Code status line environment with YAML-based Single Source of Truth.
+Configure Claude Code status line with YAML-based Single Source of Truth architecture.
+Platform-specific scripts (Bash for Unix, PowerShell for Windows) read shared YAML config.
 
 **Args**: $ARGUMENTS
 
 ---
 
-## ARCHITECTURE
+## PHASE 1: Detect Platform
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│  Single Source of Truth Architecture                            │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  ~/.claude/statusline.yaml  ←── User edits this file           │
-│           │                                                     │
-│           ↓                                                     │
-│  ~/.claude/statusline.sh    ←── Reads YAML directly (no vars)  │
-│           │                                                     │
-│           ↓                                                     │
-│  settings.json              ←── Executes the script             │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
+DETECTION LOGIC:
+├─ IF $env:OS == "Windows_NT" → PLATFORM = "windows"
+├─ IF $OSTYPE contains "msys/mingw/cygwin" → PLATFORM = "windows"
+├─ IF uname -s starts with "MINGW" → PLATFORM = "windows"
+├─ IF uname -r contains "microsoft" → PLATFORM = "unix" (WSL uses bash)
+└─ ELSE → PLATFORM = "unix"
 
-BENEFITS:
-├─ One config file to edit
-├─ YAML changes take effect immediately
-├─ No intermediate conversion step
-└─ Predictable behavior
+⚠️ Windows: Use PowerShell, NOT Git Bash (PATH issues with cat/jq)
 ```
 
 ---
 
-## CRITICAL RULES
-
-```
-⚠️ DO NOT write statusline.sh code manually!
-⚠️ ALWAYS copy templates exactly as-is!
-⚠️ YAML is the only file users should edit!
-```
-
----
-
-## PHASE 1: Find Plugin Directory
+## PHASE 2: Find Plugin Templates
 
 ```
 SEARCH ORDER:
 ├─ ~/.claude/plugins/marketplaces/claude-integration/templates/
 ├─ ~/.claude/plugins/claude-integration@claude-integration/templates/
 ├─ ~/.claude/plugins/*/templates/statusline.sh
-└─ Local: ./templates/ (if in plugin directory)
+└─ ./templates/ (local plugin directory)
 
-USE Glob: ~/.claude/plugins/**/templates/statusline.sh
+ACTION: Glob ~/.claude/plugins/**/templates/statusline.sh
+IF empty → ERROR "plugin_not_found"
 ```
 
 ---
 
-## PHASE 2: Copy Template Files
+## PHASE 3: Copy Templates (Platform-Specific)
 
+### Unix (macOS/Linux/WSL):
 ```
-ACTION: Copy both template files to ~/.claude/
-
 FILES:
-├─ statusline.sh   → ~/.claude/statusline.sh
+├─ statusline.sh → ~/.claude/statusline.sh
 └─ statusline-config.yaml → ~/.claude/statusline.yaml
 
 COMMANDS:
@@ -80,21 +60,40 @@ COMMANDS:
   chmod +x ~/.claude/statusline.sh
   cp {plugin_dir}/templates/statusline-config.yaml ~/.claude/statusline.yaml
 
-⚠️ Copy files AS-IS without any modifications!
+⚠️ Copy templates AS-IS without modifications!
+```
+
+### Windows:
+```
+FILES:
+├─ statusline.ps1 → ~/.claude/statusline.ps1
+└─ statusline-config.yaml → ~/.claude/statusline.yaml
+
+NOTE: Use Write tool (not cp). No chmod needed for PowerShell.
 ```
 
 ---
 
-## PHASE 3: Update settings.json
+## PHASE 4: Update settings.json
 
 ```
-READ ~/.claude/settings.json
+READ ~/.claude/settings.json (create if missing)
+
 MERGE statusLine config:
 
+Unix:
 {
   "statusLine": {
     "type": "command",
     "command": "/bin/bash ~/.claude/statusline.sh"
+  }
+}
+
+Windows:
+{
+  "statusLine": {
+    "type": "command",
+    "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File %USERPROFILE%\\.claude\\statusline.ps1"
   }
 }
 
@@ -103,61 +102,50 @@ PRESERVE existing settings, only update statusLine key.
 
 ---
 
-## PHASE 4: Verify Installation
+## PHASE 5: Verify Installation
 
-```bash
-# Test command
-echo '{"model":"claude-opus-4-5-20251101","cwd":"/test"}' | ~/.claude/statusline.sh
 ```
+TEST COMMAND:
 
-Expected: Colored output with emoji (🤖 Opus 4.5 │ 📂 /test │ ...)
+Unix:
+  echo '{"model":"claude-opus-4-5-20251101","cwd":"/test"}' | ~/.claude/statusline.sh
+
+Windows:
+  '{"model":"claude-opus-4-5-20251101","cwd":"C:\\test"}' | powershell.exe -NoProfile -ExecutionPolicy Bypass -File $HOME\.claude\statusline.ps1
+
+EXPECTED: Colored output with emoji (🤖 Opus 4.5 │ 📂 /test │ ...)
+IF output invalid → ERROR "test_failed"
+```
 
 ---
 
-## PHASE 5: Report (Korean)
+## PHASE 6: Report (Korean)
 
 ```markdown
 ## ✅ Status Line 설정 완료
 
 | 항목 | 경로 |
 |------|------|
-| 스크립트 | `~/.claude/statusline.sh` |
+| 스크립트 | `~/.claude/statusline.{sh|ps1}` |
 | 설정 파일 | `~/.claude/statusline.yaml` |
 | Claude 설정 | `~/.claude/settings.json` |
 
 ### 적용 방법
-
-Claude Code를 **재시작**하면 status line이 활성화됩니다.
+Claude Code를 **재시작**하면 활성화됩니다.
 
 ### 커스터마이징
+`~/.claude/statusline.yaml` 수정 → 즉시 적용 (재시작 불필요)
 
-`~/.claude/statusline.yaml` 파일을 직접 수정하세요:
-
-\`\`\`yaml
-# 디렉토리 숨기기
-show:
-  directory: false
-
-# 이모지 비활성화
-emoji_enabled: false
-
-# 색상 변경
-colors:
-  model: "38;5;196"  # 빨간색
-\`\`\`
-
-변경 후 **Claude Code 재시작** 불필요 - 즉시 적용됩니다.
-
-### 지원 플랫폼
-
-- macOS ✅
-- Linux ✅
-- Windows (Git Bash/WSL) ✅
+| 플랫폼 | 스크립트 | 상태 |
+|--------|----------|------|
+| macOS/Linux | statusline.sh | ✅ |
+| Windows | statusline.ps1 | ✅ |
+| WSL | statusline.sh | ✅ |
 ```
 
 ---
 
-## PHASE 6: Follow-up TUI (Required)
+## PHASE 7: Follow-up TUI
 
 ```
 AskUserQuestion:
@@ -178,24 +166,31 @@ AskUserQuestion:
 
 | Error | Detection | Response |
 |-------|-----------|----------|
-| Plugin not found | Glob returns empty | "플러그인 템플릿을 찾을 수 없습니다. 수동 설치 가이드를 확인하세요." |
-| settings.json missing | File not exists | "settings.json이 없습니다. 새로 생성합니다." |
-| Permission denied | Write/chmod fails | "권한 오류: 적절한 권한으로 다시 실행하세요." |
-| Test fails | Script output invalid | "테스트 실패: jq 설치 확인 및 스크립트 문법 검증이 필요합니다." |
-| Template copy fails | cp command fails | "템플릿 복사 실패: 디스크 공간 및 권한을 확인하세요." |
+| plugin_not_found | Glob returns empty | "플러그인 템플릿을 찾을 수 없습니다. 수동 설치 가이드를 확인하세요." |
+| settings_missing | File not exists | "settings.json이 없습니다. 새로 생성합니다." |
+| permission_denied | Write/chmod fails | "권한 오류: 적절한 권한으로 다시 실행하세요." |
+| test_failed_unix | Script output invalid | "테스트 실패: 스크립트 문법 검증이 필요합니다." |
+| test_failed_windows | PowerShell error | "테스트 실패: PowerShell 실행 정책을 확인하세요." |
+| copy_failed | cp/Write fails | "템플릿 복사 실패: 디스크 공간 및 권한을 확인하세요." |
 
 ---
 
 ## EXECUTE NOW
 
 ```
-1. GLOB find plugin templates directory
-2. READ template files from plugin
-3. WRITE templates to ~/.claude/ (exact copy)
-4. BASH chmod +x the script
-5. READ existing ~/.claude/settings.json
-6. WRITE merged settings.json with statusLine config
-7. BASH test the script
-8. REPORT in Korean
-9. SHOW follow-up TUI ← REQUIRED
+1. DETECT platform (Windows vs Unix)
+2. GLOB find plugin templates
+3. READ template files
+4. IF Windows:
+   ├─ WRITE statusline.ps1 → ~/.claude/
+   └─ WRITE statusline.yaml → ~/.claude/
+5. IF Unix:
+   ├─ WRITE statusline.sh → ~/.claude/
+   ├─ BASH chmod +x ~/.claude/statusline.sh
+   └─ WRITE statusline.yaml → ~/.claude/
+6. READ ~/.claude/settings.json (or create empty {})
+7. WRITE merged settings.json with statusLine config
+8. TEST script (platform-specific)
+9. REPORT in Korean
+10. SHOW follow-up TUI ← REQUIRED
 ```
