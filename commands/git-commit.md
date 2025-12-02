@@ -1,7 +1,8 @@
 ---
 name: git-commit
-description: "스마트 git 커밋 (인자: push - 커밋 후 푸시)"
+description: '스마트 git 커밋 (인자: push - 커밋 후 푸시)'
 allowed-tools: Bash(git *)
+model: haiku
 ---
 
 # Smart Git Commit
@@ -59,6 +60,7 @@ CRITICAL RULES:
 ```
 
 **TUI (main/master protection):**
+
 ```
 AskUserQuestion:
   question: "main/master 브랜치에 직접 작업하려고 합니다. 계속하시겠습니까?"
@@ -116,6 +118,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
 **Commit type guidelines:**
+
 ```
 ├─ feat:     새로운 기능 추가
 ├─ fix:      버그 수정
@@ -127,6 +130,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
 Execute:
+
 ```bash
 git commit -m "$(cat <<'EOF'
 <type>: <Korean description>
@@ -165,12 +169,12 @@ IF "push" in $ARGUMENTS:
 ```markdown
 ## ✅ 커밋 완료
 
-| 항목 | 내용 |
-|------|------|
-| 커밋 | `<hash>` <type>: <message> |
-| 브랜치 | <branch> (Git Flow: <type>) |
-| 푸시 | ✅ 완료 / ⏭️ 스킵 / ❌ 실패 |
-| 변경 | +<insertions> / -<deletions> in <files> files |
+| 항목   | 내용                                          |
+| ------ | --------------------------------------------- |
+| 커밋   | `<hash>` <type>: <message>                    |
+| 브랜치 | <branch> (Git Flow: <type>)                   |
+| 푸시   | ✅ 완료 / ⏭️ 스킵 / ❌ 실패                   |
+| 변경   | +<insertions> / -<deletions> in <files> files |
 ```
 
 ---
@@ -193,6 +197,7 @@ AskUserQuestion:
 ```
 
 ### Handle Selection:
+
 ```
 SWITCH selection:
   "푸시":
@@ -212,16 +217,16 @@ SWITCH selection:
 
 ## ERROR HANDLING
 
-| Error | Response (Korean) |
-|-------|-------------------|
-| Nothing to commit | "변경 사항 없음" → Exit |
-| Merge conflict | "충돌 파일: {files}" + "`git status`로 확인 후 해결하세요" |
-| Push rejected | "`git pull --rebase origin {branch}` 후 다시 시도하세요" |
-| Pre-commit hook fail | "훅 실패: {output}" + 수정 제안 |
-| No remote configured | "원격 저장소 설정 필요: `git remote add origin <url>`" |
-| Auth failure | "인증 실패 - GitHub 토큰 또는 SSH 키 확인 필요" |
-| No upstream branch | "`git push -u origin {branch}`로 업스트림 설정" |
-| Detached HEAD | "브랜치가 아닌 커밋에 있습니다. 브랜치 생성: `git checkout -b <name>`" |
+| Error                | Response (Korean)                                                      |
+| -------------------- | ---------------------------------------------------------------------- |
+| Nothing to commit    | "변경 사항 없음" → Exit                                                |
+| Merge conflict       | "충돌 파일: {files}" + "`git status`로 확인 후 해결하세요"             |
+| Push rejected        | "`git pull --rebase origin {branch}` 후 다시 시도하세요"               |
+| Pre-commit hook fail | "훅 실패: {output}" + 수정 제안                                        |
+| No remote configured | "원격 저장소 설정 필요: `git remote add origin <url>`"                 |
+| Auth failure         | "인증 실패 - GitHub 토큰 또는 SSH 키 확인 필요"                        |
+| No upstream branch   | "`git push -u origin {branch}`로 업스트림 설정"                        |
+| Detached HEAD        | "브랜치가 아닌 커밋에 있습니다. 브랜치 생성: `git checkout -b <name>`" |
 
 ---
 
