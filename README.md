@@ -22,13 +22,12 @@ Claude Code 생산성 향상을 위한 스마트 커맨드 플러그인입니다
 
 ## 커맨드 목록
 
-| 커맨드 | 설명 | 모델 |
-|--------|------|------|
-| `/git-commit` | Git Flow 기반 스마트 커밋 | 기본 |
-| `/claude-md` | CLAUDE.md 생성/분석/구조화 | Opus |
-| `/continue-context` | 컨텍스트 분석 및 다음 작업 추천 | Opus |
-| `/inject-context` | 대용량 파일 컨텍스트 주입 | Haiku |
-| `/optimize-command` | 커맨드 프롬프트 최적화 | 기본 |
+| 커맨드              | 설명                            | 모델  |
+| ------------------- | ------------------------------- | ----- |
+| `/git-commit`       | Git Flow 기반 스마트 커밋       | 기본  |
+| `/claude-md`        | CLAUDE.md 생성/분석/구조화      | Opus  |
+| `/continue-context` | 컨텍스트 분석 및 다음 작업 추천 | Opus  |
+| `/inject-context`   | 대용량 파일 컨텍스트 주입       | Haiku |
 
 ## 커맨드 상세
 
@@ -37,12 +36,14 @@ Claude Code 생산성 향상을 위한 스마트 커맨드 플러그인입니다
 Git 커밋을 스마트하게 생성합니다.
 
 **특징**:
+
 - Git Flow 브랜치 컨텍스트 인식 (feature/release/hotfix)
 - Conventional Commits 형식 자동 적용
 - 민감 파일 자동 감지 및 경고
 - main/master 브랜치 보호
 
 **사용법**:
+
 ```bash
 # 커밋만
 /git-commit
@@ -56,11 +57,13 @@ Git 커밋을 스마트하게 생성합니다.
 WHAT/WHY/HOW 프레임워크 기반으로 CLAUDE.md를 관리합니다.
 
 **핵심 원칙**:
+
 - Less is More: 60줄 이하 권장, 300줄 초과 금지
 - Universal Relevance: 모든 세션에 관련된 내용만
 - Progressive Disclosure: 상세 내용은 agent_docs/로 분리
 
 **사용법**:
+
 ```bash
 # 작업 선택 TUI
 /claude-md
@@ -77,17 +80,20 @@ WHAT/WHY/HOW 프레임워크 기반으로 CLAUDE.md를 관리합니다.
 현재 대화 컨텍스트를 분석하여 다음 작업을 스마트하게 추천합니다.
 
 **분석 항목**:
+
 - 로드된 파일 및 수정된 파일
 - 완료된 작업 및 미완료 항목
 - Git 상태 (커밋되지 않은 변경사항)
 - 현재 포커스 영역
 
 **추천 카테고리**:
+
 - 즉시 작업: 커밋, 테스트 수정, 오류 해결
 - 다음 단계: 테스트 작성, 문서화, PR 생성
 - 품질 개선: 리팩토링, 보안 검토
 
 **사용법**:
+
 ```bash
 # 전체 컨텍스트 분석
 /continue-context
@@ -101,28 +107,16 @@ WHAT/WHY/HOW 프레임워크 기반으로 CLAUDE.md를 관리합니다.
 대용량 파일을 구조 인식 청킹으로 분할 로드합니다.
 
 **특징**:
+
 - 코드 경계 인식 (함수, 클래스 단위)
 - 500줄 청크 + 20줄 오버랩
 - 자동 Opus 위임 옵션
 
 **사용법**:
+
 ```bash
 /inject-context src/large-file.ts
 /inject-context src/api.ts "API 엔드포인트 분석"
-```
-
-### /optimize-command
-
-프롬프트 엔지니어링 3원칙으로 커맨드를 최적화합니다.
-
-**3원칙**:
-1. 목적 정확성 (Purpose Accuracy) - 정확한 동작 보장
-2. 영어 로직 (English Logic) - 토큰 효율성
-3. 한국어 TUI (Korean TUI) - 사용자 경험
-
-**사용법**:
-```bash
-/optimize-command commands/my-command.md
 ```
 
 ## 프로젝트 구조

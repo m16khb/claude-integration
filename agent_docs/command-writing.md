@@ -5,13 +5,13 @@
 ```yaml
 ---
 name: command-name
-description: "커맨드 설명"
+description: '커맨드 설명'
 argument-hint: <required> [optional]
 allowed-tools:
   - Read
   - Write
   - Bash
-model: opus|haiku  # 생략시 기본 모델
+model: opus|haiku # 생략시 기본 모델
 ---
 ```
 
