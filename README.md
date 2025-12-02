@@ -26,7 +26,7 @@ Claude Code 생산성 향상을 위한 스마트 커맨드 플러그인입니다
 |--------|------|------|
 | `/git-commit` | Git Flow 기반 스마트 커밋 | 기본 |
 | `/claude-md` | CLAUDE.md 생성/분석/구조화 | Opus |
-| `/continue-task` | Opus로 복잡한 작업 실행 | Opus |
+| `/continue-context` | 컨텍스트 분석 및 다음 작업 추천 | Opus |
 | `/inject-context` | 대용량 파일 컨텍스트 주입 | Haiku |
 | `/optimize-command` | 커맨드 프롬프트 최적화 | 기본 |
 
@@ -72,21 +72,28 @@ WHAT/WHY/HOW 프레임워크 기반으로 CLAUDE.md를 관리합니다.
 /claude-md 검사      # 린트 검사
 ```
 
-### /continue-task
+### /continue-context
 
-Opus 모델을 활용하여 복잡한 멀티스텝 작업을 실행합니다.
+현재 대화 컨텍스트를 분석하여 다음 작업을 스마트하게 추천합니다.
 
-**지원 작업 유형**:
-- ANALYSIS: 코드 분석, 패턴 탐지
-- GENERATION: 새 코드/컴포넌트 생성
-- REFACTORING: 코드 구조 개선
-- DEBUGGING: 버그 탐지 및 수정
-- DOCUMENTATION: 문서화
+**분석 항목**:
+- 로드된 파일 및 수정된 파일
+- 완료된 작업 및 미완료 항목
+- Git 상태 (커밋되지 않은 변경사항)
+- 현재 포커스 영역
+
+**추천 카테고리**:
+- 즉시 작업: 커밋, 테스트 수정, 오류 해결
+- 다음 단계: 테스트 작성, 문서화, PR 생성
+- 품질 개선: 리팩토링, 보안 검토
 
 **사용법**:
 ```bash
-/continue-task 인증 시스템 구현
-/continue-task 성능 최적화 분석
+# 전체 컨텍스트 분석
+/continue-context
+
+# 특정 영역에 포커스
+/continue-context 테스트
 ```
 
 ### /inject-context
@@ -128,7 +135,7 @@ claude-integration/
 ├── commands/              # 슬래시 커맨드 (5개)
 │   ├── git-commit.md
 │   ├── claude-md.md
-│   ├── continue-task.md
+│   ├── continue-context.md
 │   ├── inject-context.md
 │   └── optimize-command.md
 ├── CLAUDE.md              # 프로젝트 컨텍스트
