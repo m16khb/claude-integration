@@ -45,10 +45,34 @@
       "source": "./commands/factory.md"
     }
   },
-  "skills": {
-    "factory": {
-      "description": "agent, skill, command 생성 시 자동 활성화 (MoAI-ADK, Spec-Kit 패턴 적용)",
-      "source": "./skills/factory/SKILL.md"
+  "agents": {
+    "nestjs-fastify-expert": {
+      "description": "NestJS + Fastify 오케스트레이터 (전문가 위임, Fastify 어댑터)",
+      "source": "./agents/backend/nestjs-fastify-expert.md"
+    },
+    "redis-cache-expert": {
+      "description": "Redis 캐싱 전문가 (@nestjs/cache-manager, ioredis)",
+      "source": "./agents/backend/redis-cache-expert.md"
+    },
+    "bullmq-queue-expert": {
+      "description": "BullMQ 작업 큐 전문가 (Producer, Consumer, DLQ)",
+      "source": "./agents/backend/bullmq-queue-expert.md"
+    },
+    "typeorm-expert": {
+      "description": "TypeORM 전문가 (엔티티, 리포지토리, 마이그레이션, 트랜잭션)",
+      "source": "./agents/backend/typeorm-expert.md"
+    },
+    "suites-testing-expert": {
+      "description": "테스팅 전문가 (Suites/Automock, Jest, E2E)",
+      "source": "./agents/backend/suites-testing-expert.md"
+    },
+    "cqrs-expert": {
+      "description": "CQRS 패턴 전문가 (Command, Query, Event, Saga)",
+      "source": "./agents/backend/cqrs-expert.md"
+    },
+    "microservices-expert": {
+      "description": "마이크로서비스 전문가 (RabbitMQ, Redis, gRPC, TCP)",
+      "source": "./agents/backend/microservices-expert.md"
     }
   }
 }

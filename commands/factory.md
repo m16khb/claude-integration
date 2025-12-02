@@ -1,13 +1,17 @@
 ---
 name: factory
-description: 'Agent, Skill, Command 컴포넌트 생성기'
+description: 'Agent, Skill, Command 컴포넌트 생성기 (WebFetch 기반 문서 분석)'
 argument-hint: '[type] [name]'
 allowed-tools:
   - Read
   - Write
+  - Edit
   - Glob
+  - Grep
   - AskUserQuestion
   - Bash(mkdir *)
+  - WebFetch
+  - WebSearch
 model: claude-opus-4-5-20251101
 ---
 
@@ -15,7 +19,7 @@ model: claude-opus-4-5-20251101
 
 ## MISSION
 
-Generate Claude Code components (agent, skill, command) following Anthropic 2025 schema and best practices.
+Generate Claude Code components (agent, skill, command) following Anthropic 2025 schema and best practices. Support research-driven generation via WebFetch and orchestrator composition from existing experts.
 
 **Input**: $ARGUMENTS
 
@@ -72,7 +76,7 @@ VALIDATE name:
 ├─ Must be kebab-case (lowercase, hyphens)
 ├─ No spaces or special characters
 ├─ 3-30 characters length
-└─ IF invalid → show error, ask again
+└─ IF invalid → show error "이름은 kebab-case 형식이어야 합니다", ask again
 ```
 
 ### 2.2 Purpose Collection
@@ -88,9 +92,111 @@ AskUserQuestion:
 
 ---
 
-## PHASE 3: Advanced Settings
+## PHASE 3: Research & Documentation Analysis
 
-### 3.1 Installation Location
+```
+PURPOSE: Gather best practices and code examples before generation.
+BENEFIT: Research-informed components are more accurate and useful.
+```
+
+### 3.1 Research Decision
+
+```
+AskUserQuestion:
+  question: "관련 문서를 검색하여 분석할까요?"
+  header: "리서치"
+  options:
+    - label: "예, 공식문서 분석"
+      description: "WebSearch/WebFetch로 최신 베스트 프랙티스 수집"
+    - label: "예, GitHub 예제 분석"
+      description: "유사 에이전트/스킬 예제 검색"
+    - label: "아니오, 바로 생성"
+      description: "리서치 없이 바로 생성"
+```
+
+### 3.2 Documentation Research
+
+```
+IF user selected "공식문서 분석":
+  EXTRACT keywords from {name} and {purpose}
+
+  SEARCH_QUERIES:
+  ├─ "{keyword} official documentation 2025"
+  ├─ "{keyword} best practices tutorial"
+  ├─ "{keyword} NestJS/React/etc integration"
+  └─ "Claude Code {type} {keyword} example"
+
+  FOR EACH query:
+    WebSearch → collect top 3-5 relevant URLs
+
+  FOR EACH relevant URL:
+    WebFetch → extract:
+    ├─ Installation commands
+    ├─ Configuration examples
+    ├─ API patterns and code snippets
+    ├─ Common pitfalls and solutions
+    └─ Version-specific notes
+
+  COMPILE research_context:
+  ├─ official_docs: [extracted summaries]
+  ├─ code_examples: [relevant snippets]
+  ├─ dependencies: [required packages]
+  └─ best_practices: [key recommendations]
+```
+
+### 3.3 GitHub Examples Research
+
+```
+IF user selected "GitHub 예제 분석":
+  SEARCH_QUERIES:
+  ├─ "site:github.com claude-code {type} {keyword}"
+  ├─ "site:github.com anthropic skills {keyword}"
+  └─ "site:github.com {keyword}-expert agent"
+
+  FOR EACH GitHub repo found:
+    WebFetch raw.githubusercontent.com URLs:
+    ├─ README.md → understand structure
+    ├─ agents/*.md → extract patterns
+    ├─ skills/*/SKILL.md → extract triggers
+    └─ commands/*.md → extract phases
+
+  ANALYZE patterns:
+  ├─ Common frontmatter fields
+  ├─ Section structures
+  ├─ Trigger keyword patterns
+  └─ Output format conventions
+```
+
+### 3.4 Research Summary
+
+```
+DISPLAY research summary (Korean):
+┌─────────────────────────────────────────┐
+│ 📚 리서치 결과 요약                      │
+├─────────────────────────────────────────┤
+│ 공식 문서: {count}개 분석               │
+│ 코드 예제: {count}개 수집               │
+│ 권장 패키지: {packages}                  │
+│ 주요 패턴: {patterns}                    │
+└─────────────────────────────────────────┘
+
+AskUserQuestion:
+  question: "리서치 결과를 컴포넌트에 반영할까요?"
+  header: "반영"
+  options:
+    - label: "전체 반영"
+      description: "모든 분석 결과를 컴포넌트에 포함"
+    - label: "선택 반영"
+      description: "특정 섹션만 선택하여 반영"
+    - label: "참고만"
+      description: "리서치 결과는 참고만 하고 기본 생성"
+```
+
+---
+
+## PHASE 4: Advanced Settings
+
+### 4.1 Installation Location
 
 ```
 AskUserQuestion:
@@ -110,7 +216,7 @@ LOCATION_MAP:
 └─ "플러그인" → base_path = "."
 ```
 
-### 3.2 Model Selection (Command/Agent only)
+### 4.2 Model Selection (Command/Agent only)
 
 ```
 IF type IN ["command", "agent"]:
@@ -134,7 +240,7 @@ MODEL_MAP:
 └─ "Haiku" → model: claude-haiku-4-20250414
 ```
 
-### 3.3 Tool Selection (Command/Agent only)
+### 4.3 Tool Selection (Command/Agent only)
 
 ```
 IF type IN ["command", "agent"]:
@@ -161,25 +267,118 @@ TOOL_MAP:
 
 ---
 
-## PHASE 4: Find Templates
+## PHASE 5: Component Composition (Agent only)
 
 ```
-SEARCH template files:
-├─ Glob: ~/.claude/plugins/**/templates/*.template
-├─ Glob: ./templates/*.template
-└─ IF not found → use inline default templates
+PURPOSE: Enable orchestrator creation by composing existing expert agents.
+BENEFIT: Reuse specialized experts for complex multi-domain tasks.
+```
 
-TEMPLATE_MAP:
-├─ command → command.md.template
-├─ skill → skill.md.template
-└─ agent → agent.md.template
+### 5.1 Composition Decision
+
+```
+IF type = "agent":
+  AskUserQuestion:
+    question: "컴포넌트 조합 방식을 선택하세요"
+    header: "아키텍처"
+    options:
+      - label: "단독 에이전트"
+        description: "독립적으로 동작하는 전문가 에이전트"
+      - label: "오케스트레이터"
+        description: "여러 전문가를 조합하여 위임하는 에이전트"
+      - label: "전문가 확장"
+        description: "기존 전문가 에이전트를 확장"
+```
+
+### 5.2 Expert Selection (Orchestrator)
+
+```
+IF architecture = "오케스트레이터":
+  SCAN existing experts:
+  ├─ Glob: agents/backend/*.md
+  ├─ Glob: agents/**/*-expert.md
+  └─ Extract: name, description from frontmatter
+
+  AskUserQuestion:
+    question: "조합할 전문가 에이전트를 선택하세요"
+    header: "전문가"
+    multiSelect: true
+    options: (dynamically generated from scan)
+
+  STORE selected_experts for generation
+```
+
+### 5.3 Orchestration Pattern
+
+```
+IF selected_experts.length > 0:
+  GENERATE orchestration sections:
+  ├─ SPECIALIZED EXPERTS: list with triggers and paths
+  ├─ ORCHESTRATION LOGIC: routing decision tree
+  │   ├─ SINGLE_EXPERT: one expert handles entire task
+  │   ├─ SEQUENTIAL: chain experts with context passing
+  │   ├─ PARALLEL: concurrent execution for independent tasks
+  │   └─ DIRECT: orchestrator handles core domain tasks
+  ├─ ROUTING EXAMPLES: user request → expert mapping
+  └─ DELEGATION EXAMPLES: Task() call patterns
+
+  ADD to allowed-tools: Task
+```
+
+### 5.4 Expert Extension
+
+```
+IF architecture = "전문가 확장":
+  AskUserQuestion:
+    question: "확장할 기존 전문가를 선택하세요"
+    header: "기반"
+    options: (dynamically generated from scan)
+
+  READ base_expert content
+  GENERATE extended agent:
+  ├─ Inherit: ROLE, CAPABILITIES from base
+  ├─ Add: new capabilities, knowledge
+  ├─ Reference: base expert in SOURCES
+  └─ Optional: override specific sections
 ```
 
 ---
 
-## PHASE 5: Generate Content
+## PHASE 6: Content Generation Strategy
 
-### 5.1 Build Output Path
+```
+GENERATION_STRATEGY:
+├─ IF research_context exists:
+│   └─ Use research_context to enrich component
+│       ├─ Add KEY KNOWLEDGE section with code examples
+│       ├─ Include best practices from official docs
+│       ├─ Add relevant dependencies to frontmatter
+│       └─ Generate realistic EXAMPLES from research
+├─ IF orchestrator with selected_experts:
+│   └─ Generate orchestration structure
+│       ├─ SPECIALIZED EXPERTS section
+│       ├─ ORCHESTRATION LOGIC with routing
+│       ├─ DELEGATION EXAMPLES
+│       └─ Task tool in allowed-tools
+├─ ELSE:
+│   └─ Generate minimal skeleton based on:
+│       ├─ Component type (command/skill/agent)
+│       ├─ Name and purpose
+│       └─ Selected tools and model
+
+NO_TEMPLATE_REQUIRED:
+├─ All content is dynamically generated
+├─ Research results directly inform structure
+├─ Code examples are fetched, not templated
+├─ Orchestrator patterns from existing experts
+└─ Patterns are learned from GitHub analysis
+```
+
+---
+
+## PHASE 7: Generate Content
+
+### 7.1 Build Output Path
 
 ```
 PATH_RULES:
@@ -192,7 +391,7 @@ CHECK path exists:
 └─ IF not exists → proceed
 ```
 
-### 5.2 Generate File Content
+### 7.2 Generate File Content
 
 ```
 FOR type = "command":
@@ -216,22 +415,52 @@ FOR type = "skill":
 FOR type = "agent":
   GENERATE with:
   ├─ frontmatter: name, description, model, allowed-tools
-  ├─ ROLE: specialization area
-  ├─ CAPABILITIES: task list
+  ├─ ROLE: specialization area (English)
+  ├─ CAPABILITIES: categorized task list (hierarchical)
   ├─ CONSTRAINTS: limitations
-  └─ OUTPUT FORMAT: JSON schema
+  ├─ KEY KNOWLEDGE: (IF research_context)
+  │   ├─ Configuration examples from official docs
+  │   ├─ Code snippets with Korean comments
+  │   ├─ Common patterns and anti-patterns
+  │   └─ Dependency installation commands
+  ├─ INPUT/OUTPUT FORMAT: JSON schema
+  ├─ EXECUTION FLOW: step-by-step sequence
+  ├─ ERROR HANDLING: structured responses
+  └─ EXAMPLES: realistic scenarios from research
+```
+
+### 7.3 Research-Enhanced Generation
+
+```
+IF research_context.code_examples:
+  FOR EACH code_example:
+    ├─ Add to KEY KNOWLEDGE section
+    ├─ Include Korean comments for clarity
+    └─ Reference source URL in comments
+
+IF research_context.best_practices:
+  FOR EACH practice:
+    ├─ Add to CONSTRAINTS or GUIDELINES
+    └─ Include rationale
+
+IF research_context.dependencies:
+  ├─ Add to frontmatter (if applicable)
+  └─ Include installation instructions in KEY KNOWLEDGE
+
+CITATION_FORMAT:
+// Source: {source_url}
 ```
 
 ---
 
-## PHASE 6: Write Files
+## PHASE 8: Write Files
 
 ```
 ACTIONS:
 1. Bash: mkdir -p {directory_path}
 2. Write: {output_path} with generated content
 3. IF location = "플러그인":
-   └─ Update plugin.json (add to commands/skills)
+   └─ Update plugin.json (add to commands/skills/agents)
 
 VERIFY:
 ├─ File created successfully
@@ -240,7 +469,7 @@ VERIFY:
 
 ---
 
-## PHASE 7: Report (Korean)
+## PHASE 9: Report
 
 ```markdown
 ## ✅ 컴포넌트 생성 완료
@@ -259,11 +488,7 @@ VERIFY:
 ### 사용 방법
 
 **Command인 경우:**
-```
-
 /{name} [args]
-
-```
 
 **Skill인 경우:**
 관련 작업 요청 시 자동 활성화됩니다.
@@ -281,7 +506,7 @@ Task tool에서 subagent_type으로 호출됩니다.
 
 ---
 
-## PHASE 8: Follow-up TUI
+## PHASE 10: Follow-up TUI
 
 ```
 AskUserQuestion:
@@ -302,15 +527,16 @@ AskUserQuestion:
 
 ## ERROR HANDLING
 
-| Error                    | Detection                           | Response                                                      |
-| ------------------------ | ----------------------------------- | ------------------------------------------------------------- |
-| Invalid type             | type NOT IN [command, skill, agent] | "유효한 유형: command, skill, agent"                          |
-| Invalid name             | regex test fails                    | "이름은 kebab-case 형식이어야 합니다 (예: my-command)"        |
-| Template not found       | Glob returns empty                  | Use inline default template                                   |
-| Path exists              | file already exists                 | Show overwrite confirmation TUI                               |
-| Permission denied        | Write fails                         | "권한 오류: {path}에 쓸 수 없습니다. 다른 위치를 선택하세요." |
-| Directory creation fails | mkdir fails                         | "디렉토리 생성 실패: {error}"                                 |
-| plugin.json parse error  | JSON.parse fails                    | "plugin.json 파싱 오류. 수동으로 수정하세요."                 |
+| Error | Detection | Response |
+|-------|-----------|----------|
+| Invalid type | type NOT IN [command, skill, agent] | "유효한 유형: command, skill, agent" |
+| Invalid name | regex test fails | "이름은 kebab-case 형식이어야 합니다 (예: my-command)" |
+| Path exists | file already exists | Show overwrite confirmation TUI |
+| Research timeout | WebFetch fails | "리서치 실패. 기본 생성으로 진행합니다." |
+| Permission denied | Write fails | "권한 오류: {path}에 쓸 수 없습니다. 다른 위치를 선택하세요." |
+| Directory creation fails | mkdir fails | "디렉토리 생성 실패: {error}" |
+| plugin.json parse error | JSON.parse fails | "plugin.json 파싱 오류. 수동으로 수정하세요." |
+| Expert scan empty | Glob returns empty | "기존 전문가가 없습니다. 단독 에이전트로 생성합니다." |
 
 ---
 
@@ -318,13 +544,21 @@ AskUserQuestion:
 
 ```
 1. PARSE $ARGUMENTS → extract type, name
-2. IF missing info → AskUserQuestion (Korean)
-3. COLLECT location, model, tools via TUI
-4. GLOB find template files
-5. READ template OR use inline default
-6. GENERATE content following type-specific rules
-7. BASH mkdir -p {directory}
-8. WRITE component file
-9. REPORT completion (Korean)
-10. SHOW follow-up TUI (Korean)
+2. IF missing info → AskUserQuestion (Korean TUI)
+3. COLLECT purpose via TUI
+4. ASK research preference (공식문서/GitHub/바로 생성)
+5. IF research selected:
+   ├─ WebSearch → collect relevant URLs
+   ├─ WebFetch → extract documentation and examples
+   └─ COMPILE research_context
+6. DISPLAY research summary (Korean)
+7. COLLECT location, model, tools via TUI
+8. IF type = agent → ASK composition (단독/오케스트레이터/확장)
+9. IF orchestrator → SCAN and SELECT experts
+10. GENERATE content using research_context and composition
+11. BASH mkdir -p {directory}
+12. WRITE component file
+13. IF plugin location → UPDATE plugin.json
+14. REPORT completion (Korean)
+15. SHOW follow-up TUI (Korean)
 ```
