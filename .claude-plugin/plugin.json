@@ -2,30 +2,33 @@
   "name": "claude-integration",
   "version": "1.0.0",
   "description": "Claude Code 생산성 향상을 위한 스마트 커맨드 모음",
-  "author": "m16khb",
+  "author": {
+    "name": "m16khb",
+    "email": "m16khb@users.noreply.github.com"
+  },
   "repository": "https://github.com/m16khb/claude-integration",
   "license": "MIT",
   "keywords": ["git", "productivity", "automation", "context", "claude-md"],
   "commands": {
     "git-commit": {
       "description": "Git Flow 기반 스마트 커밋 (인자: push - 커밋 후 푸시)",
-      "file": "commands/git-commit.md"
+      "source": "./commands/git-commit.md"
     },
     "claude-md": {
       "description": "CLAUDE.md 생성, 분석, 구조화 (WHAT/WHY/HOW 프레임워크)",
-      "file": "commands/claude-md.md"
+      "source": "./commands/claude-md.md"
     },
     "continue-context": {
       "description": "현재 컨텍스트를 분석하여 다음 작업을 추천",
-      "file": "commands/continue-context.md"
+      "source": "./commands/continue-context.md"
     },
     "inject-context": {
       "description": "대용량 파일 구조 인식 청킹 및 컨텍스트 주입",
-      "file": "commands/inject-context.md"
+      "source": "./commands/inject-context.md"
     },
     "optimize-command": {
       "description": "프롬프트 엔지니어링 3원칙으로 커맨드 최적화",
-      "file": "commands/optimize-command.md"
+      "source": "./commands/optimize-command.md"
     }
   }
 }
