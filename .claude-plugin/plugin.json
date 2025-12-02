@@ -49,5 +49,13 @@
       "source": "./commands/claude-sync.md"
     }
   },
-  "agents": "./agents/"
+  "agents": [
+    "./agents/backend/nestjs-fastify-expert.md",
+    "./agents/backend/redis-cache-expert.md",
+    "./agents/backend/bullmq-queue-expert.md",
+    "./agents/backend/typeorm-expert.md",
+    "./agents/backend/suites-testing-expert.md",
+    "./agents/backend/cqrs-expert.md",
+    "./agents/backend/microservices-expert.md"
+  ]
 }
