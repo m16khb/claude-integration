@@ -22,6 +22,93 @@ Single command execution - no arguments needed.
 
 ---
 
+## PHILOSOPHY: CLAUDE.md Writing Principles
+
+> Reference: https://www.humanlayer.dev/blog/writing-a-good-claude-md
+
+```
+CORE PREMISE:
+├─ "LLMs are stateless functions"
+├─ CLAUDE.md is the ONLY file included in every conversation
+└─ Therefore: include ONLY essential information
+
+ONBOARDING STRUCTURE (WHAT-WHY-HOW):
+├─ WHAT: tech stack, project structure, codebase map
+├─ WHY: project purpose, business context
+└─ HOW: commands for test/build/deploy
+
+RULES:
+├─ Less is More: 150-200 instructions = LLM stable limit
+├─ <300 lines (ideally <60 lines)
+├─ Universal applicability only
+├─ Pointers over Copies: file:line references instead of snippets
+└─ Progressive Disclosure: details in agent_docs/
+
+ANTI-PATTERNS (NEVER include):
+├─ Code style guides → use linter/formatter
+├─ Auto-generation (/init) → craft manually
+├─ Task-specific instructions → move to agent_docs/
+├─ Inline code snippets → use file references
+└─ Conditional instructions → universal rules only
+
+PROGRESSIVE DISCLOSURE:
+├─ CLAUDE.md (root, <60 lines)
+│   ├─ Project overview (WHAT/WHY)
+│   ├─ Core commands (HOW)
+│   └─ Links to detailed docs
+└─ agent_docs/ (details)
+    ├─ architecture.md
+    ├─ testing.md
+    └─ conventions.md
+```
+
+---
+
+## SUB-CLAUDE.md Creation Principles
+
+```
+MUST_CREATE (when ANY applies):
+├─ 1. Independent deployment unit
+│   └─ Separate package.json + own build/test scripts
+├─ 2. Different tech stack
+│   └─ Different language/framework than root
+│   └─ e.g., root=TypeScript, submodule=Python
+├─ 3. Independent domain context
+│   └─ Completely different business logic area
+│   └─ e.g., packages/billing vs packages/auth
+└─ 4. Git Submodule
+    └─ External repository managed module
+
+MUST_NOT_CREATE:
+├─ Simple folder structures (src/components/, src/utils/)
+├─ Shared libraries with same stack as root
+├─ Config/infra folders (.github/, docker/, scripts/)
+├─ Test folders (__tests__/, test/, e2e/)
+└─ node_modules/, dist/, build/
+
+SUB_CLAUDE_CHECKLIST (score-based):
+├─ Has independent README.md? (+1)
+├─ Has independent package.json/pyproject.toml? (+1)
+├─ Has different build command? (+1)
+├─ Has different test command? (+1)
+├─ Uses different tech stack? (+1)
+└─ Has separate team ownership (CODEOWNERS)? (+1)
+
+DECISION:
+├─ score >= 5 → MUST create sub-CLAUDE.md
+├─ score >= 3 → CONSIDER creating
+└─ score < 3 → SKIP (one-line description in root is enough)
+
+SUB_CLAUDE_RULES:
+├─ <30 lines (shorter than root)
+├─ NO duplicate content from root
+├─ Module-specific info only
+├─ Parent link required
+└─ Own agent_docs/ = last resort
+```
+
+---
+
 ## PHASE 1: Scan Codebase
 
 ```
@@ -55,30 +142,37 @@ REQUIRED_LOCATIONS = []
 1. Root (always):
    └─ push("./CLAUDE.md")
 
-2. Monorepo (packages/*, apps/*):
-   IF exists → FOR each with package.json/README:
-     push(dir + "/CLAUDE.md")
+2. SUB_CLAUDE_CHECKLIST scoring:
+   FOR each candidate in (packages/*, apps/*, libs/*, modules/*):
+     score = 0
+     IF has README.md → score++
+     IF has package.json/pyproject.toml/Cargo.toml → score++
+     IF has different build command than root → score++
+     IF has different test command than root → score++
+     IF has different tech stack than root → score++
+     IF has separate team ownership (CODEOWNERS) → score++
 
-3. Libraries (libs/*, modules/*, core/*):
-   IF exists → FOR each significant module:
-     push(dir + "/CLAUDE.md")
+     IF score >= 5 → MUST push(dir + "/CLAUDE.md")
+     IF score >= 3 → CONSIDER push(dir + "/CLAUDE.md")
+     IF score < 3 → SKIP (one-line in root is enough)
 
-4. Submodules (.gitmodules):
+3. Git Submodules (.gitmodules):
    FOR each → push(submodule + "/CLAUDE.md")
 
-5. Complex directories:
-   IF meets_threshold → push(dir + "/CLAUDE.md")
+4. Different tech stack detection:
+   IF dir uses different language/framework than root:
+     → push(dir + "/CLAUDE.md")
 
-COMPLEXITY THRESHOLD:
-├─ Has package.json/pyproject.toml/Cargo.toml
-├─ Has README.md
-├─ >10 source files
-├─ Has test directory
-└─ Has config files (tsconfig, eslint)
+SKIP_ALWAYS (never create sub-CLAUDE.md):
+├─ src/components/, src/utils/ (simple folders)
+├─ __tests__/, test/, e2e/ (test folders)
+├─ .github/, docker/, scripts/ (infra folders)
+├─ Shared utilities with same stack as root
+└─ node_modules/, dist/, build/
 
 COMPARE:
 MISSING = REQUIRED - existing
-ORPHAN = existing - REQUIRED
+ORPHAN = existing - REQUIRED (candidates for deletion)
 ```
 
 ---
