@@ -16,7 +16,8 @@ model: claude-opus-4-5-20251101
 
 ## MISSION
 
-Scan codebase structure, compare with existing CLAUDE.md files, detect differences, and automatically synchronize.
+Scan codebase, detect where CLAUDE.md files should exist, compare with existing files, and synchronize.
+Build hierarchical tree structure with parent-child links between CLAUDE.md files.
 Single command execution - no arguments needed.
 
 ---
@@ -24,114 +25,139 @@ Single command execution - no arguments needed.
 ## PHASE 1: Scan Codebase
 
 ```
-SCAN directories:
+SCAN:
 ├─ Glob("*") → root directories
-├─ Glob("commands/*.md") → command files
-├─ Glob("agents/**/*.md") → agent files
-├─ Glob("agent_docs/*.md") → doc files
-└─ Glob("**/CLAUDE.md") → all CLAUDE.md files
+├─ Glob("commands/*.md") → commands
+├─ Glob("agents/**/*.md") → agents
+├─ Glob("agent_docs/*.md") → docs
+├─ Glob("**/CLAUDE.md") → existing CLAUDE.md
+├─ Glob("**/package.json") → modules
+├─ Glob("**/README.md") → documented modules
+└─ Read .gitmodules → submodules
 
-EXTRACT codebase state:
 CODEBASE = {
-  directories: [list of top-level dirs],
-  commands: { count: N, files: [...] },
-  agents: {
-    backend: { count: N, files: [...] },
-    frontend: { count: N, files: [...] },
-    infrastructure: { count: N, files: [...] }
-  },
-  agent_docs: { count: N, files: [...] }
+  directories: [...],
+  commands: { count, files },
+  agents: { backend, frontend, infrastructure },
+  agent_docs: { count, files },
+  existing_claude_mds: [...],
+  modules: [...]
 }
 ```
 
 ---
 
-## PHASE 2: Parse CLAUDE.md
+## PHASE 2: Detect CLAUDE.md Locations
 
 ```
-FOR each CLAUDE.md found:
-  READ file content
+REQUIRED_LOCATIONS = []
+
+1. Root (always):
+   └─ push("./CLAUDE.md")
+
+2. Monorepo (packages/*, apps/*):
+   IF exists → FOR each with package.json/README:
+     push(dir + "/CLAUDE.md")
+
+3. Libraries (libs/*, modules/*, core/*):
+   IF exists → FOR each significant module:
+     push(dir + "/CLAUDE.md")
+
+4. Submodules (.gitmodules):
+   FOR each → push(submodule + "/CLAUDE.md")
+
+5. Complex directories:
+   IF meets_threshold → push(dir + "/CLAUDE.md")
+
+COMPLEXITY THRESHOLD:
+├─ Has package.json/pyproject.toml/Cargo.toml
+├─ Has README.md
+├─ >10 source files
+├─ Has test directory
+└─ Has config files (tsconfig, eslint)
+
+COMPARE:
+MISSING = REQUIRED - existing
+ORPHAN = existing - REQUIRED
+```
+
+---
+
+## PHASE 3: Parse Existing CLAUDE.md
+
+```
+FOR each CLAUDE.md:
   EXTRACT:
-  ├─ "프로젝트 구조" section → listed directories
-  ├─ "주요 커맨드" section → listed commands
-  ├─ "상세 문서" section → doc links
+  ├─ structure section → directories
+  ├─ commands section → commands
+  ├─ docs section → links
   └─ line_count
 
-  CLAUDE_STATE = {
-    directories: [parsed dirs],
-    commands: [parsed commands],
-    doc_links: [parsed links],
-    line_count: N
-  }
+  CLAUDE_STATE[path] = { directories, commands, doc_links, line_count }
 ```
 
 ---
 
-## PHASE 3: Compare and Detect
+## PHASE 4: Compare and Detect
 
 ```
-DIFF = compare(CODEBASE, CLAUDE_STATE)
+FOR each location in REQUIRED:
+  IF in MISSING:
+    ACTIONS.push({ path, action: CREATE, reason: "missing" })
+  ELSE:
+    DIFF = compare(CODEBASE, CLAUDE_STATE[location])
+    IF DIFF not empty:
+      ACTIONS.push({ path, action: UPDATE, changes: DIFF })
+    ELSE:
+      ACTIONS.push({ path, action: SKIP })
 
-CHANGES = {
-  added: [],      # in codebase but not in CLAUDE.md
-  removed: [],    # in CLAUDE.md but not in codebase
-  outdated: [],   # count mismatch
-  broken_links: [] # invalid agent_docs links
-}
+DIFF structure:
+{ added: [], removed: [], outdated: [], broken_links: [] }
 
-DETECTION RULES:
-├─ Significant (require update):
-│   ├─ New top-level directory
-│   ├─ Directory removed
-│   ├─ New/removed command files
-│   ├─ New/removed agent files
-│   ├─ agent_docs files changed
-│   └─ Broken links detected
-└─ Ignore:
-    ├─ Source code changes (*.ts, *.js, *.py)
-    ├─ Test file changes
-    └─ Config changes (except package.json scripts)
+SIGNIFICANT CHANGES:
+├─ New/removed top-level directory
+├─ New/removed command/agent files
+├─ agent_docs changes
+└─ Broken links
 
-DECISION:
-├─ No CLAUDE.md exists → ACTION = CREATE
-├─ CHANGES not empty → ACTION = UPDATE
-└─ CHANGES empty → ACTION = SKIP
+IGNORE:
+├─ Source code changes (*.ts, *.js, *.py)
+├─ Test file changes
+└─ Config changes (except scripts)
 ```
 
 ---
 
-## PHASE 4: Report Findings
+## PHASE 5: Report Findings
 
-**Output format (Korean):**
-
+**Output (Korean):**
 ```markdown
 ## 🔄 동기화 분석 결과
 
+### CLAUDE.md 위치별 상태
+| 위치 | 상태 | 작업 | 이유 |
+|------|------|------|------|
+
+### 루트 CLAUDE.md 상세
 | 항목 | 코드베이스 | CLAUDE.md | 상태 |
 |------|-----------|-----------|------|
-| commands/ | {N}개 | {M}개 기재 | {status} |
-| agents/backend/ | {N}개 | {M}개 기재 | {status} |
-| agent_docs/ | {N}개 | {M}개 링크 | {status} |
 
-### 필요한 변경
-{numbered list of required changes}
+### 필요한 작업
+{numbered list}
 ```
 
-**Status icons:**
-- ✅ 동기화됨 (no diff)
-- ⚠️ 업데이트 필요 (count mismatch)
-- ❌ 누락 (missing entirely)
+**Status:** ✅ SKIP / ⚠️ UPDATE / ❌ CREATE
 
 ---
 
-## PHASE 5: User Confirmation
+## PHASE 6: User Confirmation
 
 ```
-IF ACTION == SKIP:
+IF all SKIP:
   OUTPUT: "✅ CLAUDE.md가 최신 상태입니다"
   → END
 
-IF ACTION == CREATE or UPDATE:
+IF CREATE or UPDATE needed:
   AskUserQuestion:
     question: "위 변경사항을 적용하시겠습니까?"
     header: "적용"
@@ -146,70 +172,114 @@ IF ACTION == CREATE or UPDATE:
 
 ---
 
-## PHASE 6: Apply Changes
+## PHASE 7: Apply Changes
 
 ```
-IF user selected "적용":
+IF "적용":
+  FOR each action:
+    IF CREATE:
+      ├─ Analyze directory structure
+      ├─ Read README.md for WHY
+      ├─ Detect tech stack from config
+      ├─ Generate CLAUDE.md (WHAT/WHY/HOW, <60 lines)
+      └─ Create agent_docs/ if complex
 
-  IF ACTION == CREATE:
-    ├─ Generate CLAUDE.md using WHAT/WHY/HOW framework
-    ├─ Target: <60 lines
-    └─ Create agent_docs/ if complex project
+    IF UPDATE:
+      ├─ Edit only changed sections
+      ├─ Preserve user content
+      └─ Validate line count
 
-  IF ACTION == UPDATE:
-    ├─ Edit only changed sections
-    ├─ Preserve user custom content
-    ├─ Update structure section if directories changed
-    ├─ Update doc links if agent_docs changed
-    └─ Validate line count after edit
+  → Execute PHASE 8
 
-IF user selected "미리보기":
-  ├─ Show proposed changes as diff
-  └─ Return to PHASE 5
+IF "미리보기":
+  Show diff → Return to PHASE 6
 
-IF user selected "건너뛰기":
+IF "건너뛰기":
   → END
 ```
 
 ---
 
-## PHASE 7: Quality Validation
+## PHASE 8: Build Tree Structure
 
 ```
-AFTER any CREATE/UPDATE:
+TREE PRINCIPLE:
+├─ Each CLAUDE.md references only DIRECT children
+├─ Each CLAUDE.md links back to DIRECT parent only
+└─ Hierarchical navigation (not flat)
 
-Line count check:
+BUILD:
+1. Identify all CLAUDE.md locations
+2. Build parent-child by path depth
+3. FOR each: find direct children + direct parent
+
+UPDATE EACH:
+
+FOR parent_md:
+  ADD "하위 모듈" section:
+  | 모듈 | 설명 |
+  |------|------|
+  | [name](path/CLAUDE.md) | description |
+
+FOR child_md (except root):
+  ADD "상위 문서" section:
+  - [상위 모듈](../CLAUDE.md)
+
+INTERMEDIATE NODE:
+IF child at packages/api/CLAUDE.md
+BUT packages/CLAUDE.md NOT exists:
+  → CREATE packages/CLAUDE.md as group node
+
+VALIDATE:
+├─ Every non-root has one parent link
+├─ Every non-leaf has children section
+├─ No broken links
+├─ Fully connected (no orphans)
+└─ Max depth 3-4 levels
+```
+
+---
+
+## PHASE 9: Quality Validation
+
+```
+FOR each CREATE/UPDATE:
+
+Line count:
 ├─ <60: ✅ IDEAL
 ├─ 60-150: ✅ GOOD
-├─ 150-300: ⚠️ → suggest restructure
-└─ >300: ❌ → auto-restructure to agent_docs/
+├─ 150-300: ⚠️ suggest restructure
+└─ >300: ❌ auto-restructure
 
-WHAT/WHY/HOW check:
-├─ WHAT: tech stack, structure present?
-├─ WHY: project purpose present?
-└─ HOW: essential commands present?
+WHAT/WHY/HOW:
+├─ WHAT: tech stack, structure?
+├─ WHY: purpose?
+└─ HOW: commands?
 
-Link validation:
-└─ All agent_docs/ links resolve to existing files?
+Links: all agent_docs/ valid?
 
-Anti-pattern check:
-├─ No code style guides (should use linter)
-├─ No inline code snippets
+Anti-patterns:
+├─ No code style guides
+├─ No inline snippets
 └─ No conditional instructions
 ```
 
 ---
 
-## PHASE 8: Completion Report
+## PHASE 10: Completion Report
 
-**Output format (Korean):**
-
+**Output (Korean):**
 ```markdown
 ## ✅ 동기화 완료
 
-| 파일 | 작업 | 라인 수 |
-|------|------|---------|
-| CLAUDE.md | {CREATE/UPDATE} | {N}줄 {status} |
+### 처리된 CLAUDE.md 파일
+| 위치 | 작업 | 라인 수 | 상태 |
+|------|------|---------|------|
+
+### 구조화 결과
+- 루트: 하위 모듈 섹션 추가됨
+- 서브: 상위 문서 링크 추가됨
+- 트리 검증: ✅ 완료
 
 다음 작업: `/git-commit`으로 커밋
 ```
@@ -220,21 +290,24 @@ Anti-pattern check:
 
 | Error | Response (Korean) |
 |-------|-------------------|
-| No CLAUDE.md found | "CLAUDE.md가 없습니다. 생성하시겠습니까?" → CREATE flow |
-| Git not initialized | "Git 저장소가 아닙니다. 구조 분석만 수행합니다." |
-| Line count > 300 | "⚠️ 300줄 초과 - agent_docs/로 분리합니다" → auto-restructure |
-| Broken links found | "⚠️ 깨진 링크 감지: {links}" → suggest fix |
-| Permission denied | "파일 권한이 없습니다: {path}" |
+| No CLAUDE.md | "CLAUDE.md가 없습니다. 생성하시겠습니까?" |
+| Git not init | "Git 저장소가 아닙니다. 구조 분석만 수행합니다." |
+| >300 lines | "⚠️ 300줄 초과 - agent_docs/로 분리합니다" |
+| Broken links | "⚠️ 깨진 링크 감지: {links}" |
+| Permission | "파일 권한이 없습니다: {path}" |
 
 ---
 
 ## EXECUTE NOW
 
-1. Scan codebase with Glob (commands/, agents/, agent_docs/)
-2. Parse existing CLAUDE.md files
-3. Compare states and detect differences
-4. Output report table (Korean)
-5. Ask user confirmation if changes needed
-6. Apply changes (CREATE/UPDATE/SKIP)
-7. Validate quality (line count, links, anti-patterns)
-8. Report completion (Korean)
+1. Scan codebase (directories, modules, packages)
+2. Detect where CLAUDE.md should exist
+3. Parse existing CLAUDE.md files
+4. Compare required vs existing
+5. Output report (Korean)
+6. Ask user confirmation
+7. Apply changes (CREATE/UPDATE/SKIP)
+8. Build tree structure (parent-child links)
+9. Create intermediate nodes if needed
+10. Validate tree
+11. Report completion (Korean)
