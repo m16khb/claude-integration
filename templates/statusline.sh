@@ -49,14 +49,15 @@ yaml_get() {
             # In section, look for child key (with leading spaces)
             if $in_section && [[ "$line" =~ ^[[:space:]]+${child}:[[:space:]]*(.*)$ ]]; then
                 value="${BASH_REMATCH[1]}"
+                # Remove inline comments first (before quote removal)
+                value="${value%%#*}"
+                # Trim trailing whitespace (POSIX compatible)
+                value="${value%"${value##*[![:space:]]}"}"
                 # Remove quotes
                 value="${value#\"}"
                 value="${value%\"}"
                 value="${value#\'}"
                 value="${value%\'}"
-                # Remove inline comments
-                value="${value%%#*}"
-                value="${value%% }"
                 break
             fi
         done < "$file"
@@ -66,12 +67,15 @@ yaml_get() {
             [[ "$line" =~ ^[[:space:]]*# ]] && continue
             if [[ "$line" =~ ^${key}:[[:space:]]*(.*)$ ]]; then
                 value="${BASH_REMATCH[1]}"
+                # Remove inline comments first (before quote removal)
+                value="${value%%#*}"
+                # Trim trailing whitespace (POSIX compatible)
+                value="${value%"${value##*[![:space:]]}"}"
+                # Remove quotes
                 value="${value#\"}"
                 value="${value%\"}"
                 value="${value#\'}"
                 value="${value%\'}"
-                value="${value%%#*}"
-                value="${value%% }"
                 break
             fi
         done < "$file"
