@@ -10,6 +10,23 @@ param(
 )
 
 # =============================================================================
+# UTF-8 OUTPUT ENCODING (Required for emoji support on Windows)
+# =============================================================================
+try {
+    [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+    $OutputEncoding = [System.Text.Encoding]::UTF8
+} catch {
+    # Fallback if encoding change fails
+}
+
+# =============================================================================
+# WINDOWS EMOJI FALLBACK DETECTION
+# =============================================================================
+# Windows Terminal supports emoji, but legacy cmd.exe/PowerShell console does not
+# Detect by checking if WT_SESSION exists (Windows Terminal sets this)
+$UseAsciiIcons = -not $env:WT_SESSION
+
+# =============================================================================
 # CONFIGURATION PATH
 # =============================================================================
 $ConfigFile = if ($env:STATUSLINE_CONFIG) {
@@ -142,17 +159,31 @@ function Write-Color {
 function Write-Emoji {
     param([string]$Emoji)
 
-    if ($Config.EmojiEnabled) {
-        return "$Emoji "
+    if (-not $Config.EmojiEnabled) {
+        return ""
     }
-    return ""
+
+    # Use ASCII fallback for legacy Windows consoles
+    if ($UseAsciiIcons) {
+        switch ($Emoji) {
+            "🤖" { return "[AI] " }
+            "📂" { return "[DIR] " }
+            "🌿" { return "[BR] " }
+            "💰" { return "[$] " }
+            default { return "" }
+        }
+    }
+
+    return "$Emoji "
 }
 
 function Get-Truncated {
     param([string]$Text, [int]$MaxLength)
 
     if ($Text.Length -gt $MaxLength) {
-        return $Text.Substring(0, $MaxLength - 1) + $Config.TruncateChar
+        # Use ASCII fallback for truncate char on legacy consoles
+        $truncChar = if ($UseAsciiIcons -and $Config.TruncateChar -eq "…") { "..." } else { $Config.TruncateChar }
+        return $Text.Substring(0, $MaxLength - 1) + $truncChar
     }
     return $Text
 }
@@ -283,7 +314,9 @@ try {
     $Data = $InputJson | ConvertFrom-Json -ErrorAction Stop
 
     $parts = @()
-    $sep = Write-Color $Config.ColorSep $Config.Separator
+    # Use ASCII fallback for separator on legacy consoles
+    $separatorChar = if ($UseAsciiIcons -and $Config.Separator -eq " │ ") { " | " } else { $Config.Separator }
+    $sep = Write-Color $Config.ColorSep $separatorChar
 
     # Model
     if ($Config.ShowModel) {
