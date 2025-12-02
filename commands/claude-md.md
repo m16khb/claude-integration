@@ -10,7 +10,7 @@ allowed-tools:
   - Glob
   - Grep
   - AskUserQuestion
-model: claude-sonnet-4-5-20250514
+model: claude-opus-4-5-20250514
 ---
 
 # CLAUDE.md Management Tool
