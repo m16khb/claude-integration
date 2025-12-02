@@ -24,10 +24,6 @@
       "description": "Git Flow 기반 스마트 커밋 (인자: push - 커밋 후 푸시)",
       "source": "./commands/git-commit.md"
     },
-    "claude-md": {
-      "description": "CLAUDE.md 생성, 분석, 구조화 (WHAT/WHY/HOW 프레임워크)",
-      "source": "./commands/claude-md.md"
-    },
     "continue-context": {
       "description": "현재 컨텍스트를 분석하여 다음 작업을 추천",
       "source": "./commands/continue-context.md"
