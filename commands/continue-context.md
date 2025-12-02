@@ -8,7 +8,6 @@ allowed-tools:
   - Grep
   - AskUserQuestion
   - TodoWrite
-model: opus
 ---
 
 # Context-Aware Task Recommender

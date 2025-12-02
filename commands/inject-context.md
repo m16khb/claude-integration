@@ -1,6 +1,6 @@
 ---
 name: inject-context
-description: "Split-load large files with intelligent chunking and chain to Opus"
+description: "대용량 파일 구조 인식 청킹 및 컨텍스트 주입"
 argument-hint: <file_path> [task_instruction]
 allowed-tools:
   - Read
@@ -9,7 +9,6 @@ allowed-tools:
   - Grep
   - AskUserQuestion
   - SlashCommand
-model: haiku
 ---
 
 # Intelligent File Context Loader

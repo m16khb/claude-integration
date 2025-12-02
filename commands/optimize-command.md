@@ -8,7 +8,6 @@ allowed-tools:
   - Edit
   - Glob
   - AskUserQuestion
-model: opus
 ---
 
 # Command Optimizer
