@@ -22,13 +22,13 @@ Claude Code 생산성 향상을 위한 스마트 커맨드 플러그인입니다
 
 ## 커맨드 목록
 
-| 커맨드              | 설명                            | 모델  |
-| ------------------- | ------------------------------- | ----- |
-| `/git-commit`       | Git Flow 기반 스마트 커밋       | 기본  |
-| `/claude-md`        | CLAUDE.md 생성/분석/구조화      | Opus  |
-| `/continue-context` | 컨텍스트 분석 및 다음 작업 추천 | 기본  |
-| `/inject-context`   | 대용량 파일 컨텍스트 주입       | Haiku |
-| `/setup-statusline` | Status line 환경 자동 구성      | Opus  |
+| 커맨드              | 설명                                   | 모델  |
+| ------------------- | -------------------------------------- | ----- |
+| `/git-commit`       | Git Flow 기반 스마트 커밋              | 기본  |
+| `/claude-sync`      | 코드베이스 변경 감지 및 CLAUDE.md 동기화 | Opus  |
+| `/continue-context` | 컨텍스트 분석 및 다음 작업 추천        | 기본  |
+| `/inject-context`   | 대용량 파일 컨텍스트 주입              | Haiku |
+| `/setup-statusline` | Status line 환경 자동 구성             | Opus  |
 
 ## 커맨드 상세
 
@@ -53,28 +53,23 @@ Git 커밋을 스마트하게 생성합니다.
 /git-commit push
 ```
 
-### /claude-md
+### /claude-sync
 
-WHAT/WHY/HOW 프레임워크 기반으로 CLAUDE.md를 관리합니다.
+코드베이스 변경을 감지하고 CLAUDE.md를 자동으로 동기화합니다.
 
-**핵심 원칙**:
-
-- Less is More: 60줄 이하 권장, 300줄 초과 금지
-- Universal Relevance: 모든 세션에 관련된 내용만
-- Progressive Disclosure: 상세 내용은 agent_docs/로 분리
-
-**사용법**:
+**실행만 하면 끝**:
 
 ```bash
-# 작업 선택 TUI
-/claude-md
-
-# 직접 실행
-/claude-md 분석      # 품질 분석
-/claude-md 생성      # 새 파일 생성
-/claude-md 구조화    # Progressive Disclosure 설정
-/claude-md 검사      # 린트 검사
+/claude-sync
 ```
+
+**자동 수행 작업**:
+
+1. 코드베이스 스캔 (디렉토리, 파일 구조)
+2. 기존 CLAUDE.md 분석 (구조, 링크, 라인 수)
+3. 차이점 비교 및 리포트 출력
+4. 사용자 확인 후 자동 업데이트
+5. 품질 검증 (60줄 미만, 링크 유효성)
 
 ### /continue-context
 
@@ -141,6 +136,20 @@ Claude Code status line 환경을 YAML 기반으로 자동 구성합니다.
 /setup-statusline ~/.claude/statusline.yaml
 ```
 
+## 전문 에이전트
+
+NestJS 생태계 전문 에이전트를 제공합니다.
+
+| 에이전트 | 전문 분야 |
+|---------|----------|
+| `nestjs-fastify-expert` | NestJS + Fastify 오케스트레이터 |
+| `typeorm-expert` | TypeORM - 엔티티, 마이그레이션, 트랜잭션 |
+| `redis-cache-expert` | Redis 캐싱 - @nestjs/cache-manager |
+| `bullmq-queue-expert` | BullMQ 작업 큐 |
+| `cqrs-expert` | CQRS 패턴 - Command, Query, Event, Saga |
+| `microservices-expert` | 마이크로서비스 - RabbitMQ, gRPC, TCP |
+| `suites-testing-expert` | 테스팅 - Suites(Automock), Jest, E2E |
+
 ## 프로젝트 구조
 
 ```
@@ -148,16 +157,22 @@ claude-integration/
 ├── .claude-plugin/
 │   ├── plugin.json        # 마켓플레이스용 플러그인 메타데이터
 │   └── marketplace.json   # 마켓플레이스 정의
-├── commands/              # 슬래시 커맨드 (5개)
+├── commands/              # 슬래시 커맨드
 │   ├── git-commit.md
-│   ├── claude-md.md
+│   ├── claude-sync.md
 │   ├── continue-context.md
 │   ├── inject-context.md
 │   └── setup-statusline.md
+├── agents/                # 전문 에이전트
+│   ├── backend/           # NestJS, TypeORM, Redis 등 (7개)
+│   ├── frontend/          # (예정)
+│   └── infrastructure/    # (예정)
 ├── templates/             # 템플릿 파일
 │   ├── statusline.sh      # Status line 스크립트
 │   └── statusline-config.yaml
 ├── agent_docs/            # 상세 개발 문서
+│   ├── agents.md          # 에이전트 목록
+│   ├── commands.md        # 커맨드 상세
 │   ├── command-writing.md
 │   └── development.md
 ├── CLAUDE.md              # 프로젝트 컨텍스트
