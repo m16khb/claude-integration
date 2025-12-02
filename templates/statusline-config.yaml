@@ -1,68 +1,70 @@
 # Claude Code Status Line Configuration
-# 이 파일을 프로젝트 루트에 복사하여 커스터마이징하세요
-# Usage: /setup-statusline [config-path]
+# Single Source of Truth - 이 파일의 설정이 직접 사용됩니다
 #
-# Supported platforms: macOS, Linux, Windows (Git Bash/WSL)
+# Usage: ~/.claude/statusline.yaml에 복사하여 커스터마이징
+# Supported: macOS, Linux, Windows (Git Bash/WSL)
 
-statusline:
-  enabled: true
+# =============================================================================
+# DISPLAY MODE
+# =============================================================================
+mode: extended  # compact | extended | minimal
 
-  # Display mode: compact (80 chars) | extended (120 chars) | minimal (40 chars)
-  mode: "extended"
+# =============================================================================
+# FEATURE TOGGLES
+# =============================================================================
+colors_enabled: true
+emoji_enabled: true
 
-  # Refresh interval in milliseconds (Claude Code API limitation: 300ms minimum)
-  refresh_interval_ms: 300
+# =============================================================================
+# DISPLAY ELEMENTS
+# =============================================================================
+show:
+  model: true           # 모델명 (Opus 4.5, Sonnet 4.5)
+  directory: true       # 프로젝트 디렉토리
+  branch: true          # Git 브랜치
+  git_status: true      # Git 변경 상태 (+3 !2 ?1)
+  cost: false           # API 비용 (선택적)
 
-  # Color configuration
-  colors:
-    enabled: true
-    theme: "auto"  # auto | light | dark | high-contrast
-    palette:
-      model: "38;5;33"             # Blue - 모델명
-      feature_branch: "38;5;226"   # Yellow - feature/* 브랜치
-      develop_branch: "38;5;51"    # Cyan - develop 브랜치
-      main_branch: "38;5;46"       # Green - main/master 브랜치
-      hotfix_branch: "38;5;196"    # Red - hotfix/* 브랜치
-      release_branch: "38;5;208"   # Orange - release/* 브랜치
-      staged: "38;5;46"            # Green - staged 파일
-      modified: "38;5;208"         # Orange - modified 파일
-      untracked: "38;5;196"        # Red - untracked 파일
-      duration: "38;5;245"         # Gray - 경과 시간
-      cost: "38;5;220"             # Gold - 비용 정보
-      separator: "38;5;240"        # Dark Gray - 구분자
+# =============================================================================
+# COLOR PALETTE (ANSI 256 color codes: 38;5;N)
+# =============================================================================
+colors:
+  model: "38;5;33"          # Blue
+  separator: "38;5;240"     # Dark Gray
+  cost: "38;5;220"          # Gold
+  # Git status colors
+  staged: "38;5;46"         # Green - staged 파일
+  modified: "38;5;208"      # Orange - modified 파일
+  untracked: "38;5;196"     # Red - untracked 파일
+  # Branch type colors
+  branch_main: "38;5;46"    # Green - main/master
+  branch_develop: "38;5;51" # Cyan - dev/develop
+  branch_feature: "38;5;226" # Yellow - feature/*
+  branch_hotfix: "38;5;196" # Red - hotfix/*
+  branch_release: "38;5;208" # Orange - release/*
+  branch_staging: "38;5;141" # Purple - stg/staging
+  branch_default: "38;5;33" # Blue - 기타 브랜치
 
-  # Emoji configuration
-  emoji:
-    enabled: true
-    icons:
-      model: "🤖"      # 모델 아이콘
-      directory: "📂"  # 디렉토리 아이콘
-      branch: "🌿"     # 브랜치 아이콘
-      cost: "💰"       # 비용 아이콘
+# =============================================================================
+# EMOJI ICONS
+# =============================================================================
+emoji:
+  model: "🤖"
+  directory: "📂"
+  branch: "🌿"
+  cost: "💰"
 
-  # Caching configuration (performance optimization)
-  cache:
-    git_ttl_seconds: 5           # Git 명령 결과 캐시
-    metrics_ttl_seconds: 10      # 세션 메트릭 캐시
-    version_ttl_seconds: 60      # 버전 정보 캐시
+# =============================================================================
+# FORMAT SETTINGS
+# =============================================================================
+format:
+  max_dir_length: 30
+  max_branch_length: 25
+  truncate_char: "…"
+  separator: " │ "
 
-  # Information display settings
-  display:
-    model: true                  # 모델명 (Opus 4.5, Sonnet 4.5)
-    duration: true               # 세션 경과 시간
-    directory: true              # 프로젝트명/디렉토리
-    branch: true                 # Git 브랜치
-    git_status: true             # Git 변경 상태 (+3 ~2 ?1)
-    cost: false                  # API 비용 (선택적)
-
-  # Format configuration
-  format:
-    max_dir_length: 20           # 디렉토리명 최대 길이
-    max_branch_length: 25        # 브랜치명 최대 길이
-    truncate_with: "…"           # 말줄임 표시
-    separator: " │ "             # 섹션 구분자
-
-  # Error handling
-  error_handling:
-    graceful_degradation: true   # 에러 시 기본값 반환
-    fallback_text: ""            # 에러 시 표시할 텍스트 (빈 문자열 권장)
+# =============================================================================
+# CACHE SETTINGS (seconds)
+# =============================================================================
+cache:
+  git_ttl: 5
