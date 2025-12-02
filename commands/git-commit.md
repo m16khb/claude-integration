@@ -1,6 +1,7 @@
 ---
-allowed-tools: Bash(git *)
+name: git-commit
 description: "스마트 git 커밋 (인자: push - 커밋 후 푸시)"
+allowed-tools: Bash(git *)
 ---
 
 # Smart Git Commit
