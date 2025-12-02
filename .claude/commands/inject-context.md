@@ -12,281 +12,206 @@ allowed-tools:
 model: haiku
 ---
 
-# Intelligent File Context Injection
+# Intelligent File Context Loader
 
-Load large files using **structure-aware chunking**, then delegate to Opus based on user selection.
+## MISSION
+
+Load large files into context using structure-aware chunking.
+Preserve code boundaries (functions, classes). Hand off to Opus for analysis.
 
 **Input**: $ARGUMENTS
 
 ---
 
-## Constraints
+## CONSTRAINTS
 
-| Item | Value | Note |
-|------|-------|------|
-| Read tool limit | ~25,000 tokens | Hard limit |
-| Default chunk size | 600 lines | Safety margin |
-| Overlap size | 20 lines | Context connection |
-| Max chunks | 12 | Context window consideration |
-| Min chunk size | 50 lines | Prevent over-splitting |
+| Parameter | Value | Rationale |
+|-----------|-------|-----------|
+| Chunk size | 500 lines | Stay within Read tool limits |
+| Overlap | 20 lines | Maintain context continuity |
+| Max chunks | 10 | Prevent context overflow |
+| Min chunk | 50 lines | Avoid over-fragmentation |
 
 ---
 
-## Execution Steps
-
-### Step 1: Parse Arguments
+## PHASE 1: Parse Arguments
 
 ```
-FULL_ARGS = "$ARGUMENTS"
+PARSE $ARGUMENTS:
+├─ IF quoted path: FILE_PATH = inside quotes, TASK = after quotes
+├─ ELSE: FILE_PATH = first token, TASK = rest
+└─ IF TASK empty: TASK = "파일 구조 분석 및 핵심 로직 설명"
 
-# Handle quoted paths
-IF contains quotes:
-    FILE_PATH = string inside quotes
-    TASK = string after quotes
-ELSE:
-    FILE_PATH = first token before space
-    TASK = remaining tokens
-END IF
-
-IF TASK is empty:
-    TASK = "Analyze file structure and explain core logic"
-END IF
+VALIDATE:
+├─ FILE_PATH exists? → if not, suggest similar files via Glob
+└─ FILE_PATH is text? → if binary, EXIT with error
 ```
 
-### Step 2: Validate File and Collect Metadata
+---
+
+## PHASE 2: File Analysis
 
 Execute via Bash:
 ```bash
-if [ ! -f "{FILE_PATH}" ]; then
-    echo "ERROR: File not found: {FILE_PATH}"
-    exit 1
-fi
-
-# Collect file info
-echo "=== File Metadata ==="
-echo "Path: {FILE_PATH}"
-wc -l < "{FILE_PATH}" | xargs -I{} echo "Total lines: {}"
-file "{FILE_PATH}" | cut -d: -f2
-ls -lh "{FILE_PATH}" | awk '{print "Size: "$5}'
-
-# File extension
-echo "Extension: ${FILE_PATH##*.}"
+# Collect metadata
+echo "=== FILE INFO ==="
+ls -lh "{FILE_PATH}"
+wc -l < "{FILE_PATH}"
+file "{FILE_PATH}"
 ```
 
-### Step 3: Structure Analysis
+```
+STORE:
+├─ TOTAL_LINES = wc -l result
+├─ FILE_SIZE = ls -lh result
+└─ FILE_TYPE = file command result
+```
 
-Detect **structural boundaries** by file type:
+---
+
+## PHASE 3: Structure Detection
+
+Detect code boundaries based on file extension:
 
 ```bash
-# Find structural boundaries in code files
-# Result: line numbers for function/class/module starts
-
-FILE_EXT="${FILE_PATH##*.}"
-
-case "$FILE_EXT" in
-    py)
-        # Python: class, def, import blocks
-        grep -n "^class \|^def \|^from \|^import " "{FILE_PATH}" | head -50
-        ;;
-    ts|tsx|js|jsx)
-        # TypeScript/JavaScript: export, class, function, interface
-        grep -n "^export \|^class \|^function \|^interface \|^type \|^const.*= " "{FILE_PATH}" | head -50
-        ;;
-    go)
-        # Go: package, func, type, import
-        grep -n "^package \|^func \|^type \|^import " "{FILE_PATH}" | head -50
-        ;;
-    rs)
-        # Rust: mod, fn, struct, impl, use
-        grep -n "^pub \|^fn \|^struct \|^impl \|^use \|^mod " "{FILE_PATH}" | head -50
-        ;;
-    yaml|yml)
-        # YAML: top-level keys (no indentation)
-        grep -n "^[a-zA-Z_-]*:" "{FILE_PATH}" | head -50
-        ;;
-    *)
-        # Others: section separation by blank lines
-        grep -n "^$" "{FILE_PATH}" | head -50
-        ;;
-esac
+EXT="${FILE_PATH##*.}"
+case "$EXT" in
+  py)     grep -n "^class \|^def \|^async def " "{FILE_PATH}" ;;
+  ts|js)  grep -n "^export \|^class \|^function \|^const.*= " "{FILE_PATH}" ;;
+  go)     grep -n "^func \|^type \|^package " "{FILE_PATH}" ;;
+  rs)     grep -n "^pub \|^fn \|^struct \|^impl " "{FILE_PATH}" ;;
+  java)   grep -n "^public \|^private \|^class \|^interface " "{FILE_PATH}" ;;
+  *)      grep -n "^$" "{FILE_PATH}" ;;  # Fallback: blank lines
+esac | head -50
 ```
 
-### Step 4: Smart Chunking Algorithm
-
 ```
-TOTAL_LINES = N (wc -l result)
-BASE_CHUNK = 600
-OVERLAP = 20
-MAX_CHUNKS = 12
-
-# Structural boundary array (Step 3 result)
-BOUNDARIES = [1, ...structure_points..., TOTAL_LINES]
-
-# Generate chunk plan
-CHUNKS = []
-current_start = 1
-
-WHILE current_start < TOTAL_LINES:
-    # Calculate target end
-    target_end = current_start + BASE_CHUNK - 1
-
-    IF target_end >= TOTAL_LINES:
-        # Last chunk
-        CHUNKS.append({start: current_start, end: TOTAL_LINES})
-        BREAK
-    END IF
-
-    # Find nearest structural boundary (near target_end)
-    best_boundary = find_nearest_boundary(BOUNDARIES, target_end, range=100)
-
-    IF best_boundary exists:
-        actual_end = best_boundary - 1  # Up to just before boundary
-    ELSE:
-        actual_end = target_end
-    END IF
-
-    # Add chunk
-    CHUNKS.append({start: current_start, end: actual_end})
-
-    # Next chunk start (apply overlap)
-    current_start = actual_end - OVERLAP + 1
-
-    IF len(CHUNKS) >= MAX_CHUNKS:
-        WARN "Max chunks reached. Remaining will be processed in summary mode"
-        BREAK
-    END IF
-END WHILE
+STORE: BOUNDARIES = [line numbers where structure starts]
 ```
 
-### Step 5: Sequential Chunk Loading
+---
+
+## PHASE 4: Chunking Algorithm
 
 ```
-context_loaded = []
+ALGORITHM:
+├─ IF TOTAL_LINES <= 500: single chunk (no split)
+├─ ELSE: create chunks respecting BOUNDARIES
+│
+│   chunks = []
+│   start = 1
+│   WHILE start < TOTAL_LINES AND len(chunks) < MAX_CHUNKS:
+│     target_end = start + CHUNK_SIZE - 1
+│
+│     # Find nearest boundary near target_end
+│     boundary = nearest(BOUNDARIES, target_end, tolerance=50)
+│     actual_end = boundary - 1 if boundary else target_end
+│
+│     chunks.append({start, actual_end})
+│     start = actual_end - OVERLAP + 1
+│   END WHILE
+│
+└─ IF remaining lines: add final chunk
+```
 
-FOR i, chunk IN enumerate(CHUNKS):
-    # Chunk header output
-    PRINT "===== 청크 {i+1}/{len(CHUNKS)} [라인 {chunk.start}-{chunk.end}] ====="
+---
 
-    TRY:
-        Read(file_path=FILE_PATH, offset=chunk.start, limit=chunk.end - chunk.start + 1)
-        context_loaded.append(chunk)
-    CATCH overflow:
-        # Split in half on overflow
-        mid = (chunk.start + chunk.end) // 2
-        PRINT "⚠️ Chunk size exceeded. Split loading..."
-        Read(file_path=FILE_PATH, offset=chunk.start, limit=mid - chunk.start + 1)
-        Read(file_path=FILE_PATH, offset=mid + 1, limit=chunk.end - mid)
-        context_loaded.append(chunk)
-    END TRY
+## PHASE 5: Sequential Loading
 
-    PRINT ""  # Chunk separator
+```
+FOR each chunk in chunks:
+  PRINT "===== 청크 {i}/{total} [라인 {start}-{end}] ====="
+
+  TRY:
+    Read(file_path=FILE_PATH, offset=start, limit=end-start+1)
+  CATCH overflow:
+    # Split chunk in half and retry
+    mid = (start + end) / 2
+    Read(file_path=FILE_PATH, offset=start, limit=mid-start+1)
+    Read(file_path=FILE_PATH, offset=mid+1, limit=end-mid)
+  END TRY
+
+  PRINT ""  # separator
 END FOR
 ```
 
-### Step 6: Verify Context Completeness
+---
 
-```
-# Calculate loaded lines
-total_loaded = sum(chunk.end - chunk.start + 1 for chunk in context_loaded)
-# Actual coverage excluding overlap
-unique_coverage = actual covered lines based on TOTAL_LINES
-
-IF unique_coverage < TOTAL_LINES * 0.95:
-    WARN "⚠️ {100 - unique_coverage/TOTAL_LINES*100:.1f}% of file not loaded"
-    # Load missing sections additionally
-END IF
-```
-
-### Step 7: Load Complete Report and User Selection
+## PHASE 6: Completion Report (Korean)
 
 ```markdown
-╔═══════════════════════════════════════════════════════════════╗
-║           📁 파일 컨텍스트 주입 완료                              ║
-╠═══════════════════════════════════════════════════════════════╣
-║ 파일: {FILE_PATH}                                              ║
-║ 크기: {TOTAL_LINES}줄                                          ║
-║ 청크: {len(CHUNKS)}개 (오버랩 {OVERLAP}줄)                      ║
-║ 커버리지: {coverage}%                                          ║
-║ 구조점: {len(BOUNDARIES)}개 탐지                               ║
-╠═══════════════════════════════════════════════════════════════╣
-║ 작업 지시: {TASK}                                              ║
-╚═══════════════════════════════════════════════════════════════╝
+╔════════════════════════════════════════════════════════════╗
+║              📁 파일 컨텍스트 로딩 완료                       ║
+╠════════════════════════════════════════════════════════════╣
+║ 파일: {FILE_PATH}                                           ║
+║ 크기: {TOTAL_LINES}줄 ({FILE_SIZE})                         ║
+║ 청크: {chunk_count}개 (오버랩 {OVERLAP}줄)                   ║
+║ 구조점: {boundary_count}개 탐지                             ║
+╠════════════════════════════════════════════════════════════╣
+║ 작업 지시: {TASK}                                           ║
+╚════════════════════════════════════════════════════════════╝
 ```
 
 ---
 
-## Step 8: User Selection (TUI) - Required!
-
-Use **AskUserQuestion** for next action:
+## PHASE 7: Follow-up TUI (Required)
 
 ```
-AskUserQuestion(questions=[
-    {
-        "question": "컨텍스트 로딩이 완료되었습니다. 다음 작업을 선택하세요.",
-        "header": "다음 작업",
-        "options": [
-            {"label": "Opus로 작업 위임", "description": "로드된 컨텍스트를 기반으로 '{TASK}' 작업을 Opus 모델에서 실행합니다"},
-            {"label": "추가 파일 로드", "description": "관련 파일을 추가로 로드합니다 (inject-context 재실행)"},
-            {"label": "작업 지시 변경", "description": "다른 작업 지시로 변경합니다"},
-            {"label": "컨텍스트만 유지", "description": "자동 위임 없이 현재 컨텍스트를 유지합니다"}
-        ],
-        "multiSelect": false
-    }
-])
+AskUserQuestion:
+  question: "컨텍스트 로딩이 완료되었습니다. 다음 작업을 선택하세요."
+  header: "다음 작업"
+  options:
+    - label: "Opus로 작업 위임"
+      description: "로드된 컨텍스트로 '{TASK}' 작업을 Opus에서 실행"
+    - label: "추가 파일 로드"
+      description: "관련 파일을 추가로 로드합니다"
+    - label: "작업 지시 변경"
+      description: "다른 작업 지시로 변경합니다"
+    - label: "컨텍스트만 유지"
+      description: "자동 위임 없이 현재 상태 유지"
 ```
 
-### Handle Selection
-
+### Handle Selection:
 ```
-SWITCH user_selection:
-    CASE "Opus로 작업 위임":
-        SlashCommand(command="/continue-task {TASK}")
+SWITCH selection:
+  "Opus로 작업 위임":
+    → SlashCommand("/continue-task {TASK}")
 
-    CASE "추가 파일 로드":
-        AskUserQuestion → get additional file path
-        → inject-context for that file too
+  "추가 파일 로드":
+    → TUI: input file path
+    → Recursive: inject-context on new file
 
-    CASE "작업 지시 변경":
-        AskUserQuestion → get new task instruction
-        → /continue-task with new TASK
+  "작업 지시 변경":
+    → TUI: input new TASK
+    → SlashCommand("/continue-task {new_TASK}")
 
-    CASE "컨텍스트만 유지":
-        Print completion message and exit
-        → User enters follow-up command directly
-END SWITCH
+  "컨텍스트만 유지":
+    → Print "컨텍스트가 준비되었습니다. 직접 질문하세요."
+    → Exit
 ```
 
 ---
 
-## Error Handling
+## ERROR HANDLING
 
-| Error | Response |
-|-------|----------|
-| File not found | Search similar filenames and suggest |
-| Permission denied | Inform permission issue |
-| Token overflow | Reduce chunk size by 50% and retry |
-| Binary file | Print error message and exit |
-| Structure detection failed | Fallback to fixed chunking |
+| Error | Response (Korean) |
+|-------|-------------------|
+| File not found | "파일을 찾을 수 없습니다" + Glob 유사 파일 제안 |
+| Permission denied | "파일 읽기 권한이 없습니다" |
+| Binary file | "바이너리 파일은 지원하지 않습니다" |
+| Token overflow | 청크 크기 50% 감소 후 재시도 |
+| Structure detection fail | 고정 청킹으로 폴백 |
+| Empty file | "빈 파일입니다. 다른 파일을 선택하세요" |
 
 ---
 
-## Execute (now)
+## EXECUTE NOW
 
 1. Parse FILE_PATH and TASK from $ARGUMENTS
-2. Analyze file existence/size/structure via Bash
-3. Create smart chunking plan (structure-based)
-4. Sequential Read calls with overlap
-5. Verify context completeness
-6. Output completion report
-7. **AskUserQuestion for next action**
-8. Execute SlashCommand or additional work based on selection
-
----
-
-## Never Skip
-
-- Structure analysis (Step 3) - Core of chunking quality
-- Apply overlap (Step 4) - Ensures context continuity
-- User selection (Step 8) - Provides TUI experience
-
-Complete context without loss, user must be able to select next steps.
+2. Validate file exists and is readable
+3. Collect metadata (size, type)
+4. Detect structural boundaries
+5. Calculate optimal chunks
+6. Load chunks sequentially with overlap
+7. Report completion in Korean
+8. **Show TUI for next action** ← REQUIRED

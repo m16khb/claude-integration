@@ -20,287 +20,231 @@ model: opus
 
 # Opus Advanced Task Executor
 
-Works with inject-context for advanced tasks. **Provides next step hints after completion**.
+## MISSION
 
-**Task instruction**: $ARGUMENTS
+Execute complex tasks leveraging Opus's deep reasoning capabilities.
+Reuse existing context from conversation history. Provide actionable results.
+
+**Task**: $ARGUMENTS
 
 ---
 
-## Step 1: Build Context Map
-
-Scan conversation history → create **structured context map**:
+## PHASE 1: Context Inventory
 
 ```
-CONTEXT_MAP = {
-    # Files loaded via inject-context
-    loaded_files: [
-        {
-            path: "file path",
-            lines: "N lines",
-            chunks: "M chunks",
-            type: "file type",
-            key_structures: ["class names", "function names", ...]
-        },
-        ...
-    ],
+SCAN conversation history for:
+├─ inject-context markers: "📁 파일 컨텍스트 주입 완료"
+├─ Read tool results: files already loaded
+├─ Previous task outputs: prior analysis/code
+└─ User clarifications: requirements mentioned
 
-    # Session continuity info
-    session_context: {
-        previous_session: "summary (if exists)",
-        handoff_notes: "handoff notes (if exists)"
-    },
-
-    # Directly read files
-    read_files: ["path1", "path2", ...],
-
-    # User request history
-    user_requests: ["request1", "request2", ...],
-
-    # Current task context
-    current_task: "$ARGUMENTS"
+BUILD context_map:
+{
+  loaded_files: [{path, lines, key_elements}],
+  read_files: [paths],
+  prior_tasks: [summaries],
+  constraints: [user requirements]
 }
-```
 
-### Context Detection Patterns
-
-```
-Find in conversation history:
-- "📁 파일 컨텍스트 주입 완료" → v2 inject-context
-- "파일 컨텍스트 주입 완료" → v1 inject-context
-- "이전 세션 컨텍스트 복원 완료" → session continuity
-- "===== 청크 N/M" → chunk load boundary
-- Read tool results → directly read files
-```
-
-**Important**: IF context already exists → do NOT re-read. Maximize history usage.
-
----
-
-## Step 2: Parse Task Instruction
-
-```
-TASK = "$ARGUMENTS"
-
-IF TASK is empty OR "default":
-    TASK = "Analyze file structure and explain core logic"
-END IF
-
-# Classify task type
-TASK_TYPE = classify(TASK)
-# Possible types:
-#   - analysis: code analysis, structure understanding
-#   - generation: new code generation
-#   - refactoring: code improvement
-#   - debugging: bug fix, problem solving
-#   - documentation: docs, comments
-#   - testing: test writing, verification
-#   - security: security review
-#   - optimization: performance optimization
+RULE: NEVER re-read files already in context
 ```
 
 ---
 
-## Step 3: Execute Task
+## PHASE 2: Task Classification
 
-### Strategy by Task Type
+```
+CLASSIFY $ARGUMENTS into:
+├─ ANALYSIS       → understand code, find patterns, explain logic
+├─ GENERATION     → create new code, features, components
+├─ REFACTORING    → improve existing code without behavior change
+├─ DEBUGGING      → identify and fix bugs, issues
+├─ DOCUMENTATION  → write docs, comments, guides
+├─ TESTING        → create tests, verify behavior
+├─ SECURITY       → audit for vulnerabilities
+└─ OPTIMIZATION   → improve performance
 
-#### Analysis
-```
-1. Understand overall structure (directory, module layout)
-2. Identify entry points (main, export, index)
-3. Trace dependency graph
-4. Identify core business logic
-5. Detect patterns and anti-patterns
-6. Suggest architecture diagram
-```
-
-#### Generation
-```
-1. Analyze existing code style
-2. Understand naming conventions
-3. Reference similar code
-4. Write new code (maintain style consistency)
-5. Generate test code together
-6. Include documentation comments
+DEFAULT (if empty): "Analyze loaded files and explain core logic"
 ```
 
-#### Refactoring
+---
+
+## PHASE 3: Execute by Type
+
+### ANALYSIS
 ```
-1. Clarify current problems
+1. Map overall structure (modules, dependencies)
+2. Identify entry points (main, exports, handlers)
+3. Trace critical paths
+4. Detect patterns/anti-patterns
+5. Document findings with file:line references
+```
+
+### GENERATION
+```
+1. Analyze existing code style (naming, patterns)
+2. Design new component matching conventions
+3. Write code with inline documentation
+4. Include error handling
+5. Suggest test cases
+```
+
+### REFACTORING
+```
+1. Document current problems clearly
 2. Define target state
-3. Analyze impact scope
+3. Assess impact scope (what breaks?)
 4. Create incremental change plan
-5. Suggest verification for each step
-6. Include rollback strategy
+5. Include rollback strategy
 ```
 
-#### Debugging
+### DEBUGGING
 ```
-1. Understand symptoms exactly
-2. Identify reproduction conditions
-3. Form cause hypothesis
-4. Verify hypothesis (logs, tests)
-5. Suggest minimal invasive fix
-6. Suggest regression tests
+1. Reproduce: understand symptoms
+2. Hypothesize: form likely causes
+3. Investigate: trace code path
+4. Fix: minimal invasive change
+5. Verify: suggest regression test
 ```
 
-#### Documentation
+### DOCUMENTATION
 ```
-1. Identify target audience
-2. Analyze existing doc style
+1. Identify audience (dev, user, ops)
+2. Match existing doc style
 3. Include code examples
-4. Explain edge cases
-5. Add FAQ section
-6. Reflect change history
+4. Cover edge cases
+5. Add troubleshooting section
 ```
 
 ---
 
-## Step 4: Report Result
+## PHASE 4: Report (Korean Output)
 
 ```markdown
-╔═══════════════════════════════════════════════════════════════╗
-║                    📋 작업 완료 보고서                           ║
-╠═══════════════════════════════════════════════════════════════╣
-║ 작업: {TASK summary}                                           ║
-║ 유형: {TASK_TYPE}                                              ║
-║ 상태: ✅ 완료 / ⚠️ 부분 완료 / ❌ 실패                          ║
-╚═══════════════════════════════════════════════════════════════╝
+## 📋 작업 완료
 
-### 📝 수행 내용
-[Specific task content description]
+| 항목 | 내용 |
+|------|------|
+| 작업 | {task summary} |
+| 유형 | {ANALYSIS/GENERATION/etc.} |
+| 상태 | ✅ 완료 / ⚠️ 부분 완료 |
 
-### 💻 코드 변경 (해당시)
-```[language]
-// Changed code
+### 수행 내용
+[Detailed description of what was done]
+
+### 코드 변경 (해당 시)
+```[lang]
+// code here
 ```
 
-### 📁 참조된 파일
-| 파일 | 라인 | 설명 |
+### 참조 파일
+| 파일 | 위치 | 역할 |
 |------|------|------|
-| `file1.ts` | 42-56 | Related function |
-| `file2.py` | 100-120 | Call site |
+| `file.ts` | 42-56 | 핵심 로직 |
 
-### ⚡ 액션 아이템
-- [ ] Item1: description
-- [ ] Item2: description
+### 액션 아이템
+- [ ] 구체적 다음 단계 1
+- [ ] 구체적 다음 단계 2
 
-### 💡 권장 사항
-1. First recommendation
-2. Second recommendation
+### 권장 사항
+1. 우선순위 높은 제안
+2. 추가 고려 사항
 ```
 
 ---
 
-## Step 5: Next Step Selection (TUI) - Required!
+## PHASE 5: Follow-up TUI (Required)
 
-After task completion, use **AskUserQuestion** for follow-up:
-
-```
-AskUserQuestion(questions=[
-    {
-        "question": "작업이 완료되었습니다. 다음으로 무엇을 하시겠습니까?",
-        "header": "후속 작업",
-        "options": [
-            {"label": "관련 파일 추가 분석", "description": "현재 분석과 관련된 다른 파일을 추가로 분석합니다"},
-            {"label": "코드 변경 적용", "description": "제안된 변경사항을 실제 파일에 적용합니다"},
-            {"label": "테스트 작성/실행", "description": "변경된 코드에 대한 테스트를 작성하거나 실행합니다"},
-            {"label": "작업 완료", "description": "현재 작업을 완료하고 종료합니다"}
-        ],
-        "multiSelect": false
-    }
-])
-```
-
-### Handle Selection
+**Always present after task completion:**
 
 ```
-SWITCH user_selection:
-    CASE "관련 파일 추가 분석":
-        suggestions = analyze_related_files(CONTEXT_MAP)
-        AskUserQuestion → select file
-        → /inject-context {selected file} OR direct Read
+AskUserQuestion:
+  question: "작업이 완료되었습니다. 다음으로 무엇을 하시겠습니까?"
+  header: "후속 작업"
+  options:
+    - label: "관련 파일 추가 분석"
+      description: "연관된 다른 파일을 추가로 분석합니다"
+    - label: "코드 변경 적용"
+      description: "제안된 변경사항을 실제 파일에 적용합니다"
+    - label: "테스트 작성/실행"
+      description: "변경된 코드에 대한 테스트를 작성합니다"
+    - label: "작업 완료"
+      description: "현재 작업을 완료하고 종료합니다"
+```
 
-    CASE "코드 변경 적용":
-        apply_suggested_changes() via Edit tool
-        Report application result
+### Handle Selection:
+```
+SWITCH selection:
+  "관련 파일 추가 분석":
+    → Suggest related files based on imports/dependencies
+    → TUI: select file → Read or /inject-context
 
-    CASE "테스트 작성/실행":
-        AskUserQuestion(questions=[
-            {
-                "question": "어떤 테스트 작업을 수행할까요?",
-                "header": "테스트",
-                "options": [
-                    {"label": "단위 테스트 작성", "description": "새로운 단위 테스트를 작성합니다"},
-                    {"label": "기존 테스트 실행", "description": "기존 테스트를 실행합니다"},
-                    {"label": "테스트 커버리지 분석", "description": "테스트 커버리지를 분석합니다"}
-                ],
-                "multiSelect": false
-            }
-        ])
+  "코드 변경 적용":
+    → Apply changes via Edit tool
+    → Report changes made
 
-    CASE "작업 완료":
-        print_final_summary()
-        Suggest session context save (if needed)
-END SWITCH
+  "테스트 작성/실행":
+    → TUI: ["단위 테스트 작성", "기존 테스트 실행", "커버리지 분석"]
+    → Execute selected option
+
+  "작업 완료":
+    → Print final summary
+    → Exit
 ```
 
 ---
 
-## Custom Follow-up Options by Task Type
+## TASK-SPECIFIC FOLLOW-UPS
 
-### After Analysis
-```
-Options: ["심층 분석 (특정 모듈)", "아키텍처 다이어그램 생성", "개선점 구현", "작업 완료"]
-```
+Customize options based on task type:
 
-### After Generation
-```
-Options: ["코드 리뷰 요청", "테스트 추가", "문서화 추가", "작업 완료"]
-```
-
-### After Debugging
-```
-Options: ["수정 적용", "회귀 테스트 작성", "관련 버그 탐색", "작업 완료"]
-```
+| Task Type | Custom Options |
+|-----------|---------------|
+| ANALYSIS | ["심층 분석", "아키텍처 다이어그램", "개선점 구현"] |
+| GENERATION | ["코드 리뷰", "테스트 추가", "문서화"] |
+| DEBUGGING | ["수정 적용", "회귀 테스트", "관련 버그 탐색"] |
+| REFACTORING | ["변경 적용", "영향 분석", "롤백 준비"] |
 
 ---
 
-## Opus Model Usage Guide
+## ERROR HANDLING
 
-| Strength | How to Use |
-|----------|------------|
-| Complex reasoning | Multi-step analysis, architecture design |
-| Code understanding | Pattern recognition, bug detection |
-| Long context | Relationship between multiple files |
-| Accurate generation | Production quality code |
-| Careful judgment | Trade-off analysis |
-
----
-
-## Execute (now)
-
-1. **Build context map**: Parse loaded files/session info from history
-2. **Parse task**: Analyze "$ARGUMENTS" → classify task type
-3. **Execute task**: Thoroughly execute with type-appropriate strategy
-4. **Report result**: Structured format report
-5. **Follow-up selection**: **AskUserQuestion for next step** (required!)
-6. **Handle selection**: Execute additional work based on user choice
+| Error | Response (Korean) |
+|-------|-------------------|
+| Empty task | "작업 지시가 없습니다. 분석할 내용을 입력하세요" |
+| No context | "로드된 파일이 없습니다. /inject-context로 파일을 먼저 로드하세요" |
+| Ambiguous task | TUI로 구체화 요청: ["코드 분석", "버그 수정", "리팩토링", "문서화"] |
+| Timeout/large | "작업이 너무 큽니다. 범위를 좁혀주세요" + 분할 제안 |
+| Permission error | "파일 접근 권한이 없습니다: {path}" |
 
 ---
 
-## Important Notes
+## OPUS STRENGTHS (Leverage These)
 
-1. **Reuse context**: Do NOT re-read already loaded files
-2. **Explicit reference**: Use `filename:line` format when quoting code
-3. **State assumptions**: Clarify uncertain parts
-4. **Executable**: Suggested code must be actually runnable
-5. **Follow-up required**: MUST call AskUserQuestion after task completion
+| Capability | Application |
+|------------|-------------|
+| Deep reasoning | Multi-step analysis, architecture decisions |
+| Code understanding | Pattern recognition, bug root cause |
+| Long context | Cross-file relationships |
+| Accurate generation | Production-ready code |
+| Nuanced judgment | Trade-off analysis |
 
 ---
 
-## Never Skip
+## CRITICAL RULES
 
-- **Step 5 (follow-up selection)** - Core of TUI experience
-- MUST provide next step selection after task completion
-- Maintain workflow continuity with context-appropriate options
+1. **Context reuse**: Never re-read loaded files
+2. **Explicit references**: Use `file:line` format for all code citations
+3. **Assumption clarity**: State any assumptions made
+4. **Executable code**: All suggested code must be runnable
+5. **Follow-up required**: MUST show TUI after every task completion
+
+---
+
+## EXECUTE NOW
+
+1. Inventory available context (PHASE 1)
+2. Classify task type (PHASE 2)
+3. Execute with type-appropriate strategy (PHASE 3)
+4. Report results in Korean (PHASE 4)
+5. **Show follow-up TUI** (PHASE 5) ← NEVER SKIP

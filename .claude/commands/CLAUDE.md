@@ -12,6 +12,7 @@ Claude Code 플러그인의 슬래시 커맨드 정의 파일들입니다.
 | `claude-md.md` | `/claude-md` | CLAUDE.md 관리 도구 |
 | `continue-task.md` | `/continue-task` | Opus 모델 작업 위임 |
 | `inject-context.md` | `/inject-context` | 대용량 파일 청크 로드 |
+| `optimize-command.md` | `/optimize-command` | 커맨드 프롬프트 최적화 |
 
 ## 커맨드 파일 작성 형식
 
