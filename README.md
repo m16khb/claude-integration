@@ -1,183 +1,149 @@
 # Claude Integration
 
-Claude Code 생산성 향상을 위한 스마트 커맨드 플러그인입니다.
+Claude Code 생산성 향상을 위한 스마트 커맨드 및 에이전트 마켓플레이스입니다.
+
+## 아키텍처
+
+이 마켓플레이스는 **단일 책임 원칙**을 중심으로 설계되었습니다:
+
+- **5개 전문화된 플러그인**
+- **8개 전문 에이전트 + 1개 오케스트레이터**
+- **7개 슬래시 커맨드**
+- **1개 에이전트 스킬**
+
+각 플러그인은 필요한 컴포넌트만 컨텍스트에 로드하여 **토큰 효율성**을 극대화합니다.
 
 ## 설치
 
-### 방법 1: 마켓플레이스 추가 후 설치 (권장)
+### 마켓플레이스 추가 후 설치 (권장)
 
 ```bash
 # 1. 마켓플레이스 추가
 /plugin marketplace add m16khb/claude-integration
 
-# 2. 플러그인 설치
+# 2. 전체 플러그인 설치
 /plugin install claude-integration
+
+# 또는 개별 플러그인 설치
+/plugin install backend-development
+/plugin install documentation-generation
+/plugin install git-workflows
+/plugin install context-management
+/plugin install automation-tools
 ```
 
-### 방법 2: 직접 설치
+## 플러그인 목록
 
-```bash
-/plugin add m16khb/claude-integration
-```
+| 플러그인 | 카테고리 | 설명 |
+|---------|---------|------|
+| `backend-development` | development | NestJS + Fastify 백엔드 개발 에이전트 |
+| `documentation-generation` | documentation | CLAUDE.md 및 agent-docs 문서 생성 |
+| `git-workflows` | development | Git Flow 기반 스마트 커밋 |
+| `context-management` | productivity | 대용량 파일 청킹 및 컨텍스트 관리 |
+| `automation-tools` | productivity | Agent, Skill, Command 자동 생성 |
 
 ## 커맨드 목록
 
-| 커맨드              | 설명                                   | 모델  |
-| ------------------- | -------------------------------------- | ----- |
-| `/git-commit`       | Git Flow 기반 스마트 커밋              | 기본  |
-| `/claude-sync`      | 코드베이스 변경 감지 및 CLAUDE.md 동기화 | Opus  |
-| `/continue-context` | 컨텍스트 분석 및 다음 작업 추천        | 기본  |
-| `/inject-context`   | 대용량 파일 컨텍스트 주입              | Haiku |
-| `/setup-statusline` | Status line 환경 자동 구성             | Opus  |
+| 커맨드 | 플러그인 | 설명 |
+|--------|---------|------|
+| `/git-commit` | git-workflows | Git Flow 기반 스마트 커밋 |
+| `/continue-context` | context-management | 컨텍스트 분석 및 작업 추천 |
+| `/inject-context` | context-management | 대용량 파일 구조 인식 청킹 |
+| `/factory` | automation-tools | Agent, Skill, Command 생성기 |
+| `/setup-statusline` | automation-tools | YAML 기반 status line 구성 |
+| `/claude-sync` | automation-tools | CLAUDE.md 자동 동기화 |
 
-## 커맨드 상세
+## 에이전트 목록
 
-### /git-commit
+### Orchestrator (1개)
 
-Git 커밋을 스마트하게 생성합니다.
+| 에이전트 | 모델 | 설명 |
+|---------|------|------|
+| `nestjs-fastify-expert` | Opus | NestJS + Fastify 오케스트레이터 |
 
-**특징**:
+### Experts (8개)
 
-- Git Flow 브랜치 컨텍스트 인식 (feature/release/hotfix)
-- Conventional Commits 형식 자동 적용
-- 민감 파일 자동 감지 및 경고
-- main/master 브랜치 보호
-
-**사용법**:
-
-```bash
-# 커밋만
-/git-commit
-
-# 커밋 + 푸시
-/git-commit push
-```
-
-### /claude-sync
-
-코드베이스 변경을 감지하고 CLAUDE.md를 자동으로 동기화합니다.
-
-**실행만 하면 끝**:
-
-```bash
-/claude-sync
-```
-
-**자동 수행 작업**:
-
-1. 코드베이스 스캔 (디렉토리, 파일 구조)
-2. 기존 CLAUDE.md 분석 (구조, 링크, 라인 수)
-3. 차이점 비교 및 리포트 출력
-4. 사용자 확인 후 자동 업데이트
-5. 품질 검증 (60줄 미만, 링크 유효성)
-
-### /continue-context
-
-현재 대화 컨텍스트를 분석하여 다음 작업을 스마트하게 추천합니다.
-
-**분석 항목**:
-
-- 로드된 파일 및 수정된 파일
-- 완료된 작업 및 미완료 항목
-- Git 상태 (커밋되지 않은 변경사항)
-- 현재 포커스 영역
-
-**추천 카테고리**:
-
-- 즉시 작업: 커밋, 테스트 수정, 오류 해결
-- 다음 단계: 테스트 작성, 문서화, PR 생성
-- 품질 개선: 리팩토링, 보안 검토
-
-**사용법**:
-
-```bash
-# 전체 컨텍스트 분석
-/continue-context
-
-# 특정 영역에 포커스
-/continue-context 테스트
-```
-
-### /inject-context
-
-대용량 파일을 구조 인식 청킹으로 분할 로드합니다.
-
-**특징**:
-
-- 코드 경계 인식 (함수, 클래스 단위)
-- 500줄 청크 + 20줄 오버랩
-- 자동 Opus 위임 옵션
-
-**사용법**:
-
-```bash
-/inject-context src/large-file.ts
-/inject-context src/api.ts "API 엔드포인트 분석"
-```
-
-### /setup-statusline
-
-Claude Code status line 환경을 YAML 기반으로 자동 구성합니다.
-
-**특징**:
-
-- Single Source of Truth 아키텍처 (YAML → Shell)
-- 크로스 플랫폼 지원 (macOS/Linux)
-- 이모지 지원 자동 감지
-- 터미널별 자동 설정 (zsh, bash)
-
-**사용법**:
-
-```bash
-# 기본 설정 (대화형)
-/setup-statusline
-
-# 설정 파일 지정
-/setup-statusline ~/.claude/statusline.yaml
-```
-
-## 전문 에이전트
-
-NestJS 생태계 전문 에이전트를 제공합니다.
-
-| 에이전트 | 전문 분야 |
-|---------|----------|
-| `nestjs-fastify-expert` | NestJS + Fastify 오케스트레이터 |
-| `typeorm-expert` | TypeORM - 엔티티, 마이그레이션, 트랜잭션 |
-| `redis-cache-expert` | Redis 캐싱 - @nestjs/cache-manager |
-| `bullmq-queue-expert` | BullMQ 작업 큐 |
-| `cqrs-expert` | CQRS 패턴 - Command, Query, Event, Saga |
-| `microservices-expert` | 마이크로서비스 - RabbitMQ, gRPC, TCP |
-| `suites-testing-expert` | 테스팅 - Suites(Automock), Jest, E2E |
+| 에이전트 | 모델 | 설명 |
+|---------|------|------|
+| `typeorm-expert` | Sonnet | TypeORM 엔티티, 마이그레이션, 트랜잭션 |
+| `redis-cache-expert` | Sonnet | Redis 캐싱, @nestjs/cache-manager |
+| `bullmq-queue-expert` | Sonnet | BullMQ 작업 큐 |
+| `cqrs-expert` | Sonnet | CQRS 패턴, Command/Query/Event/Saga |
+| `microservices-expert` | Sonnet | 마이크로서비스, RabbitMQ, gRPC |
+| `suites-testing-expert` | Sonnet | Suites(Automock), Jest, E2E |
+| `document-builder` | Sonnet | 계층적 CLAUDE.md 및 agent-docs 생성 |
 
 ## 프로젝트 구조
 
 ```
 claude-integration/
 ├── .claude-plugin/
-│   ├── plugin.json        # 마켓플레이스용 플러그인 메타데이터
-│   └── marketplace.json   # 마켓플레이스 정의
-├── commands/              # 슬래시 커맨드
-│   ├── git-commit.md
-│   ├── claude-sync.md
-│   ├── continue-context.md
-│   ├── inject-context.md
-│   └── setup-statusline.md
-├── agents/                # 전문 에이전트
-│   ├── backend/           # NestJS, TypeORM, Redis 등 (7개)
-│   ├── frontend/          # (예정)
-│   └── infrastructure/    # (예정)
-├── templates/             # 템플릿 파일
-│   ├── statusline.sh      # Status line 스크립트
-│   └── statusline-config.yaml
-├── agent_docs/            # 상세 개발 문서
-│   ├── agents.md          # 에이전트 목록
-│   ├── commands.md        # 커맨드 상세
-│   ├── command-writing.md
-│   └── development.md
-├── CLAUDE.md              # 프로젝트 컨텍스트
-├── LICENSE                # MIT 라이선스
+│   └── marketplace.json       # 플러그인 레지스트리
+├── plugins/                   # 5개 전문화된 플러그인
+│   ├── backend-development/   # NestJS 생태계 에이전트
+│   │   ├── agents/
+│   │   ├── commands/
+│   │   └── skills/
+│   ├── documentation-generation/
+│   ├── git-workflows/
+│   ├── context-management/
+│   └── automation-tools/
+├── docs/                      # 종합 문서
+│   ├── architecture.md        # 아키텍처 설계 원칙
+│   ├── agents.md              # 에이전트 레퍼런스
+│   ├── plugins.md             # 플러그인 레퍼런스
+│   ├── usage.md               # 사용 가이드
+│   └── agent-skills.md        # 스킬 개발 가이드
+├── CLAUDE.md                  # 프로젝트 루트 설정
 └── README.md
+```
+
+## MCP 서버 (내장)
+
+플러그인 활성화 시 자동 로드:
+
+| MCP 서버 | 설명 | 요구사항 |
+|----------|------|---------|
+| `playwright` | 브라우저 자동화 | Node.js 18+ |
+| `context7` | 최신 문서 주입 | Node.js 18+ |
+| `sequential-thinking` | 단계별 사고 | Node.js 18+ |
+| `chrome-devtools` | 크롬 개발자 도구 | Node.js 22+, Chrome |
+
+```bash
+# MCP 상태 확인
+claude mcp list
+```
+
+## 상세 문서
+
+- [Architecture](docs/architecture.md) - 아키텍처 설계 원칙
+- [Agents](docs/agents.md) - 에이전트 레퍼런스
+- [Plugins](docs/plugins.md) - 플러그인 레퍼런스
+- [Usage](docs/usage.md) - 사용 가이드
+- [Agent Skills](docs/agent-skills.md) - 스킬 개발 가이드
+
+## 빠른 시작
+
+### NestJS 백엔드 개발
+
+```typescript
+// Orchestrator를 통해 자동 위임
+Task(
+  subagent_type="nestjs-fastify-expert",
+  prompt="Redis 캐시 설정하고 BullMQ 큐도 추가해줘"
+)
+```
+
+### 스마트 Git 커밋
+
+```bash
+/git-commit push
+```
+
+### 대용량 파일 처리
+
+```bash
+/inject-context ./large-file.ts "리팩토링해줘"
 ```
 
 ## 기여
@@ -186,4 +152,4 @@ claude-integration/
 
 ## 라이선스
 
-MIT License - 자유롭게 사용, 수정, 배포할 수 있습니다.
+MIT License
