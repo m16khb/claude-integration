@@ -1,5 +1,16 @@
 # 전문 에이전트 목록
 
+## 에이전트 분류
+
+| 모듈 | 전문 분야 | 상태 |
+|------|----------|------|
+| [backend/](../agents/backend/CLAUDE.md) | NestJS + Fastify 생태계 | ✅ 활성 |
+| [document/](../agents/document/CLAUDE.md) | CLAUDE.md, agent-docs 생성 | ✅ 활성 |
+| frontend/ | React, Vue 등 프론트엔드 | 🚧 예정 |
+| infrastructure/ | Docker, K8s, CI/CD | 🚧 예정 |
+
+---
+
 ## Backend 에이전트
 
 NestJS 생태계 전문 에이전트 모음입니다.
@@ -21,6 +32,18 @@ NestJS 생태계 전문 에이전트 모음입니다.
 | `microservices-expert` | 마이크로서비스 - RabbitMQ, Redis, gRPC, TCP |
 | `suites-testing-expert` | 테스팅 - Suites(Automock), Jest, E2E |
 
+---
+
+## Document 에이전트
+
+문서화 전문 에이전트 모음입니다.
+
+| 에이전트 | 전문 분야 |
+|---------|----------|
+| `document-builder` | 계층적 CLAUDE.md 및 agent-docs 생성/수정 |
+
+---
+
 ## 사용법
 
 ### Task 도구로 호출
@@ -31,6 +54,9 @@ Task(subagent_type="nestjs-fastify-expert", prompt="...")
 
 // 직접 전문가 호출
 Task(subagent_type="typeorm-expert", prompt="...")
+
+// Document builder 호출
+Task(subagent_type="document-builder", prompt="...")
 ```
 
 ### Orchestrator 동작 방식
@@ -42,11 +68,15 @@ Task(subagent_type="typeorm-expert", prompt="...")
 └─ Fastify 관련 → 직접 처리
 ```
 
+---
+
 ## 폴더 구조
 
 ```
 agents/
+├── CLAUDE.md
 ├── backend/
+│   ├── CLAUDE.md
 │   ├── nestjs-fastify-expert.md  # Orchestrator
 │   ├── typeorm-expert.md
 │   ├── redis-cache-expert.md
@@ -54,9 +84,15 @@ agents/
 │   ├── cqrs-expert.md
 │   ├── microservices-expert.md
 │   └── suites-testing-expert.md
+├── document/
+│   ├── CLAUDE.md
+│   ├── document-builder.md
+│   └── agent-docs/
 ├── frontend/       # (예정)
 └── infrastructure/ # (예정)
 ```
+
+---
 
 ## 모델 설정
 

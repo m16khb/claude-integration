@@ -8,238 +8,409 @@ allowed-tools:
   - Bash
   - Glob
   - Grep
+  - Task
   - AskUserQuestion
 model: claude-opus-4-5-20251101
 ---
 
-# CLAUDE.md Auto-Sync
+# CLAUDE.md Auto-Sync (Hierarchical Orchestration)
 
 ## MISSION
 
-Scan codebase and synchronize CLAUDE.md files based on Claude Code's official loading behavior.
-Optimize placement using cwd-based hierarchical loading and @import mechanism.
+Build and synchronize hierarchical documentation orchestration system.
+Scan project → identify modules → create/update CLAUDE.md and agent-docs → parallel document-builder invocation.
 
 ---
 
-## CONTEXT: Loading Behavior
+## ARCHITECTURE OVERVIEW
 
 ```
-LOADING RULES:
-├─ Claude Code walks UP from cwd to project root
-├─ Only ancestor path CLAUDE.md files are auto-loaded
-├─ Sub-directory CLAUDE.md = loaded ONLY when cwd is in that directory
-└─ @import syntax = explicit inclusion regardless of cwd
-
-@IMPORT SYNTAX:
-├─ @path/to/file.md → include at parse time
-├─ Supports relative/absolute paths
-├─ Max 5 recursive hops
-└─ Not evaluated inside code blocks
-
-DECISION: Sub-CLAUDE.md vs @import
-├─ Always needed everywhere → @import in root
-└─ Context-specific (only when working there) → sub-CLAUDE.md
+                      ┌─────────────────┐
+                      │  Root CLAUDE.md │  ← Top-level orchestrator
+                      └────────┬────────┘
+                               │
+                ┌──────────────┼──────────────┐
+                │              │              │
+                ▼              ▼              ▼
+      ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
+      │ commands/   │ │ agents/     │ │ templates/  │
+      │ CLAUDE.md   │ │ CLAUDE.md   │ │ CLAUDE.md   │
+      └──────┬──────┘ └──────┬──────┘ └─────────────┘
+             │               │
+             ▼               ▼
+      ┌─────────────┐ ┌─────────────┐
+      │ agent-docs/ │ │ backend/    │
+      │ (optional)  │ │ CLAUDE.md   │
+      └─────────────┘ └──────┬──────┘
+                             │
+                             ▼
+                      ┌─────────────┐
+                      │ agent-docs/ │
+                      │ (optional)  │
+                      └─────────────┘
 ```
 
 ---
 
-## PHASE 1: Scan Codebase
+## PHASE 1: Hierarchical Scan
 
 ```
-EXECUTE:
+EXECUTE PARALLEL:
 ├─ Glob("*") → root directories
-├─ Glob("**/CLAUDE.md") → existing files
-├─ Glob("**/package.json") → potential modules
-├─ Glob("**/README.md") → documented modules
-└─ Read .gitmodules → submodules (if exists)
+├─ Glob("**/CLAUDE.md") → existing CLAUDE.md files
+├─ Glob("**/agent-docs") → existing agent-docs dirs
+├─ Glob("*/package.json") → level-1 modules
+├─ Glob("*/*/package.json") → level-2 submodules
+└─ Glob("**/*.md") → all markdown files
 
-COLLECT → CODEBASE:
+COLLECT → HIERARCHY:
 {
-  root_dirs: [...],
-  existing_mds: [...],
-  modules: [...],
-  submodules: [...]
+  root: {
+    path: "/",
+    has_claude_md: boolean,
+    has_agent_docs: boolean,
+    children: ["commands", "agents", "templates"]
+  },
+  modules: [
+    {
+      path: "commands",
+      type: "MODULE",
+      has_claude_md: boolean,
+      has_agent_docs: boolean,
+      files: ["*.md"],
+      children: []
+    },
+    {
+      path: "agents",
+      type: "MODULE",
+      has_claude_md: boolean,
+      has_agent_docs: boolean,
+      children: ["backend", "frontend", "infrastructure"]
+    }
+  ],
+  submodules: [
+    {
+      path: "agents/backend",
+      type: "SUBMODULE",
+      parent: "agents",
+      has_claude_md: boolean,
+      has_agent_docs: boolean,
+      files: ["*.md"]
+    }
+  ]
 }
 ```
 
 ---
 
-## PHASE 2: Classify Locations
+## PHASE 2: Gap Analysis
 
 ```
-FOR each directory in (root, packages/*, apps/*, libs/*):
-  EVALUATE:
-  ├─ Has own package.json/pyproject.toml? (+2)
-  ├─ Different tech stack than root? (+2)
-  ├─ Independent build/test commands? (+1)
-  ├─ Frequently used as cwd? (+1)
-  └─ Git submodule? (+3)
+FOR each item in HIERARCHY:
+  ANALYZE:
+  ├─ CLAUDE.md exists?
+  ├─ CLAUDE.md line count (if exists)
+  ├─ agent-docs/ exists?
+  ├─ Parent CLAUDE.md referenced?
+  ├─ Child modules linked?
+  └─ Content up-to-date?
 
-  CLASSIFY by score:
-  ├─ score >= 4 → SUB_NEEDED (create sub-CLAUDE.md)
-  ├─ score 2-3 → CONSIDER (suggest, let user decide)
-  └─ score < 2 → SKIP (root is sufficient)
+  LINE COUNT RULES:
+  ├─ ROOT CLAUDE.md: max 150 lines
+  ├─ MODULE CLAUDE.md: max 80 lines
+  └─ SUBMODULE CLAUDE.md: max 50 lines
 
-ALWAYS SKIP:
-├─ src/*, lib/* (simple code folders)
-├─ __tests__/, test/, e2e/ (test dirs)
-├─ .github/, docker/, scripts/ (config dirs)
-└─ node_modules/, dist/, build/ (generated)
+  IF line_count > limit:
+    CLASSIFY as NEEDS_AGENT_DOCS
+    ├─ Extract reference sections to agent-docs/
+    ├─ Keep only summaries in CLAUDE.md
+    └─ Add links to detailed docs
+
+  CLASSIFY:
+  ├─ CREATE_CLAUDE_MD: CLAUDE.md missing
+  ├─ CREATE_AGENT_DOCS: agent-docs/ needed but missing
+  ├─ NEEDS_AGENT_DOCS: CLAUDE.md too large, needs refactoring
+  ├─ UPDATE_CLAUDE_MD: file structure changed
+  ├─ UPDATE_LINKS: reference links broken
+  └─ OK: up-to-date
+
+BUILD TASK_QUEUE:
+[
+  {
+    action: "CREATE",
+    target: { path: "commands", type: "MODULE" },
+    priority: 1,  // MODULE before SUBMODULE
+    context: { ... }
+  },
+  {
+    action: "CREATE",
+    target: { path: "agents/backend", type: "SUBMODULE" },
+    priority: 2,
+    context: { parent_claude_md: "agents/CLAUDE.md", ... }
+  },
+  {
+    action: "REFACTOR_TO_AGENT_DOCS",
+    target: { path: "commands", type: "MODULE" },
+    priority: 3,  // After CLAUDE.md exists
+    context: {
+      current_lines: 95,
+      max_lines: 80,
+      sections_to_extract: ["detailed-guide", "examples"]
+    }
+  }
+]
 ```
 
 ---
 
-## PHASE 3: Detect Changes
+## PHASE 2.5: Agent-docs Auto-generation
 
 ```
-CHANGES = []
+WHEN CLAUDE.md exceeds line limit:
 
-FOR ROOT (./CLAUDE.md):
-  IF not exists:
-    CHANGES.push({ path: "./CLAUDE.md", action: "CREATE" })
-  ELSE:
-    DIFF = compare(CODEBASE.root_dirs, parsed_structure_section)
-    IF DIFF.added.length OR DIFF.removed.length:
-      CHANGES.push({ path: "./CLAUDE.md", action: "UPDATE", diff: DIFF })
+  IDENTIFY extractable sections:
+  ├─ Detailed guides (> 20 lines)
+  ├─ Code examples (> 10 lines)
+  ├─ Reference tables (> 15 rows)
+  └─ Architecture diagrams
 
-FOR each SUB_NEEDED location:
-  IF CLAUDE.md not exists:
-    CHANGES.push({ path, action: "CREATE", reason: "independent module" })
-  ELSE IF outdated:
-    CHANGES.push({ path, action: "UPDATE" })
+  CREATE agent-docs/ at same level:
+  ├─ {module}/agent-docs/
+  │   ├─ detailed-guide.md      # Extracted detailed content
+  │   ├─ examples.md            # Code examples
+  │   └─ references.md          # External links, resources
+  │
+  └─ Directory structure mirrors CLAUDE.md level
 
-FOR each existing sub-CLAUDE.md NOT in SUB_NEEDED:
-  CHANGES.push({ path, action: "REVIEW", reason: "may not be loaded" })
+  UPDATE CLAUDE.md:
+  ├─ Replace detailed sections with summaries
+  ├─ Add links: "상세 내용은 [agent-docs/detailed-guide.md](agent-docs/detailed-guide.md) 참조"
+  └─ Verify line count within limit
 
-FOR @import validation:
-  FOR each @import in root CLAUDE.md:
-    IF target file not exists:
-      CHANGES.push({ path, action: "FIX_IMPORT", target })
+  EXTRACTION RULES:
+  ├─ Keep: Overview, Quick Start, Essential info
+  ├─ Extract: Detailed guides, Full examples, References
+  └─ Link: All extracted content must be linked from CLAUDE.md
+
+EXAMPLE:
+  commands/CLAUDE.md (95 lines) → exceeds 80 line limit
+
+  EXTRACT:
+  ├─ "## 커맨드 작성 상세 가이드" → commands/agent-docs/command-writing.md
+  └─ "## 예제 모음" → commands/agent-docs/examples.md
+
+  RESULT:
+  ├─ commands/CLAUDE.md (52 lines) ✅
+  └─ commands/agent-docs/
+      ├─ command-writing.md
+      └─ examples.md
 ```
 
 ---
 
-## PHASE 4: Report
+## PHASE 3: Report & Confirm
 
 **TUI Output (Korean):**
 
 ```markdown
-## 🔄 CLAUDE.md 동기화 분석
+## 🔄 계층적 문서 동기화 분석
 
-### 로딩 방식 요약
-- cwd 기준 상위 경로만 자동 로드
-- @import로 명시적 포함 가능
+### 현재 구조
+```
+claude-integration/
+├── CLAUDE.md ✅
+├── agent-docs/ ✅
+├── commands/
+│   ├── CLAUDE.md ❌ (생성 필요)
+│   └── agent-docs/ ⚠️ (선택)
+├── agents/
+│   ├── CLAUDE.md ❌ (생성 필요)
+│   └── backend/
+│       ├── CLAUDE.md ❌ (생성 필요)
+│       └── agent-docs/ ⚠️ (선택)
+└── templates/
+    └── CLAUDE.md ❌ (생성 필요)
+```
 
-### 현재 상태
-| 위치 | 상태 | 로딩 조건 | 권장 |
-|------|------|----------|------|
-| ./CLAUDE.md | {status} | 항상 | {recommendation} |
-| {path} | {status} | cwd={dir} | {recommendation} |
+### 작업 계획
 
-### 필요한 작업
-1. {action description}
-2. {action description}
+| 우선순위 | 경로 | 작업 | 유형 |
+|---------|------|------|------|
+| 1 | commands/CLAUDE.md | 생성 | MODULE |
+| 1 | agents/CLAUDE.md | 생성 | MODULE |
+| 1 | templates/CLAUDE.md | 생성 | MODULE |
+| 2 | agents/backend/CLAUDE.md | 생성 | SUBMODULE |
+
+### 병렬 처리 계획
+- 그룹 1 (동시 실행): commands, agents, templates
+- 그룹 2 (그룹 1 완료 후): agents/backend
 ```
 
 ---
 
-## PHASE 5: User Confirmation
+## PHASE 4: User Confirmation
 
 ```
-IF CHANGES.length == 0:
-  OUTPUT: "✅ CLAUDE.md가 최신 상태입니다"
-  → END
-
-IF CHANGES.length > 0:
-  AskUserQuestion:
-    question: "위 변경사항을 적용하시겠습니까?"
-    header: "적용"
-    options:
-      - label: "적용"
-        description: "CLAUDE.md 자동 업데이트"
-      - label: "미리보기"
-        description: "변경될 내용 먼저 확인"
-      - label: "건너뛰기"
-        description: "변경 없이 종료"
-
-  IF "미리보기":
-    FOR each change: show diff
-    → Return to this PHASE
-
-  IF "건너뛰기":
-    → END
+AskUserQuestion:
+  question: "위 계획대로 문서를 생성/수정하시겠습니까?"
+  header: "동기화"
+  options:
+    - label: "전체 적용"
+      description: "모든 작업 실행 (병렬 처리)"
+    - label: "선택 적용"
+      description: "작업별로 확인 후 진행"
+    - label: "미리보기"
+      description: "생성될 내용 먼저 확인"
+    - label: "취소"
+      description: "변경 없이 종료"
 ```
 
 ---
 
-## PHASE 6: Apply Changes
+## PHASE 5: Parallel Execution
 
 ```
-IF "적용" selected:
+IF "전체 적용" OR "선택 적용":
 
-  FOR each CREATE action:
-    IF root:
-      Generate using WHAT/WHY/HOW structure:
-      ├─ WHAT: tech stack, project structure
-      ├─ WHY: project purpose (from README.md)
-      ├─ HOW: build/test/deploy commands
-      └─ Links to agent_docs/ if exists
-      CONSTRAINT: <60 lines ideal, <150 max
+  GROUP_BY_PRIORITY(TASK_QUEUE)
 
-    IF sub:
-      Generate minimal content:
-      ├─ Module-specific tech stack
-      ├─ Module-specific commands
-      └─ Parent reference link
-      CONSTRAINT: <30 lines
+  FOR each priority_group:
+    # Same priority = parallel execution
+    PARALLEL_EXECUTE:
+      FOR each task in priority_group:
+        Task(
+          subagent_type="document-builder",
+          prompt="""
+          Hierarchical CLAUDE.md creation/modification task:
 
-  FOR each UPDATE action:
-    Edit only changed sections:
-    ├─ Preserve user-written content
-    ├─ Update structure section with new dirs
-    ├─ Fix broken @import paths
-    └─ Maintain line count limits
+          Action: {task.action}
+          Target Path: {task.target.path}
+          Target Type: {task.target.type}
 
-  FOR each FIX_IMPORT action:
-    ├─ Remove broken @import line
-    └─ OR suggest alternative path
+          Context:
+          - Project Name: {context.project_name}
+          - Module Purpose: {context.module_purpose}
+          - Existing Files: {context.existing_files}
+          - Parent CLAUDE.md: {context.parent_claude_md}
+          - Tech Stack: {context.tech_stack}
+
+          Requirements:
+          1. Create CLAUDE.md following template
+          2. Create agent-docs/ if needed
+          3. Set parent/child reference links
+          4. Respect line count limits
+          """
+        )
+
+    WAIT for all tasks in group
+    VALIDATE results
+    CONTINUE to next priority_group
+```
+
+### Parallel Execution Example
+
+```
+# Priority 1: MODULE level (parallel)
+SINGLE MESSAGE with MULTIPLE Task calls:
+├─ Task(subagent_type="document-builder", prompt="commands/CLAUDE.md...")
+├─ Task(subagent_type="document-builder", prompt="agents/CLAUDE.md...")
+└─ Task(subagent_type="document-builder", prompt="templates/CLAUDE.md...")
+
+# Wait for all Priority 1 tasks
+
+# Priority 2: SUBMODULE level (sequential - parent dependency)
+├─ Task(subagent_type="document-builder", prompt="agents/backend/CLAUDE.md...")
+└─ Task(subagent_type="document-builder", prompt="agents/frontend/CLAUDE.md...")
 ```
 
 ---
 
-## PHASE 7: Validate & Report
+## PHASE 6: Update Root CLAUDE.md
 
 ```
-VALIDATE all modified files:
-├─ All @import paths resolve?
-├─ Line counts within limits?
-├─ No duplicate content between root and subs?
-├─ WHAT/WHY/HOW structure present in root?
-└─ No anti-patterns (inline code, style guides)?
+AFTER all document-builder tasks complete:
 
-IF validation fails:
-  OUTPUT warnings and auto-fix if possible
+  READ current root CLAUDE.md
+
+  UPDATE "모듈별 컨텍스트" section:
+    FOR each MODULE with new CLAUDE.md:
+      ADD row to table:
+      | [module/](module/CLAUDE.md) | module description |
+
+  VALIDATE:
+  ├─ All module links resolve
+  ├─ Line count < 150
+  └─ No duplicate content
+
+  WRITE updated root CLAUDE.md
+```
+
+---
+
+## PHASE 7: Validation & Report
+
+```
+FINAL VALIDATION:
+├─ All CLAUDE.md files exist
+├─ All @import paths resolve
+├─ All inter-document links work
+├─ No orphan CLAUDE.md files
+├─ Line counts within limits
+└─ Hierarchy integrity maintained
+
+IF validation_errors:
+  REPORT errors
+  SUGGEST fixes
+ELSE:
+  SUCCESS report
 ```
 
 **TUI Output (Korean):**
 
 ```markdown
-## ✅ 동기화 완료
+## ✅ 계층적 동기화 완료
 
-### 처리 결과
-| 위치 | 작업 | 라인 수 | 상태 |
+### 생성된 문서
+| 경로 | 유형 | 라인 수 | 상태 |
 |------|------|---------|------|
-| {path} | {action} | {lines} | ✅ |
+| commands/CLAUDE.md | MODULE | 45 | ✅ |
+| agents/CLAUDE.md | MODULE | 52 | ✅ |
+| templates/CLAUDE.md | MODULE | 38 | ✅ |
+| agents/backend/CLAUDE.md | SUBMODULE | 48 | ✅ |
 
-### @import 구조
-- 루트 @import: {list}
-- 서브 CLAUDE.md: {list}
+### 계층 구조
+```
+Root CLAUDE.md
+├── @import agent-docs/commands.md
+├── 참조 → commands/CLAUDE.md
+├── 참조 → agents/CLAUDE.md
+│   └── 참조 → agents/backend/CLAUDE.md
+└── 참조 → templates/CLAUDE.md
+```
 
 ### 검증 결과
 - ✅ 모든 링크 유효
 - ✅ 라인 수 제한 준수
+- ✅ 부모-자식 참조 무결성
+```
 
-다음 작업: `/git-commit`으로 커밋
+---
+
+## PHASE 8: Follow-up TUI
+
+```
+AskUserQuestion:
+  question: "동기화가 완료되었습니다. 다음 작업을 선택하세요."
+  header: "후속"
+  options:
+    - label: "커밋"
+      description: "/git-commit으로 변경사항 커밋"
+    - label: "문서 검토"
+      description: "생성된 CLAUDE.md 파일 열기"
+    - label: "재동기화"
+      description: "변경사항 확인 후 다시 동기화"
+    - label: "완료"
+      description: "작업을 종료합니다"
 ```
 
 ---
@@ -248,21 +419,68 @@ IF validation fails:
 
 | Error | Response |
 |-------|----------|
-| No root CLAUDE.md | "루트 CLAUDE.md가 없습니다. 생성하시겠습니까?" → offer CREATE |
-| @import target missing | "⚠️ @import 대상 없음: {path}" → suggest remove or fix |
-| Root >150 lines | "⚠️ 150줄 초과 - @import로 분리 권장" → suggest refactor |
-| Sub >30 lines | "⚠️ 서브 30줄 초과 - 간소화 필요" → suggest trim |
-| Orphan sub-CLAUDE.md | "⚠️ 로드되지 않는 위치: {path}" → suggest delete or explain |
-| Permission denied | "파일 권한 없음: {path}" → skip with warning |
+| document-builder failure | Skip module with warning |
+| Parent CLAUDE.md missing | Create parent first, then retry |
+| Circular reference detected | Report error, request manual fix |
+| Permission error | Skip path with warning |
+| Parallel task conflict | Re-execute sequentially |
+
+---
+
+## CONTEXT COLLECTION HELPERS
+
+### Module Context Extraction
+
+```
+FOR MODULE at path:
+  context = {
+    project_name: from root CLAUDE.md,
+    module_purpose: from README first line or infer from files,
+    existing_files: Glob("{path}/*.md") + Glob("{path}/*.ts"),
+    parent_claude_md: "../CLAUDE.md",
+    tech_stack: infer from file extensions and imports
+  }
+
+  IF path == "commands":
+    context.module_purpose = "slash command definitions"
+    context.writing_guide = from agent-docs/command-writing.md
+
+  IF path == "agents":
+    context.module_purpose = "specialized agent definitions"
+    context.writing_guide = from agent-docs/agents.md
+
+  IF path == "templates":
+    context.module_purpose = "generation templates"
+```
+
+### Submodule Context Extraction
+
+```
+FOR SUBMODULE at path:
+  parent_path = dirname(path)
+
+  context = {
+    project_name: from root CLAUDE.md,
+    module_purpose: infer from files,
+    existing_files: Glob("{path}/*.md"),
+    parent_claude_md: "{parent_path}/CLAUDE.md",
+    specialization: infer from agent names
+  }
+
+  IF path == "agents/backend":
+    context.specialization = "NestJS ecosystem expert agents"
+    context.orchestrator = "nestjs-fastify-expert.md"
+```
 
 ---
 
 ## EXECUTE NOW
 
-1. Scan codebase (Glob for dirs, modules, existing CLAUDE.md)
-2. Classify each location (SUB_NEEDED / CONSIDER / SKIP)
-3. Detect required changes (CREATE / UPDATE / REVIEW / FIX_IMPORT)
-4. Report findings (Korean)
-5. Ask user confirmation
-6. Apply approved changes
-7. Validate and report completion (Korean)
+1. **Phase 1**: Scan project hierarchy
+2. **Phase 2**: Gap analysis and build task queue
+3. **Phase 3**: Report analysis results (Korean)
+4. **Phase 4**: Request user confirmation
+5. **Phase 5**: Parallel/sequential document-builder invocation
+6. **Phase 6**: Update root CLAUDE.md
+7. **Phase 7**: Final validation and completion report (Korean)
+8. **Phase 8**: Show follow-up TUI ← REQUIRED
