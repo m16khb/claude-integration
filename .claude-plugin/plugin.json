@@ -53,6 +53,6 @@
     "./agents/backend/suites-testing-expert.md",
     "./agents/backend/cqrs-expert.md",
     "./agents/backend/microservices-expert.md",
-    "./agents/documentation/document-builder.md"
+    "./agents/document/document-builder.md"
   ]
 }

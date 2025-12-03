@@ -15,10 +15,9 @@
 
 ```
 claude-integration/
-├── CLAUDE.md                    # 루트 오케스트레이터
+├── CLAUDE.md                    # 루트 오케스트레이터 (커맨드 가이드 포함)
 ├── agent-docs/                  # 루트 공통 문서
-├── commands/                    # 슬래시 커맨드 정의
-│   └── CLAUDE.md
+├── commands/                    # 슬래시 커맨드 정의 (*.md = 커맨드로 자동 인식)
 ├── agents/                      # 전문 에이전트 정의
 │   ├── CLAUDE.md
 │   ├── backend/                 # NestJS, TypeORM, Redis 등
@@ -31,16 +30,47 @@ claude-integration/
 
 ## 주요 커맨드
 
-| 커맨드 | 설명 |
-|--------|------|
-| `/git-commit` | Conventional Commits 커밋 |
-| `/claude-sync` | 계층적 CLAUDE.md 동기화 (document-builder 병렬 호출) |
-| `/factory` | 컴포넌트 생성기 |
-| `/continue-context` | 현재 컨텍스트 분석 후 다음 작업 추천 |
-| `/inject-context` | 대용량 파일 구조 인식 청킹 및 컨텍스트 주입 |
-| `/setup-statusline` | YAML 설정 기반 status line 환경 구성 |
-| `/optimize-command` | 커맨드 최적화 (프롬프트 엔지니어링) |
-| `/optimize-agents` | 에이전트 최적화 (프롬프트 엔지니어링) |
+| 커맨드 | 설명 | 사용 예 |
+|--------|------|---------|
+| `/git-commit` | Conventional Commits 커밋 | `/git-commit push` |
+| `/claude-sync` | 계층적 CLAUDE.md 동기화 | `/claude-sync` |
+| `/factory` | Agent, Skill, Command 생성기 | `/factory agent user-auth` |
+| `/continue-context` | 컨텍스트 분석 후 작업 추천 | `/continue-context` |
+| `/inject-context` | 대용량 파일 청킹 및 주입 | `/inject-context ./large-file.ts` |
+| `/setup-statusline` | YAML 기반 status line 설정 | `/setup-statusline` |
+| `/optimize-command` | 커맨드 최적화 | `/optimize-command <path>` |
+| `/optimize-agents` | 에이전트 최적화 | `/optimize-agents <path>` |
+
+### 커맨드 작성 가이드
+
+> **Note**: `commands/` 디렉토리에 CLAUDE.md를 두지 마세요. Claude Code는 해당 디렉토리의 모든 .md 파일을 슬래시 커맨드로 자동 인식합니다.
+
+#### Frontmatter 구조
+
+```yaml
+---
+name: command-name
+description: '커맨드 설명'
+argument-hint: <required> [optional]
+allowed-tools:
+  - Read
+  - Write
+  - Bash
+model: opus|haiku  # 생략시 기본 모델
+---
+```
+
+#### 필수 요소
+
+- **$ARGUMENTS**: 사용자 입력 인자 참조
+- **TUI 패턴**: `AskUserQuestion`으로 사용자 선택 제공
+- **후속 작업**: 완료 후 다음 단계 안내
+
+#### 주의사항
+
+- 민감 정보(API 키, 패스워드) 노출 금지
+- Bash 도구 사용시 패턴 명시: `Bash(git:*, npm:*)`
+- 컨텍스트 윈도우 고려하여 청크 크기 조절
 
 ## 설치
 
@@ -96,6 +126,7 @@ claude mcp list
 
 | 모듈 | CLAUDE.md | 설명 |
 |------|-----------|------|
-| [commands/](commands/CLAUDE.md) | 슬래시 커맨드 | 커맨드 정의 및 작성 가이드 |
 | [agents/](agents/CLAUDE.md) | 전문 에이전트 | 오케스트레이터 및 전문가 에이전트 |
 | [templates/](templates/CLAUDE.md) | 템플릿 | 설정 파일 및 스크립트 템플릿 |
+
+> **Note**: `commands/` 디렉토리에는 CLAUDE.md를 두지 않습니다. Claude Code가 모든 .md 파일을 슬래시 커맨드로 자동 인식하기 때문입니다. 커맨드 작성 가이드는 이 문서의 "커맨드 작성 가이드" 섹션을 참조하세요.
