@@ -21,7 +21,7 @@ claude-integration/
 │   ├── frontend/       # (예정)
 │   └── infrastructure/ # (예정)
 ├── templates/          # 생성 템플릿
-└── agent_docs/         # 상세 문서 (Progressive Disclosure)
+└── agent-docs/         # 상세 문서 (Progressive Disclosure)
 ```
 
 ## 주요 커맨드
@@ -79,8 +79,16 @@ claude mcp list
 
 ## 상세 문서
 
-- [agent_docs/commands.md](agent_docs/commands.md) - 전체 커맨드 목록
-- [agent_docs/agents.md](agent_docs/agents.md) - 전문 에이전트 목록
-- [agent_docs/references.md](agent_docs/references.md) - 참고 프레임워크
-- [agent_docs/command-writing.md](agent_docs/command-writing.md) - 커맨드 작성 가이드
-- [agent_docs/development.md](agent_docs/development.md) - 개발 가이드
+- [agent-docs/commands.md](agent-docs/commands.md) - 전체 커맨드 목록
+- [agent-docs/agents.md](agent-docs/agents.md) - 전문 에이전트 목록
+- [agent-docs/references.md](agent-docs/references.md) - 참고 프레임워크
+- [agent-docs/command-writing.md](agent-docs/command-writing.md) - 커맨드 작성 가이드
+- [agent-docs/development.md](agent-docs/development.md) - 개발 가이드
+
+## 모듈별 컨텍스트
+
+| 모듈 | CLAUDE.md | 설명 |
+|------|-----------|------|
+| [commands/](commands/CLAUDE.md) | 슬래시 커맨드 | 커맨드 정의 및 작성 가이드 |
+| [agents/](agents/CLAUDE.md) | 전문 에이전트 | 오케스트레이터 및 전문가 에이전트 |
+| [templates/](templates/CLAUDE.md) | 템플릿 | 설정 파일 및 스크립트 템플릿 |
