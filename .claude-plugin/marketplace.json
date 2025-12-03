@@ -21,16 +21,25 @@
   },
   "plugins": [
     {
-      "name": "backend-development",
+      "name": "nestjs-backend",
       "description": "NestJS + Fastify 백엔드 개발을 위한 전문 에이전트 및 라우팅 시스템",
       "version": "1.1.0",
       "author": {
         "name": "m16khb",
         "url": "https://github.com/m16khb"
       },
-      "source": "./plugins/backend-development",
+      "source": "./plugins/nestjs-backend",
       "category": "development",
-      "keywords": ["nestjs", "fastify", "typeorm", "redis", "bullmq", "cqrs", "microservices", "routing"],
+      "keywords": [
+        "nestjs",
+        "fastify",
+        "typeorm",
+        "redis",
+        "bullmq",
+        "cqrs",
+        "microservices",
+        "routing"
+      ],
       "agents": [
         "agents/nestjs-fastify-expert.md",
         "agents/typeorm-expert.md",
@@ -41,9 +50,7 @@
         "agents/suites-testing-expert.md"
       ],
       "commands": [],
-      "skills": [
-        "skills/agent-routing/SKILL.md"
-      ],
+      "skills": ["skills/agent-routing/SKILL.md"],
       "strict": false
     },
     {
@@ -56,17 +63,18 @@
       },
       "source": "./plugins/code-quality",
       "category": "quality",
-      "keywords": ["code-review", "testing", "suites", "automock", "jest", "quality", "security"],
-      "agents": [
-        "agents/code-reviewer.md",
-        "agents/test-automator.md"
+      "keywords": [
+        "code-review",
+        "testing",
+        "suites",
+        "automock",
+        "jest",
+        "quality",
+        "security"
       ],
-      "commands": [
-        "commands/review.md"
-      ],
-      "skills": [
-        "skills/testing-patterns/SKILL.md"
-      ],
+      "agents": ["agents/code-reviewer.md", "agents/test-automator.md"],
+      "commands": ["commands/review.md"],
+      "skills": ["skills/testing-patterns/SKILL.md"],
       "strict": false
     },
     {
@@ -79,16 +87,16 @@
       },
       "source": "./plugins/full-stack-orchestration",
       "category": "workflows",
-      "keywords": ["orchestration", "workflow", "ci-cd", "dev-flow", "multi-agent"],
-      "agents": [
-        "agents/full-stack-orchestrator.md"
+      "keywords": [
+        "orchestration",
+        "workflow",
+        "ci-cd",
+        "dev-flow",
+        "multi-agent"
       ],
-      "commands": [
-        "commands/dev-flow.md"
-      ],
-      "skills": [
-        "skills/ci-cd-patterns/SKILL.md"
-      ],
+      "agents": ["agents/full-stack-orchestrator.md"],
+      "commands": ["commands/dev-flow.md"],
+      "skills": ["skills/ci-cd-patterns/SKILL.md"],
       "strict": false
     },
     {
@@ -102,13 +110,9 @@
       "source": "./plugins/documentation-generation",
       "category": "documentation",
       "keywords": ["claude.md", "agent-docs", "documentation", "markdown"],
-      "agents": [
-        "agents/document-builder.md"
-      ],
+      "agents": ["agents/document-builder.md"],
       "commands": [],
-      "skills": [
-        "skills/document-builder-templates.md"
-      ],
+      "skills": ["skills/document-builder-templates.md"],
       "strict": false
     },
     {
@@ -123,9 +127,7 @@
       "category": "development",
       "keywords": ["git", "commit", "conventional-commits", "git-flow"],
       "agents": [],
-      "commands": [
-        "commands/git-commit.md"
-      ],
+      "commands": ["commands/git-commit.md"],
       "skills": [],
       "strict": false
     },
