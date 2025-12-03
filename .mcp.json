@@ -1,0 +1,28 @@
+{
+  "_comment": "Claude Integration Plugin - MCP Servers (Cross-platform: Windows/macOS/Linux)",
+  "mcpServers": {
+    "playwright": {
+      "_description": "Browser automation and web testing",
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest"],
+      "env": {
+        "PLAYWRIGHT_BROWSERS_PATH": "0"
+      }
+    },
+    "context7": {
+      "_description": "Latest documentation and code examples injection",
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@latest"]
+    },
+    "sequential-thinking": {
+      "_description": "Step-by-step reasoning and analysis",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+    },
+    "chrome-devtools": {
+      "_description": "Chrome DevTools integration for debugging",
+      "command": "npx",
+      "args": ["-y", "chrome-devtools-mcp@latest"]
+    }
+  }
+}

@@ -42,6 +42,41 @@ claude-integration/
 /plugin install claude-integration
 ```
 
+## MCP 서버 (내장)
+
+플러그인 활성화 시 자동으로 로드되는 MCP 서버:
+
+| MCP 서버 | 설명 | 사용 예 |
+|----------|------|---------|
+| `playwright` | 브라우저 자동화 | "playwright로 example.com 열어줘" |
+| `context7` | 최신 문서 주입 | "use context7 React 19 새 기능 알려줘" |
+| `sequential-thinking` | 단계별 사고 | 복잡한 문제 분석 시 자동 활성화 |
+| `chrome-devtools` | 크롬 개발자 도구 | "현재 열린 크롬 탭 분석해줘" |
+
+### 요구사항
+
+- **Node.js 18+** (context7, sequential-thinking)
+- **Node.js 22+** (chrome-devtools)
+- **Chrome 브라우저** (chrome-devtools 사용 시)
+
+### Windows 사용자 참고
+
+Windows에서 MCP 서버가 동작하지 않으면:
+
+```bash
+# npx 대신 전역 설치 후 사용
+npm install -g @playwright/mcp
+npm install -g @upstash/context7-mcp
+npm install -g @modelcontextprotocol/server-sequential-thinking
+npm install -g chrome-devtools-mcp
+```
+
+### MCP 상태 확인
+
+```bash
+claude mcp list
+```
+
 ## 상세 문서
 
 - [agent_docs/commands.md](agent_docs/commands.md) - 전체 커맨드 목록
