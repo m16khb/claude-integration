@@ -23,6 +23,11 @@
       "_description": "Chrome DevTools integration for debugging",
       "command": "npx",
       "args": ["-y", "chrome-devtools-mcp@latest"]
+    },
+    "dbhub": {
+      "_description": "Universal database MCP server (MySQL/PostgreSQL/SQLite/SQL Server/MariaDB). Configure via .env.local or .env file with DB_TYPE, DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME or DSN",
+      "command": "npx",
+      "args": ["-y", "@bytebase/dbhub"]
     }
   }
 }
