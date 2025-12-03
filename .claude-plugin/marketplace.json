@@ -5,7 +5,7 @@
   "description": "Claude Code 생산성 향상을 위한 스마트 커맨드 마켓플레이스",
   "owner": {
     "name": "m16khb",
-    "email": "m16khb@users.noreply.github.com"
+    "email": "m16khb@gmail.com"
   },
   "plugins": [
     {
@@ -14,7 +14,7 @@
       "version": "1.0.0",
       "author": {
         "name": "m16khb",
-        "email": "m16khb@users.noreply.github.com"
+        "email": "m16khb@gmail.com"
       },
       "source": "./",
       "category": "productivity"

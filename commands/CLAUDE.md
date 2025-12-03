@@ -1,4 +1,4 @@
-# commands/ CLAUDE.md
+# Commands 모듈
 
 ## 모듈 개요
 
