@@ -10,8 +10,8 @@
   "repository": "https://github.com/m16khb/claude-integration",
   "license": "MIT",
   "keywords": ["claude.md", "agent-docs", "documentation", "markdown"],
-  "agents": {
-    "document-builder": "./agents/document-builder.md"
-  },
+  "agents": [
+    "./agents/document-builder.md"
+  ],
   "skills": "./skills/"
 }
