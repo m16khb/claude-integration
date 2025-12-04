@@ -420,7 +420,7 @@ ELSE:
 ### 계층 구조
 ```
 Root CLAUDE.md
-├── @import agent-docs/commands.md
+├── @import ../documentation-generation/agent-docs/commands.md
 ├── 참조 → commands/CLAUDE.md
 ├── 참조 → agents/CLAUDE.md
 │   └── 참조 → agents/backend/CLAUDE.md

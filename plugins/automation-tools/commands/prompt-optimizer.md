@@ -1,6 +1,6 @@
 ---
 name: automation-tools:prompt-optimizer
-description: 'TUI 기반 프롬프트 최적화 엔진 (Context7 + Sequential-Thinking)'
+description: '[DEPRECATED] /optimize prompt 사용을 권장합니다'
 argument-hint: '[prompt-text-or-file]'
 allowed-tools:
   - Read

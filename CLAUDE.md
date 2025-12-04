@@ -17,7 +17,7 @@
 이 마켓플레이스는 **단일 책임 원칙**을 따릅니다:
 
 - **7개 전문화된 플러그인**
-- **12개 전문 에이전트** (2개 오케스트레이터 + 10개 전문가)
+- **11개 전문 에이전트** (2개 오케스트레이터 + 9개 전문가)
 - **9개 슬래시 커맨드**
 - **4개 에이전트 스킬** (라우팅 시스템 포함)
 
@@ -35,7 +35,8 @@
 claude-integration/
 ├── .claude-plugin/          # 플러그인 레지스트리
 ├── plugins/                  # 7개 전문화된 플러그인
-├── agent-docs/              # 상세 문서
+│   └── documentation-generation/
+│       └── agent-docs/      # 상세 문서
 ├── docs/                    # 종합 문서
 └── CLAUDE.md               # 본문 (150라인 제한)
 ```
@@ -103,9 +104,9 @@ routing-table.json에서 키워드 점수 관리 (primary 3점)
 ## 상세 문서
 
 ### 핵심 가이드
-- [agent-docs/detailed-guides.md](agent-docs/detailed-guides.md) - 상세 작성 가이드
-- [agent-docs/examples.md](agent-docs/examples.md) - 풍부한 예제 모음
-- [agent-docs/references.md](agent-docs/references.md) - 참고 자료
+- [plugins/documentation-generation/agent-docs/detailed-guides.md](plugins/documentation-generation/agent-docs/detailed-guides.md) - 상세 작성 가이드
+- [plugins/documentation-generation/agent-docs/examples.md](plugins/documentation-generation/agent-docs/examples.md) - 풍부한 예제 모음
+- [plugins/documentation-generation/agent-docs/references.md](plugins/documentation-generation/agent-docs/references.md) - 참고 자료
 
 ### 공식 문서
 - [docs/architecture.md](docs/architecture.md) - 아키텍처 설계 원칙

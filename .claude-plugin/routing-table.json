@@ -1,0 +1,293 @@
+{
+  "last_synced": "2025-12-05T00:00:00.000Z",
+  "version": "1.0.0",
+  "agents": {
+    "code-reviewer": {
+      "path": "plugins/code-quality/agents/code-reviewer.md",
+      "model": "claude-sonnet-4-20250514",
+      "role": "expert",
+      "triggers": {
+        "primary": ["리뷰", "review", "보안", "security", "취약점", "vulnerability"],
+        "secondary": ["품질", "quality", "성능 분석", "performance analysis", "OWASP", "static analysis"],
+        "auto": ["코드 작성 완료", "git-commit", "PR 생성"]
+      },
+      "plugin": "code-quality"
+    },
+    "test-automator": {
+      "path": "plugins/code-quality/agents/test-automator.md",
+      "model": "claude-sonnet-4-20250514",
+      "role": "expert",
+      "triggers": {
+        "primary": ["테스트", "test", "e2e", "unit test", "integration test"],
+        "secondary": ["커버리지", "coverage", "테스트 자동화", " suites"],
+        "auto": ["코드 작성 완료", "PR 생성"]
+      },
+      "plugin": "code-quality"
+    },
+    "document-builder": {
+      "path": "plugins/documentation-generation/agents/document-builder.md",
+      "model": "claude-sonnet-4-20250514",
+      "role": "expert",
+      "triggers": {
+        "primary": ["문서", "documentation", "docs", "readme", "api 문서"],
+        "secondary": ["가이드", "guide", "설명서", "매뉴얼", "manual"]
+      },
+      "plugin": "documentation-generation"
+    },
+    "full-stack-orchestrator": {
+      "path": "plugins/full-stack-orchestration/agents/full-stack-orchestrator.md",
+      "model": "claude-opus-4-5-20251101",
+      "role": "orchestrator",
+      "triggers": {
+        "primary": ["dev-flow", "feature-flow", "리뷰하고 테스트하고 커밋", "PR 만들어줘"],
+        "secondary": ["워크플로우", "workflow", "파이프라인", "pipeline"],
+        "auto": ["복합 요청", "다중 단계 작업"]
+      },
+      "plugin": "full-stack-orchestration"
+    },
+    "nestjs-fastify-expert": {
+      "path": "plugins/nestjs-backend/agents/nestjs-fastify-expert.md",
+      "model": "claude-opus-4-5-20251101",
+      "role": "orchestrator",
+      "triggers": {
+        "primary": ["nestjs", "fastify", "백엔드", "backend"],
+        "secondary": ["express", "api", "서버", "server"],
+        "context": ["복합 백엔드 작업", "아키텍처", "마이그레이션"]
+      },
+      "plugin": "nestjs-backend"
+    },
+    "typeorm-expert": {
+      "path": "plugins/nestjs-backend/agents/typeorm-expert.md",
+      "model": "claude-opus-4-5-20251101",
+      "role": "expert",
+      "triggers": {
+        "primary": ["typeorm", "entity", "데이터베이스", "database", "repository"],
+        "secondary": ["migration", "query", "orm", "model"]
+      },
+      "plugin": "nestjs-backend"
+    },
+    "redis-cache-expert": {
+      "path": "plugins/nestjs-backend/agents/redis-cache-expert.md",
+      "model": "claude-opus-4-5-20251101",
+      "role": "expert",
+      "triggers": {
+        "primary": ["redis", "캐시", "cache", "세션", "session"],
+        "secondary": ["ttl", "expire", "distributed lock", "pub/sub"]
+      },
+      "plugin": "nestjs-backend"
+    },
+    "bullmq-queue-expert": {
+      "path": "plugins/nestjs-backend/agents/bullmq-queue-expert.md",
+      "model": "claude-opus-4-5-20251101",
+      "role": "expert",
+      "triggers": {
+        "primary": ["bullmq", "큐", "queue", "백그라운드", "background"],
+        "secondary": ["job", "worker", "task", "scheduler"]
+      },
+      "plugin": "nestjs-backend"
+    },
+    "cqrs-expert": {
+      "path": "plugins/nestjs-backend/agents/cqrs-expert.md",
+      "model": "claude-opus-4-5-20251101",
+      "role": "expert",
+      "triggers": {
+        "primary": ["cqrs", "command", "query", "event sourcing"],
+        "secondary": ["saga", "event", "handler", "dispatch"]
+      },
+      "plugin": "nestjs-backend"
+    },
+    "microservices-expert": {
+      "path": "plugins/nestjs-backend/agents/microservices-expert.md",
+      "model": "claude-opus-4-5-20251101",
+      "role": "expert",
+      "triggers": {
+        "primary": ["microservices", "마이크로서비스", "grpc", "message broker"],
+        "secondary": ["service discovery", "api gateway", "circuit breaker", "saga"]
+      },
+      "plugin": "nestjs-backend"
+    },
+    "suites-testing-expert": {
+      "path": "plugins/nestjs-backend/agents/suites-testing-expert.md",
+      "model": "claude-opus-4-5-20251101",
+      "role": "expert",
+      "triggers": {
+        "primary": ["suites", "automock", "테스트 자동화", "test automation"],
+        "secondary": ["mock", "stub", "fixture", "given-when-then"]
+      },
+      "plugin": "nestjs-backend"
+    }
+  },
+  "skills": {
+    "agent-routing": {
+      "path": "plugins/nestjs-backend/skills/agent-routing/SKILL.md",
+      "triggers": ["에이전트 선택", "agent routing", "전문가 배정"],
+      "plugin": "nestjs-backend"
+    },
+    "testing-patterns": {
+      "path": "plugins/code-quality/skills/testing-patterns/SKILL.md",
+      "triggers": ["테스트 패턴", "test patterns", "테스트 전략"],
+      "plugin": "code-quality"
+    },
+    "document-templates": {
+      "path": "plugins/documentation-generation/skills/document-templates/SKILL.md",
+      "triggers": ["문서 템플릿", "document templates", "문서 생성"],
+      "plugin": "documentation-generation"
+    },
+    "ci-cd-patterns": {
+      "path": "plugins/full-stack-orchestration/skills/ci-cd-patterns/SKILL.md",
+      "triggers": ["ci/cd", "배포", "deployment", "github actions"],
+      "plugin": "full-stack-orchestration"
+    },
+    "factory-generator": {
+      "path": "plugins/automation-tools/skills/factory-generator/SKILL.md",
+      "triggers": ["컴포넌트 생성", "factory", "자동 생성"],
+      "plugin": "automation-tools"
+    },
+    "factory-researcher": {
+      "path": "plugins/automation-tools/skills/factory-researcher/SKILL.md",
+      "triggers": ["문서 분석", "최신 기술 조사", "research"],
+      "plugin": "automation-tools"
+    },
+    "factory-validator": {
+      "path": "plugins/automation-tools/skills/factory-validator/SKILL.md",
+      "triggers": ["검증", "validation", "품질 검사"],
+      "plugin": "automation-tools"
+    },
+    "factory-orchestrator": {
+      "path": "plugins/automation-tools/skills/factory-orchestrator/SKILL.md",
+      "triggers": ["팩토리 조율", "orchestration", "생성 관리"],
+      "plugin": "automation-tools"
+    }
+  },
+  "commands": {
+    "review": {
+      "path": "plugins/code-quality/commands/review.md",
+      "triggers": ["/review", "/code-quality:review"],
+      "plugin": "code-quality"
+    },
+    "claude-sync": {
+      "path": "plugins/automation-tools/commands/claude-sync.md",
+      "triggers": ["/claude-sync", "/automation-tools:claude-sync"],
+      "plugin": "automation-tools"
+    },
+    "setup-statusline": {
+      "path": "plugins/automation-tools/commands/setup-statusline.md",
+      "triggers": ["/setup-statusline", "/automation-tools:setup-statusline"],
+      "plugin": "automation-tools"
+    },
+    "inject-context": {
+      "path": "plugins/context-management/commands/inject-context.md",
+      "triggers": ["/inject-context", "/context-management:inject-context"],
+      "plugin": "context-management"
+    },
+    "continue-context": {
+      "path": "plugins/context-management/commands/continue-context.md",
+      "triggers": ["/continue-context", "/context-management:continue-context"],
+      "plugin": "context-management"
+    },
+    "dev-flow": {
+      "path": "plugins/full-stack-orchestration/commands/dev-flow.md",
+      "triggers": ["/dev-flow", "/full-stack-orchestration:dev-flow"],
+      "plugin": "full-stack-orchestration"
+    },
+    "git-commit": {
+      "path": "plugins/git-workflows/commands/git-commit.md",
+      "triggers": ["/git-commit", "/git-workflows:git-commit"],
+      "plugin": "git-workflows"
+    },
+    "factory": {
+      "path": "plugins/automation-tools/commands/factory.md",
+      "triggers": ["/factory", "/automation-tools:factory"],
+      "plugin": "automation-tools"
+    },
+    "optimize-agents": {
+      "path": ".claude/commands/optimize-agents.md",
+      "triggers": ["/optimize-agents"],
+      "plugin": "core"
+    },
+    "optimize-command": {
+      "path": ".claude/commands/optimize-command.md",
+      "triggers": ["/optimize-command"],
+      "plugin": "core"
+    },
+    "prompt-optimizer": {
+      "path": "plugins/automation-tools/commands/prompt-optimizer.md",
+      "triggers": ["/prompt-optimizer", "/automation-tools:prompt-optimizer"],
+      "plugin": "automation-tools"
+    }
+  },
+  "routing_rules": [
+    {
+      "keywords": ["redis", "캐시", "cache"],
+      "experts": ["redis-cache-expert"],
+      "priority": "primary",
+      "score": 3
+    },
+    {
+      "keywords": ["typeorm", "entity", "데이터베이스"],
+      "experts": ["typeorm-expert"],
+      "priority": "primary",
+      "score": 3
+    },
+    {
+      "keywords": ["큐", "queue", "bullmq", "백그라운드"],
+      "experts": ["bullmq-queue-expert"],
+      "priority": "primary",
+      "score": 3
+    },
+    {
+      "keywords": ["cqrs", "event sourcing", "이벤트"],
+      "experts": ["cqrs-expert"],
+      "priority": "primary",
+      "score": 3
+    },
+    {
+      "keywords": ["마이크로서비스", "microservices", "grpc"],
+      "experts": ["microservices-expert"],
+      "priority": "primary",
+      "score": 3
+    },
+    {
+      "keywords": ["테스트", "test", "e2e", "unit"],
+      "experts": ["suites-testing-expert"],
+      "priority": "primary",
+      "score": 3
+    },
+    {
+      "keywords": ["리뷰", "review", "보안", "security"],
+      "experts": ["code-reviewer"],
+      "priority": "primary",
+      "score": 3
+    },
+    {
+      "keywords": ["문서", "documentation", "docs"],
+      "experts": ["document-builder"],
+      "priority": "primary",
+      "score": 3
+    },
+    {
+      "keywords": ["redis", "bullmq", "캐시", "큐"],
+      "experts": ["redis-cache-expert", "bullmq-queue-expert"],
+      "execution": "parallel",
+      "orchestrator": "nestjs-fastify-expert"
+    },
+    {
+      "keywords": ["typeorm", "테스트", "entity", "test"],
+      "experts": ["typeorm-expert", "suites-testing-expert"],
+      "execution": "sequential",
+      "orchestrator": "nestjs-fastify-expert"
+    },
+    {
+      "keywords": ["백엔드", "전체", "아키텍처", "시스템"],
+      "experts": ["nestjs-fastify-expert"],
+      "priority": "orchestrator",
+      "score": 3
+    },
+    {
+      "keywords": ["dev-flow", "feature-flow", "워크플로우"],
+      "experts": ["full-stack-orchestrator"],
+      "priority": "orchestrator",
+      "score": 3
+    }
+  ]
+}

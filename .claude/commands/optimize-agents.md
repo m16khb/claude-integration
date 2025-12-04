@@ -1,6 +1,6 @@
 ---
 name: optimize-agents
-description: '프롬프트 엔지니어링 원칙으로 에이전트 최적화 (MCP 통합)'
+description: '[DEPRECATED] /optimize agent 사용을 권장합니다'
 argument-hint: <agent-file-path>
 allowed-tools:
   - Read

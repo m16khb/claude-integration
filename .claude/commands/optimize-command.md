@@ -1,6 +1,6 @@
 ---
 name: optimize-command
-description: '프롬프트 엔지니어링 원칙으로 커맨드 최적화 (MCP 통합)'
+description: '[DEPRECATED] /optimize command 사용을 권장합니다'
 argument-hint: <command-file-path>
 allowed-tools:
   - Read
