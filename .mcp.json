@@ -21,7 +21,7 @@
     },
     "dbhub": {
       "command": "npx",
-      "args": ["-y", "@bytebase/dbhub"]
+      "args": ["-y", "@bytebase/dbhub", "--readonly"]
     }
   }
 }
