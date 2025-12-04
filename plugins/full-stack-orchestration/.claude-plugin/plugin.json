@@ -1,0 +1,16 @@
+{
+  "name": "full-stack-orchestration",
+  "version": "1.0.0",
+  "description": "다중 에이전트 워크플로우 오케스트레이션 및 CI/CD 자동화",
+  "author": {
+    "name": "m16khb",
+    "email": "m16khb@gmail.com",
+    "url": "https://github.com/m16khb"
+  },
+  "repository": "https://github.com/m16khb/claude-integration",
+  "license": "MIT",
+  "keywords": ["orchestration", "workflow", "ci-cd", "dev-flow", "multi-agent"],
+  "agents": "./agents/",
+  "commands": ["./commands/dev-flow.md"],
+  "skills": "./skills/"
+}

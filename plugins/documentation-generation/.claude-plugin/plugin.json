@@ -1,0 +1,15 @@
+{
+  "name": "documentation-generation",
+  "version": "1.0.0",
+  "description": "계층적 CLAUDE.md 및 agent-docs 문서 생성 에이전트",
+  "author": {
+    "name": "m16khb",
+    "email": "m16khb@gmail.com",
+    "url": "https://github.com/m16khb"
+  },
+  "repository": "https://github.com/m16khb/claude-integration",
+  "license": "MIT",
+  "keywords": ["claude.md", "agent-docs", "documentation", "markdown"],
+  "agents": "./agents/",
+  "skills": "./skills/"
+}

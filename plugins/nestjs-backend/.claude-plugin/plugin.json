@@ -1,0 +1,15 @@
+{
+  "name": "nestjs-backend",
+  "version": "1.1.0",
+  "description": "NestJS + Fastify 백엔드 개발을 위한 전문 에이전트 및 라우팅 시스템",
+  "author": {
+    "name": "m16khb",
+    "email": "m16khb@gmail.com",
+    "url": "https://github.com/m16khb"
+  },
+  "repository": "https://github.com/m16khb/claude-integration",
+  "license": "MIT",
+  "keywords": ["nestjs", "fastify", "typeorm", "redis", "bullmq", "cqrs", "microservices", "routing"],
+  "agents": "./agents/",
+  "skills": "./skills/"
+}

@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "claude-integration",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Claude Code 생산성 향상을 위한 스마트 커맨드 및 에이전트 마켓플레이스",
   "owner": {
     "name": "m16khb",
@@ -14,187 +14,46 @@
     "documentation": "./docs",
     "stats": {
       "total_plugins": 7,
-      "total_agents": 12,
-      "total_commands": 9,
-      "total_skills": 4,
-      "total_mcp_servers": 5
-    }
-  },
-  "mcpServers": {
-    "playwright": {
-      "command": "npx",
-      "args": ["-y", "@playwright/mcp@latest"],
-      "env": {
-        "PLAYWRIGHT_BROWSERS_PATH": "0"
-      }
-    },
-    "context7": {
-      "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp@latest"]
-    },
-    "sequential-thinking": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
-    },
-    "chrome-devtools": {
-      "command": "npx",
-      "args": ["-y", "chrome-devtools-mcp@latest"]
-    },
-    "dbhub": {
-      "command": "npx",
-      "args": ["-y", "@bytebase/dbhub"]
+      "total_agents": 11,
+      "total_commands": 8,
+      "total_skills": 4
     }
   },
   "plugins": [
     {
       "name": "nestjs-backend",
-      "description": "NestJS + Fastify 백엔드 개발을 위한 전문 에이전트 및 라우팅 시스템",
-      "version": "1.1.0",
-      "author": {
-        "name": "m16khb",
-        "url": "https://github.com/m16khb"
-      },
       "source": "./plugins/nestjs-backend",
-      "category": "development",
-      "keywords": [
-        "nestjs",
-        "fastify",
-        "typeorm",
-        "redis",
-        "bullmq",
-        "cqrs",
-        "microservices",
-        "routing"
-      ],
-      "agents": [
-        "./agents/nestjs-fastify-expert.md",
-        "./agents/typeorm-expert.md",
-        "./agents/redis-cache-expert.md",
-        "./agents/bullmq-queue-expert.md",
-        "./agents/cqrs-expert.md",
-        "./agents/microservices-expert.md",
-        "./agents/suites-testing-expert.md"
-      ],
-      "commands": [],
-      "skills": ["./skills/agent-routing/SKILL.md"],
-      "strict": false
+      "category": "development"
     },
     {
       "name": "code-quality",
-      "description": "코드 리뷰, 테스트 자동화, 품질 검증 도구 (Suites 3.x 기반)",
-      "version": "1.0.0",
-      "author": {
-        "name": "m16khb",
-        "url": "https://github.com/m16khb"
-      },
       "source": "./plugins/code-quality",
-      "category": "quality",
-      "keywords": [
-        "code-review",
-        "testing",
-        "suites",
-        "automock",
-        "jest",
-        "quality",
-        "security"
-      ],
-      "agents": ["./agents/code-reviewer.md", "./agents/test-automator.md"],
-      "commands": ["./commands/review.md"],
-      "skills": ["./skills/testing-patterns/SKILL.md"],
-      "strict": false
+      "category": "quality"
     },
     {
       "name": "full-stack-orchestration",
-      "description": "다중 에이전트 워크플로우 오케스트레이션 및 CI/CD 자동화",
-      "version": "1.0.0",
-      "author": {
-        "name": "m16khb",
-        "url": "https://github.com/m16khb"
-      },
       "source": "./plugins/full-stack-orchestration",
-      "category": "workflows",
-      "keywords": [
-        "orchestration",
-        "workflow",
-        "ci-cd",
-        "dev-flow",
-        "multi-agent"
-      ],
-      "agents": ["./agents/full-stack-orchestrator.md"],
-      "commands": ["./commands/dev-flow.md"],
-      "skills": ["./skills/ci-cd-patterns/SKILL.md"],
-      "strict": false
+      "category": "workflows"
     },
     {
       "name": "documentation-generation",
-      "description": "계층적 CLAUDE.md 및 agent-docs 문서 생성 에이전트",
-      "version": "1.0.0",
-      "author": {
-        "name": "m16khb",
-        "url": "https://github.com/m16khb"
-      },
       "source": "./plugins/documentation-generation",
-      "category": "documentation",
-      "keywords": ["claude.md", "agent-docs", "documentation", "markdown"],
-      "agents": ["./agents/document-builder.md"],
-      "commands": [],
-      "skills": ["./skills/document-builder-templates.md"],
-      "strict": false
+      "category": "documentation"
     },
     {
       "name": "git-workflows",
-      "description": "Git Flow 기반 스마트 커밋 및 브랜치 관리",
-      "version": "1.0.0",
-      "author": {
-        "name": "m16khb",
-        "url": "https://github.com/m16khb"
-      },
       "source": "./plugins/git-workflows",
-      "category": "development",
-      "keywords": ["git", "commit", "conventional-commits", "git-flow"],
-      "agents": [],
-      "commands": ["./commands/git-commit.md"],
-      "skills": [],
-      "strict": false
+      "category": "development"
     },
     {
       "name": "context-management",
-      "description": "대용량 파일 청킹, 컨텍스트 주입 및 작업 추천 도구",
-      "version": "1.0.0",
-      "author": {
-        "name": "m16khb",
-        "url": "https://github.com/m16khb"
-      },
       "source": "./plugins/context-management",
-      "category": "productivity",
-      "keywords": ["context", "chunking", "injection", "recommendation"],
-      "agents": [],
-      "commands": [
-        "./commands/continue-context.md",
-        "./commands/inject-context.md"
-      ],
-      "skills": [],
-      "strict": false
+      "category": "productivity"
     },
     {
       "name": "automation-tools",
-      "description": "Agent, Skill, Command 자동 생성 및 설정 도구",
-      "version": "1.0.0",
-      "author": {
-        "name": "m16khb",
-        "url": "https://github.com/m16khb"
-      },
       "source": "./plugins/automation-tools",
-      "category": "productivity",
-      "keywords": ["factory", "generator", "automation", "statusline", "sync"],
-      "agents": [],
-      "commands": [
-        "./commands/factory.md",
-        "./commands/setup-statusline.md",
-        "./commands/claude-sync.md"
-      ],
-      "skills": [],
-      "strict": false
+      "category": "productivity"
     }
   ]
 }

@@ -1,0 +1,17 @@
+{
+  "name": "context-management",
+  "version": "1.0.0",
+  "description": "대용량 파일 청킹, 컨텍스트 주입 및 작업 추천 도구",
+  "author": {
+    "name": "m16khb",
+    "email": "m16khb@gmail.com",
+    "url": "https://github.com/m16khb"
+  },
+  "repository": "https://github.com/m16khb/claude-integration",
+  "license": "MIT",
+  "keywords": ["context", "chunking", "injection", "recommendation"],
+  "commands": [
+    "./commands/continue-context.md",
+    "./commands/inject-context.md"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "name": "code-quality",
+  "version": "1.0.0",
+  "description": "코드 리뷰, 테스트 자동화, 품질 검증 도구 (Suites 3.x 기반)",
+  "author": {
+    "name": "m16khb",
+    "email": "m16khb@gmail.com",
+    "url": "https://github.com/m16khb"
+  },
+  "repository": "https://github.com/m16khb/claude-integration",
+  "license": "MIT",
+  "keywords": ["code-review", "testing", "suites", "automock", "jest", "quality", "security"],
+  "agents": "./agents/",
+  "commands": ["./commands/review.md"],
+  "skills": "./skills/"
+}
