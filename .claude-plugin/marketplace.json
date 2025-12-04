@@ -41,16 +41,16 @@
         "routing"
       ],
       "agents": [
-        "agents/nestjs-fastify-expert.md",
-        "agents/typeorm-expert.md",
-        "agents/redis-cache-expert.md",
-        "agents/bullmq-queue-expert.md",
-        "agents/cqrs-expert.md",
-        "agents/microservices-expert.md",
-        "agents/suites-testing-expert.md"
+        "./agents/nestjs-fastify-expert.md",
+        "./agents/typeorm-expert.md",
+        "./agents/redis-cache-expert.md",
+        "./agents/bullmq-queue-expert.md",
+        "./agents/cqrs-expert.md",
+        "./agents/microservices-expert.md",
+        "./agents/suites-testing-expert.md"
       ],
       "commands": [],
-      "skills": ["skills/agent-routing/SKILL.md"],
+      "skills": ["./skills/agent-routing/SKILL.md"],
       "strict": false
     },
     {
@@ -72,9 +72,9 @@
         "quality",
         "security"
       ],
-      "agents": ["agents/code-reviewer.md", "agents/test-automator.md"],
-      "commands": ["commands/review.md"],
-      "skills": ["skills/testing-patterns/SKILL.md"],
+      "agents": ["./agents/code-reviewer.md", "./agents/test-automator.md"],
+      "commands": ["./commands/review.md"],
+      "skills": ["./skills/testing-patterns/SKILL.md"],
       "strict": false
     },
     {
@@ -94,9 +94,9 @@
         "dev-flow",
         "multi-agent"
       ],
-      "agents": ["agents/full-stack-orchestrator.md"],
-      "commands": ["commands/dev-flow.md"],
-      "skills": ["skills/ci-cd-patterns/SKILL.md"],
+      "agents": ["./agents/full-stack-orchestrator.md"],
+      "commands": ["./commands/dev-flow.md"],
+      "skills": ["./skills/ci-cd-patterns/SKILL.md"],
       "strict": false
     },
     {
@@ -110,9 +110,9 @@
       "source": "./plugins/documentation-generation",
       "category": "documentation",
       "keywords": ["claude.md", "agent-docs", "documentation", "markdown"],
-      "agents": ["agents/document-builder.md"],
+      "agents": ["./agents/document-builder.md"],
       "commands": [],
-      "skills": ["skills/document-builder-templates.md"],
+      "skills": ["./skills/document-builder-templates.md"],
       "strict": false
     },
     {
@@ -127,7 +127,7 @@
       "category": "development",
       "keywords": ["git", "commit", "conventional-commits", "git-flow"],
       "agents": [],
-      "commands": ["commands/git-commit.md"],
+      "commands": ["./commands/git-commit.md"],
       "skills": [],
       "strict": false
     },
@@ -144,8 +144,8 @@
       "keywords": ["context", "chunking", "injection", "recommendation"],
       "agents": [],
       "commands": [
-        "commands/continue-context.md",
-        "commands/inject-context.md"
+        "./commands/continue-context.md",
+        "./commands/inject-context.md"
       ],
       "skills": [],
       "strict": false
@@ -163,9 +163,9 @@
       "keywords": ["factory", "generator", "automation", "statusline", "sync"],
       "agents": [],
       "commands": [
-        "commands/factory.md",
-        "commands/setup-statusline.md",
-        "commands/claude-sync.md"
+        "./commands/factory.md",
+        "./commands/setup-statusline.md",
+        "./commands/claude-sync.md"
       ],
       "skills": [],
       "strict": false

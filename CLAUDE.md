@@ -37,7 +37,7 @@ claude-integration/
 │   ├── marketplace.json          # 플러그인 레지스트리
 │   └── routing-table.json        # 컴포넌트 라우팅 테이블
 ├── plugins/                      # 7개 전문화된 플러그인
-│   ├── backend-development/      # NestJS 생태계 에이전트 + 라우팅
+│   ├── nestjs-backend/           # NestJS 생태계 에이전트 + 라우팅
 │   │   ├── agents/               # 7개 백엔드 전문가
 │   │   └── skills/agent-routing/ # 에이전트 라우팅 시스템
 │   ├── code-quality/             # 코드 품질 도구
@@ -60,7 +60,7 @@ claude-integration/
 
 | 플러그인 | 카테고리 | 컴포넌트 |
 |---------|---------|---------|
-| `backend-development` | development | 에이전트 7개, 스킬 1개 |
+| `nestjs-backend` | development | 에이전트 7개, 스킬 1개 |
 | `code-quality` | quality | 에이전트 2개, 커맨드 1개, 스킬 1개 |
 | `full-stack-orchestration` | workflows | 에이전트 1개, 커맨드 1개, 스킬 1개 |
 | `documentation-generation` | documentation | 에이전트 1개, 스킬 1개 |
