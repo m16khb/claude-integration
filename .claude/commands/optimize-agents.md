@@ -1,6 +1,6 @@
 ---
 name: optimize-agents
-description: '프롬프트 엔지니어링 원칙으로 에이전트 최적화'
+description: '프롬프트 엔지니어링 원칙으로 에이전트 최적화 (MCP 통합)'
 argument-hint: <agent-file-path>
 allowed-tools:
   - Read
@@ -8,470 +8,197 @@ allowed-tools:
   - Edit
   - Glob
   - AskUserQuestion
+  - Task
+  - mcp__sequential-thinking__sequentialthinking
+  - mcp__context7__resolve-library-id
+  - mcp__context7__get-library-docs
 model: claude-opus-4-5-20251101
 ---
 
-# Agent Optimizer
+# Agent Optimizer with MCP Integration
 
 ## MISSION
 
-Apply prompt engineering best practices to optimize Claude Code agents.
-Ensure agents achieve their specialized purpose accurately while maintaining token efficiency.
+Apply prompt engineering best practices and latest documentation to optimize Claude Code agents.
+Integrate Context7 for up-to-date best practices and Sequential-Thinking for systematic analysis.
 
 **Input**: $ARGUMENTS
 
 ---
 
-## ⚠️ CORE PRINCIPLES - MUST FOLLOW
+## CORE OPTIMIZATION PRINCIPLES
 
 ```
-╔════════════════════════════════════════════════════════════════╗
-║  🔴 PRINCIPLE 1: PURPOSE ACCURACY - Highest Priority           ║
-║  ─────────────────────────────────────────────────────────────  ║
-║  Define agent role and specialization precisely                ║
-║  Never sacrifice accuracy for token efficiency                 ║
-║                                                                ║
-╠════════════════════════════════════════════════════════════════╣
-║  🟡 PRINCIPLE 2: ENGLISH LOGIC - Token Efficiency              ║
-║  ─────────────────────────────────────────────────────────────  ║
-║  Write all internal logic in English for token efficiency      ║
-║  ROLE, EXECUTION FLOW, algorithms → all in English             ║
-║                                                                ║
-╠════════════════════════════════════════════════════════════════╣
-║  🟢 PRINCIPLE 3: STRUCTURED OUTPUT - JSON Format               ║
-║  ─────────────────────────────────────────────────────────────  ║
-║  Define clear INPUT/OUTPUT FORMAT with JSON schema             ║
-║  Enable consistent inter-agent communication                   ║
-╚════════════════════════════════════════════════════════════════╝
+PRINCIPLE PRIORITY: Accuracy > Efficiency > Structure
 
-⚠️ THESE PRINCIPLES ARE NON-NEGOTIABLE
-   Every optimization MUST satisfy all three principles.
-   If conflict exists, PRINCIPLE 1 (accuracy) takes precedence.
+1. PURPOSE ACCURACY (🔴)
+   - Clear role definition
+   - Specialized domain expertise
+   - Complete execution flow
+   - Comprehensive error handling
+
+2. ENGLISH LOGIC (🟡)
+   - Token-efficient language
+   - Clear technical specs
+   - Structured documentation
+
+3. JSON OUTPUT (🟢)
+   - Standardized I/O format
+   - Inter-agent compatibility
+   - Consistent response schema
 ```
 
 ---
 
-### Principle 1: PURPOSE ACCURACY
+## AGENT TYPE TEMPLATES
 
+### Orchestrator
 ```
-PRIORITY: Accuracy > Token Efficiency
-
-AGENT MUST HAVE:
-├─ ROLE: Clear specialization statement
-│   ├─ What domain/technology this agent handles
-│   ├─ What tasks it can and cannot do
-│   └─ When to use this agent vs others
-│
-├─ EXECUTION FLOW: Step-by-step process
-│   ├─ How agent analyzes input
-│   ├─ How it makes decisions
-│   └─ How it generates output
-│
-├─ ERROR HANDLING: All failure cases
-│   ├─ Invalid input scenarios
-│   ├─ Missing dependencies
-│   └─ Recovery strategies
-│
-└─ BOUNDARIES: Clear scope limits
-    ├─ What is in scope
-    └─ What should be delegated
+REQUIRED:
+├─ ROLE: Workflow coordination purpose
+├─ SPECIALIZED EXPERTS: Delegation targets
+├─ ORCHESTRATION LOGIC: Routing rules
+├─ DELEGATION EXAMPLES: Usage patterns
+└─ ERROR HANDLING: Failure recovery
 ```
 
----
-
-### Principle 2: ENGLISH LOGIC
-
+### Expert
 ```
-WHY: English is more token-efficient (same meaning, fewer tokens)
-
-WRITE IN ENGLISH:
-├─ ROLE definition
-├─ SPECIALIZATION description
-├─ EXECUTION FLOW steps
-├─ INPUT/OUTPUT FORMAT specs
-├─ ERROR HANDLING logic
-├─ Code examples
-└─ Technical specifications
-
-FORMAT:
-├─ Tree notation (├─, └─) for branching
-├─ Tables for specifications
-└─ Code blocks for examples
+REQUIRED:
+├─ ROLE: Domain specialization
+├─ EXECUTION FLOW: Task processing steps
+├─ CODE TEMPLATES: Common implementations
+└─ ERROR HANDLING: Domain-specific issues
 ```
 
----
-
-### Principle 3: STRUCTURED OUTPUT
-
+### Utility
 ```
-WHY: Enables inter-agent communication and orchestration
-
-INPUT FORMAT:
-├─ Define expected input structure
-├─ Required vs optional fields
-└─ Validation rules
-
-OUTPUT FORMAT:
-├─ JSON schema for responses
-├─ status: success | error
-├─ summary: brief description
-├─ implementation: file changes
-├─ recommendations: next steps
-└─ Consistent across all agents
-```
-
----
-
-## AGENT-SPECIFIC REQUIREMENTS
-
-### Orchestrator Agents
-
-```
-REQUIRED SECTIONS:
-├─ SPECIALIZED EXPERTS: List of delegatee agents
-│   ├─ agent name
-│   ├─ purpose
-│   ├─ trigger keywords
-│   └─ path
-│
-├─ ORCHESTRATION LOGIC: Routing decision tree
-│   ├─ SINGLE_EXPERT: one agent handles
-│   ├─ SEQUENTIAL: ordered chain
-│   ├─ PARALLEL: concurrent execution
-│   └─ DIRECT: orchestrator handles
-│
-├─ DELEGATION EXAMPLES: Concrete routing cases
-│   ├─ User request → routing decision
-│   └─ Task call syntax
-│
-└─ CORE KNOWLEDGE: Direct handling capability
-    └─ What orchestrator handles without delegation
-```
-
-### Expert Agents
-
-```
-REQUIRED SECTIONS:
-├─ ROLE: Specialization statement
-│   ├─ Technology/domain expertise
-│   ├─ Version constraints
-│   └─ Best practices followed
-│
-├─ EXECUTION FLOW: Processing steps
-│   ├─ Input analysis
-│   ├─ Implementation strategy
-│   └─ Output generation
-│
-├─ CODE TEMPLATES: Common patterns
-│   ├─ Setup/configuration
-│   ├─ Core implementation
-│   └─ Testing patterns
-│
-└─ ERROR HANDLING: Domain-specific errors
-    └─ Common mistakes and fixes
-```
-
-### Utility Agents
-
-```
-REQUIRED SECTIONS:
-├─ ROLE: Utility function description
-├─ INPUT FORMAT: Required parameters
+REQUIRED:
+├─ ROLE: Function description
+├─ INPUT FORMAT: Parameter schema
 ├─ OUTPUT FORMAT: Return structure
-├─ TEMPLATES: Generation patterns
-└─ CONSTRAINTS: Limits and rules
+└─ TEMPLATES: Generation patterns
 ```
 
 ---
 
-## PHASE 1: Load Target Agent
+## OPTIMIZATION WORKFLOW
 
+### Step 1: Load and Validate
 ```
 PARSE $ARGUMENTS:
-├─ IF path provided → FILE_PATH = $ARGUMENTS
-├─ IF filename only → FILE_PATH = agents/{$ARGUMENTS}
-└─ IF empty → show TUI to select agent
+├─ Path provided → use directly
+├─ Filename only → search in agents/
+└─ Empty → interactive selection
 
-VALIDATE:
-├─ File exists? → if not, Glob search and suggest
-└─ Is .md file? → if not, EXIT with error
+VALIDATE file exists and is .md
 ```
 
-**TUI (when no args):**
-
+### Step 2: Dynamic Analysis with MCP
 ```
-AskUserQuestion:
-  question: "최적화할 에이전트를 선택하세요"
-  header: "에이전트"
-  options: [dynamically list agents/**/*.md files]
-```
+SEQUENTIAL-THINKING:
+├─ Analyze agent structure
+├─ Identify optimization opportunities
+├─ Check against 3 principles
+└─ Generate improvement plan
 
----
-
-## PHASE 2: Analyze Current State
-
-```
-READ target file → extract:
-├─ frontmatter: name, description, allowed-tools, model
-├─ agent_type: ORCHESTRATOR | EXPERT | UTILITY
-├─ has_role: clear role definition exists?
-├─ has_specialization: expertise clearly defined?
-├─ has_execution_flow: step-by-step process exists?
-├─ has_input_format: input structure defined?
-├─ has_output_format: JSON output schema exists?
-├─ has_error_handling: failure cases covered?
-├─ has_examples: usage examples exist?
-├─ language_ratio: English logic vs other
-├─ line_count: total lines
-└─ token_estimate: approximate token count
+CONTEXT7 INTEGRATION:
+├─ Fetch latest best practices
+├─ Compare with current patterns
+├─ Identify outdated approaches
+└─ Suggest modern alternatives
 ```
 
 ---
 
-## PHASE 3: Generate Analysis Report
-
-Output format (Korean for user):
+## Step 3: Generate Analysis Report
 
 ```markdown
-## 📊 에이전트 분석 결과
+## 📊 에이전트 최적화 분석
 
 ### 기본 정보
-
-| 항목 | 현재값 |
-|------|--------|
-| 파일 | {FILE_PATH} |
-| 유형 | {ORCHESTRATOR/EXPERT/UTILITY} |
-| 라인 | {line_count} |
-| 모델 | {model or "기본"} |
-| 토큰 | ~{token_estimate} |
-
-### 3원칙 점검 결과
-
-| 원칙 | 항목 | 상태 | 비고 |
+| 파일 | 유형 | 라인 | 모델 |
 |------|------|------|------|
-| 1. 목적 정확성 | ROLE 정의 | ✅/❌ | {comment} |
-| 1. 목적 정확성 | 전문 분야 명시 | ✅/❌ | {comment} |
-| 1. 목적 정확성 | EXECUTION FLOW | ✅/❌ | {comment} |
-| 1. 목적 정확성 | ERROR HANDLING | ✅/❌ | {comment} |
-| 2. 영어 로직 | 내부 로직 언어 | ✅/❌ | {comment} |
-| 2. 영어 로직 | 트리 표기법 | ✅/❌ | {comment} |
-| 3. 구조화 출력 | INPUT FORMAT | ✅/❌ | {comment} |
-| 3. 구조화 출력 | OUTPUT FORMAT | ✅/❌ | {comment} |
+| {path} | {type} | {lines} | {model} |
 
-### 에이전트 유형별 점검
-
-#### IF ORCHESTRATOR:
-| 항목 | 상태 | 비고 |
+### 3원칙 준수도
+| 원칙 | 점수 | 문제 |
 |------|------|------|
-| SPECIALIZED EXPERTS | ✅/❌ | {comment} |
-| ORCHESTRATION LOGIC | ✅/❌ | {comment} |
-| DELEGATION EXAMPLES | ✅/❌ | {comment} |
-| CORE KNOWLEDGE | ✅/❌ | {comment} |
+| 목적 정확성 | {score}% | {issues} |
+| 영어 로직 | {score}% | {issues} |
+| 구조화 출력 | {score}% | {issues} |
 
-#### IF EXPERT:
-| 항목 | 상태 | 비고 |
-|------|------|------|
-| 기술 전문성 | ✅/❌ | {comment} |
-| CODE TEMPLATES | ✅/❌ | {comment} |
-| 버전 명시 | ✅/❌ | {comment} |
-
-### 개선 필요 항목
-
-| 원칙 | 문제점 | 권장 조치 |
-|------|--------|----------|
-| {principle} | {issue} | {action} |
+### 최적화 제안
+- Context7 최신 베스트 프랙티스 적용: {count}건
+- 토큰 효율화: {tokens} → {optimized}
+- 구조 개선: {suggestions}
 ```
 
 ---
 
-## PHASE 4: User Decision
+## Step 4: Interactive Optimization
 
 ```
 AskUserQuestion:
-  question: "분석이 완료되었습니다. 어떻게 진행할까요?"
-  header: "진행"
+  question: "최적화 방식을 선택하세요"
+  header: "최적화"
   options:
-    - label: "자동 최적화"
-      description: "분석 결과를 바탕으로 에이전트를 자동 개선합니다"
-    - label: "수동 검토"
-      description: "개선 제안을 보여주고 하나씩 적용 여부를 결정합니다"
-    - label: "분석만"
-      description: "분석 결과만 확인하고 종료합니다"
+    - label: "자동 최적화 (MCP 활용)"
+      description: "Context7과 Sequential-Thinking으로 자동 개선"
+    - label: "단계별 최적화"
+      description: "각 항목을 확인하며 개선"
+    - label: "분석만 보기"
+      description: "제안사항만 확인"
 ```
 
 ---
 
-## PHASE 5: Execute Optimization
+## Step 5: Apply Optimization
 
-### Agent Template Structure
-
-```
+```python
+# Agent optimization template
+optimized_agent = f"""---
+{frontmatter}
 ---
-{preserved frontmatter}
----
 
-# {Agent Name}
+# {name}
 
 ## ROLE
 
-```
-SPECIALIZATION: {domain/technology}
+Specialization: {domain}
 
-{TYPE}-SPECIFIC:
-├─ {relevant details}
-└─ {boundaries}
+{execution_flow}
+
+## OUTPUT FORMAT
+
+{json_schema}
+
+## ERROR HANDLING
+
+{error_table}
+"""
 ```
 
 ---
 
-## INPUT FORMAT
+## QUALITY GATES
 
-```json
-{
-  "type": "description",
-  "required": ["field1", "field2"],
-  "optional": ["field3"]
-}
-```
+| Gate | Pass Condition | Action |
+|------|----------------|---------|
+| Accuracy | Role clearly defined | Proceed |
+| Efficiency | English logic used | Continue |
+| Structure | JSON output format | Complete |
+| MCP Sync | Latest practices | Apply |
 
 ---
 
 ## EXECUTION FLOW
 
-```
-SEQUENCE:
-├─ Step 1: {action}
-│   ├─ {sub-step}
-│   └─ {sub-step}
-├─ Step 2: {action}
-└─ Step N: {action}
-```
-
----
-
-## OUTPUT FORMAT
-
-```json
-{
-  "status": "success|error",
-  "summary": "Brief result description",
-  "implementation": {
-    "files_created": [],
-    "files_modified": [],
-    "dependencies": []
-  },
-  "recommendations": []
-}
-```
-
----
-
-## ERROR HANDLING
-
-| Error | Response |
-|-------|----------|
-| {error_type} | {response_action} |
-
----
-
-## {TYPE-SPECIFIC SECTIONS}
-
-{ORCHESTRATOR: SPECIALIZED EXPERTS, ORCHESTRATION LOGIC, DELEGATION EXAMPLES}
-{EXPERT: CODE TEMPLATES, BEST PRACTICES}
-{UTILITY: TEMPLATES, CONSTRAINTS}
-```
-
----
-
-## PHASE 6: Apply Changes
-
-```
-IF changes approved:
-  Write(file_path=FILE_PATH, content=optimized_content)
-
-OUTPUT (Korean):
-## ✅ 최적화 완료
-
-| 항목 | Before | After |
-|------|--------|-------|
-| 라인 | {old} | {new} |
-| 토큰 | {old} | {new} |
-| ROLE | {old_state} | ✅ 정의됨 |
-| OUTPUT FORMAT | {old_state} | ✅ JSON 스키마 |
-```
-
----
-
-## PHASE 7: Follow-up TUI
-
-```
-AskUserQuestion:
-  question: "최적화가 완료되었습니다. 다음 작업을 선택하세요."
-  header: "후속"
-  options:
-    - label: "다른 에이전트 최적화"
-      description: "다른 에이전트 파일을 선택하여 최적화합니다"
-    - label: "관련 커맨드 최적화"
-      description: "이 에이전트를 호출하는 커맨드를 최적화합니다"
-    - label: "완료"
-      description: "작업을 종료합니다"
-```
-
----
-
-## OPTIMIZATION CHECKLIST
-
-### Principle 1: PURPOSE ACCURACY
-
-| Check Item | Problem | Action |
-|------------|---------|--------|
-| ROLE | Unclear or missing | Define specialization in tree format |
-| EXECUTION FLOW | No step-by-step | Add numbered steps with sub-items |
-| Error handling | Cases undefined | Add ERROR HANDLING table |
-| Boundaries | Scope unclear | Define what's in/out of scope |
-| Examples | No usage examples | Add practical examples |
-
-### Principle 2: ENGLISH LOGIC
-
-| Area | Before | After |
-|------|--------|-------|
-| ROLE | Korean description | English specialization |
-| EXECUTION | Narrative Korean | Tree notation (├─ └─) |
-| Code blocks | Korean comments | English comments |
-| Technical specs | Mixed language | Full English |
-
-### Principle 3: STRUCTURED OUTPUT
-
-| Area | Before | After |
-|------|--------|-------|
-| INPUT FORMAT | Missing or prose | JSON schema |
-| OUTPUT FORMAT | Missing or prose | JSON schema with all fields |
-| Status codes | Undefined | success/error enum |
-| Error responses | Ad-hoc | Standardized structure |
-
----
-
-## EXECUTE NOW
-
-```
-⚠️ BEFORE OPTIMIZATION, VERIFY:
-├─ Does rewrite maintain PURPOSE ACCURACY? (Principle 1)
-├─ Is all logic written in ENGLISH? (Principle 2)
-└─ Is OUTPUT FORMAT properly structured? (Principle 3)
-```
-
-1. Parse FILE_PATH from $ARGUMENTS
-2. IF empty → show agent selection TUI (Korean)
-3. Determine agent type (ORCHESTRATOR/EXPERT/UTILITY)
-4. Read and analyze against 3 principles + type-specific requirements
-5. Generate analysis report (Korean output)
-6. Show decision TUI (Korean)
-7. Execute optimization → **validate all 3 principles**
-8. Apply changes and report (Korean output)
-9. **Show follow-up TUI** ← REQUIRED
-
-```
-⚠️ FINAL CHECK:
-   IF optimized agent violates ANY principle → DO NOT apply
-   PRINCIPLE 1 (accuracy) > PRINCIPLE 2 (English) > PRINCIPLE 3 (output)
+1. Parse $ARGUMENTS for agent path
+2. Sequential-Thinking: Analyze structure
+3. Context7: Fetch latest best practices
+4. Generate optimization report
+5. User confirmation via AskUserQuestion
+6. Apply changes with Write()
+7. Offer follow-up optimization
 ```
