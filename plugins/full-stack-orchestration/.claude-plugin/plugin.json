@@ -10,7 +10,9 @@
   "repository": "https://github.com/m16khb/claude-integration",
   "license": "MIT",
   "keywords": ["orchestration", "workflow", "ci-cd", "dev-flow", "multi-agent"],
-  "agents": "./agents/",
+  "agents": [
+    "./agents/full-stack-orchestrator.md"
+  ],
   "commands": ["./commands/dev-flow.md"],
   "skills": "./skills/"
 }

@@ -10,7 +10,10 @@
   "repository": "https://github.com/m16khb/claude-integration",
   "license": "MIT",
   "keywords": ["code-review", "testing", "suites", "automock", "jest", "quality", "security"],
-  "agents": "./agents/",
+  "agents": [
+    "./agents/code-reviewer.md",
+    "./agents/test-automator.md"
+  ],
   "commands": ["./commands/review.md"],
   "skills": "./skills/"
 }
