@@ -1,33 +1,25 @@
 {
-  "_comment": "Claude Integration Plugin - MCP Servers (Cross-platform: Windows/macOS/Linux)",
-  "mcpServers": {
-    "playwright": {
-      "_description": "Browser automation and web testing",
-      "command": "npx",
-      "args": ["-y", "@playwright/mcp@latest"],
-      "env": {
-        "PLAYWRIGHT_BROWSERS_PATH": "0"
-      }
-    },
-    "context7": {
-      "_description": "Latest documentation and code examples injection",
-      "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp@latest"]
-    },
-    "sequential-thinking": {
-      "_description": "Step-by-step reasoning and analysis",
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
-    },
-    "chrome-devtools": {
-      "_description": "Chrome DevTools integration for debugging",
-      "command": "npx",
-      "args": ["-y", "chrome-devtools-mcp@latest"]
-    },
-    "dbhub": {
-      "_description": "Universal database MCP server (MySQL/PostgreSQL/SQLite/SQL Server/MariaDB). Configure via .env.local or .env file with DB_TYPE, DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME or DSN",
-      "command": "npx",
-      "args": ["-y", "@bytebase/dbhub"]
+  "playwright": {
+    "command": "npx",
+    "args": ["-y", "@playwright/mcp@latest"],
+    "env": {
+      "PLAYWRIGHT_BROWSERS_PATH": "0"
     }
+  },
+  "context7": {
+    "command": "npx",
+    "args": ["-y", "@upstash/context7-mcp@latest"]
+  },
+  "sequential-thinking": {
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+  },
+  "chrome-devtools": {
+    "command": "npx",
+    "args": ["-y", "chrome-devtools-mcp@latest"]
+  },
+  "dbhub": {
+    "command": "npx",
+    "args": ["-y", "@bytebase/dbhub"]
   }
 }
