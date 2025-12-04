@@ -1,5 +1,5 @@
 ---
-name: claude-sync
+name: automation-tools/claude-sync
 description: '코드베이스 변경 감지 및 CLAUDE.md 자동 동기화'
 allowed-tools:
   - Read

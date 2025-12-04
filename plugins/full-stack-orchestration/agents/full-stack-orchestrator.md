@@ -1,5 +1,5 @@
 ---
-name: full-stack-orchestrator
+name: full-stack-orchestration/full-stack-orchestrator
 description: 'Multi-agent workflow coordinator - orchestrates code review, testing, commit, and deployment. Use for complex development workflows.'
 model: claude-opus-4-5-20251101
 allowed-tools:

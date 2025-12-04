@@ -1,5 +1,5 @@
 ---
-name: dev-flow
+name: full-stack-orchestration/dev-flow
 description: '개발 워크플로우 오케스트레이션 (리뷰 → 테스트 → 커밋)'
 argument-hint: '[skip-review|skip-test]'
 allowed-tools:

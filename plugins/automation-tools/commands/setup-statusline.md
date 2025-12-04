@@ -1,5 +1,5 @@
 ---
-name: setup-statusline
+name: automation-tools/setup-statusline
 description: 'YAML 설정 기반 status line 환경 구성'
 allowed-tools: Read, Write, Bash(cp *), Bash(chmod *), Bash(mkdir *), Bash(uname *)
 model: claude-opus-4-5-20251101

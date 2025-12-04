@@ -1,5 +1,5 @@
 ---
-name: cqrs-expert
+name: nestjs-backend/cqrs-expert
 description: 'NestJS CQRS pattern specialist with commands, queries, events, and sagas'
 model: claude-opus-4-5-20251101
 allowed-tools:

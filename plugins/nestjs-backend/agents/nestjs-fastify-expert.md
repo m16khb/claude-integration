@@ -1,5 +1,5 @@
 ---
-name: nestjs-fastify-expert
+name: nestjs-backend/nestjs-fastify-expert
 description: 'Orchestrator agent for NestJS + Fastify development - delegates to specialized experts'
 model: claude-opus-4-5-20251101
 allowed-tools:

@@ -1,5 +1,5 @@
 ---
-name: suites-testing-expert
+name: nestjs-backend/suites-testing-expert
 description: 'NestJS testing specialist with Suites (Automock), Jest, and E2E testing patterns'
 model: claude-opus-4-5-20251101
 allowed-tools:

@@ -1,5 +1,5 @@
 ---
-name: code-reviewer
+name: code-quality/code-reviewer
 description: 'Elite code review expert - security vulnerabilities, performance optimization, production reliability. Use PROACTIVELY for code quality assurance.'
 model: claude-sonnet-4-20250514
 allowed-tools:

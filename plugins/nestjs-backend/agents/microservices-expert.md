@@ -1,5 +1,5 @@
 ---
-name: microservices-expert
+name: nestjs-backend/microservices-expert
 description: 'NestJS microservices specialist with RabbitMQ, Redis, gRPC, and TCP transports'
 model: claude-opus-4-5-20251101
 allowed-tools:

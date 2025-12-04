@@ -1,5 +1,5 @@
 ---
-name: redis-cache-expert
+name: nestjs-backend/redis-cache-expert
 description: 'NestJS Redis caching specialist with @nestjs/cache-manager and ioredis'
 model: claude-opus-4-5-20251101
 allowed-tools:

@@ -1,5 +1,5 @@
 ---
-name: typeorm-expert
+name: nestjs-backend/typeorm-expert
 description: 'NestJS TypeORM specialist with entities, repositories, migrations, and transactions'
 model: claude-opus-4-5-20251101
 allowed-tools:

@@ -1,5 +1,5 @@
 ---
-name: bullmq-queue-expert
+name: nestjs-backend/bullmq-queue-expert
 description: 'NestJS BullMQ job queue specialist with producers, consumers, and monitoring'
 model: claude-opus-4-5-20251101
 allowed-tools:

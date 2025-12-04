@@ -1,5 +1,5 @@
 ---
-name: test-automator
+name: code-quality/test-automator
 description: 'AI-powered test automation expert - Suites 3.x (Automock), Jest, Vitest. Use PROACTIVELY after code implementation.'
 model: claude-opus-4-5-20251101
 allowed-tools:

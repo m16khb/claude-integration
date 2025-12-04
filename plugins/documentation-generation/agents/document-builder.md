@@ -1,5 +1,5 @@
 ---
-name: document-builder
+name: documentation-generation/document-builder
 description: '계층적 CLAUDE.md 및 agent-docs 문서 생성/수정 전문 에이전트'
 model: claude-opus-4-5-20251101
 allowed-tools:
