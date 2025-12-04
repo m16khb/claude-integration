@@ -22,7 +22,9 @@ model: claude-opus-4-5-20251101
 
 ## MISSION
 
-Transform user prompts into production-ready, task-oriented prompts using TUI interaction, latest documentation, and systematic decomposition. Leverage Context7 for real-time research and Sequential-Thinking for structured optimization.
+Transform user prompts into production-ready, task-oriented prompts using TUI interaction, latest documentation, systematic decomposition, and dynamic resource discovery.
+
+**Key Innovation**: Scans the user's actual project directory to discover and integrate available plugins, agents, and skills into optimized prompts.
 
 **Input**: $ARGUMENTS
 
@@ -95,15 +97,30 @@ LAYER 3 - OPTIMIZATION (최적화)
    - 실행 가능성 평가
 ```
 
-### Phase 4: Context Research
+### Phase 4: Dynamic Resource Discovery
 ```
-5. CONTEXT7 INTEGRATION
+5. SCAN USER PROJECT RESOURCES
+   # Execute in user's project directory
+   AVAILABLE_PLUGINS=$(find .claude-plugin/ plugins/ -name "CLAUDE.md" -type f 2>/dev/null | wc -l)
+   AVAILABLE_AGENTS=$(find .claude-plugin/ plugins/ -name "*.md" -path "*/agents/*" -type f 2>/dev/null | wc -l)
+   AVAILABLE_SKILLS=$(find .claude-plugin/ plugins/ -name "SKILL.md" -type f 2>/dev/null | wc -l)
+   AVAILABLE_COMMANDS=$(find .claude-plugin/ plugins/ -name "*.md" -path "*/commands/*" -type f 2>/dev/null | wc -l)
+
+   # List actual resources found
+   echo "=== DISCOVERED RESOURCES ==="
+   echo "Plugins ($AVAILABLE_PLUGINS):"
+   find .claude-plugin/ plugins/ -name "CLAUDE.md" -type f 2>/dev/null | sed 's|^.||' | sort
+   echo ""
+   echo "Commands ($AVAILABLE_COMMANDS):"
+   find .claude-plugin/ plugins/ -name "*.md" -path "*/commands/*" -type f 2>/dev/null | sed 's|^.||' | sort
+
+6. CONTEXT7 INTEGRATION
    ├─ 관련 라이브러리/도구 최신 문서 검색
    ├─ Best practices 패턴 추출
    ├─ 코드 예시 획득
    └─ 현행 표준 준수 확인
 
-6. WEB SUPPLEMENTARY RESEARCH
+7. WEB SUPPLEMENTARY RESEARCH
    ├─ 실제 사용 사례 검색
    ├─ 커뮤니티 추천 패턴
    └─ 성공적인 프롬프트 예시
@@ -294,7 +311,7 @@ RELATED COMPONENTS:
 
 ## EXECUTION EXAMPLES
 
-### Example 1: Code Generation Prompt
+### Example 1: Code Generation Prompt with Dynamic Resources
 ```
 INPUT: "타입스크립트로 API 만들어줘"
 
@@ -304,19 +321,32 @@ OPTIMIZATION PROCESS:
    - 필요한 기능 명시
    - 데이터베이스 연동 여부
 
-2. Context7 Research:
+2. Dynamic Resource Scan:
+   # Check user's available resources
+   if [ -d "plugins/nestjs-backend" ]; then
+       echo "NestJS experts available!"
+       AGENTS="typeorm-expert redis-cache-expert"
+   elif [ -f "package.json" ]; then
+       echo "Node.js project detected"
+       FRAMEWORK=$(cat package.json | jq -r '.dependencies.fastify ? "fastify" : "express"')
+   else
+       echo "Generic TypeScript setup"
+   fi
+
+3. Context7 Research:
    - /nestjs/docs 최신 가이드
    - /fastify/docs 성능 팁
    - Best practices 추출
 
-3. Optimized Output:
+4. Optimized Output:
    - 명확한 역할 정의
    - 단계별 생성 절차
    - 타입 정의 포함
    - 에러 핸들링 패턴
+   - Available tools: [${DISCOVERED_COMMANDS}]
 ```
 
-### Example 2: Document Creation
+### Example 2: Document Creation with Project Resources
 ```
 INPUT: "기술 문서 써줘"
 
@@ -326,16 +356,35 @@ OPTIMIZATION PROCESS:
    - 타겟 독자 지정
    - 포함할 섹션 명시
 
-2. Research Integration:
+2. Dynamic Resource Discovery:
+   # Check for documentation-related resources
+   DOC_RESOURCES=$(find . -name "*doc*" -o -name "*README*" 2>/dev/null)
+   if command -v document-builder >/dev/null 2>&1; then
+       echo "Using document-builder agent"
+   fi
+
+3. Research Integration:
    - Technical writing best practices
    - Documentation standards (OpenAPI, etc.)
    - Template structures
 
-3. Optimized Output:
+4. Optimized Output:
    - 구조화된 템플릿
    - 예시 및 가이드
    - Markdown 형식 지정
    - 검토 체크리스트
+   - Integration with: [${AVAILABLE_TOOLS}]
+```
+
+### Example: Resource Discovery in Action (claude-integration project)
+```
+When run in claude-integration project, discovered:
+- 7 plugins (automation-tools, code-quality, etc.)
+- 12 agents (code-reviewer, test-automator, etc.)
+- 9 skills (factory-series, testing-patterns, etc.)
+- 10 commands (including this prompt-optimizer)
+
+Your project will show YOUR actual resources!
 ```
 
 ---
@@ -354,16 +403,47 @@ OPTIMIZATION PROCESS:
 ## EXECUTE NOW
 
 ```
-1. Parse input from $ARGUMENTS or TUI
-2. Start Sequential-Thinking for analysis
-3. Query Context7 for latest documentation
-4. Perform web research for examples
-5. Generate optimized prompt structure
-6. Apply task decomposition patterns
-7. Create TUI-guided refinement options
-8. Output final optimized prompt
-9. Provide implementation guidance
-10. Track success metrics
+# ACTUAL BASH COMMANDS TO RUN:
+echo "=== SCANNING YOUR PROJECT RESOURCES ==="
+echo ""
+
+# Discover plugins
+echo "Available Plugins:"
+find .claude-plugin/ plugins/ -name "CLAUDE.md" -type f 2>/dev/null | while read f; do
+    name=$(basename $(dirname "$f"))
+    desc=$(grep -m1 "^description:" "$f" | cut -d: -f2- | xargs)
+    echo "  - $name: $desc"
+done
+echo ""
+
+# Discover commands
+echo "Available Commands:"
+find .claude-plugin/ plugins/ -name "*.md" -path "*/commands/*" -type f 2>/dev/null | while read f; do
+    name=$(grep -m1 "^name:" "$f" | cut -d: -f2- | xargs)
+    desc=$(grep -m1 "^description:" "$f" | cut -d: -f2- | xargs)
+    echo "  - /$name: $desc"
+done
+echo ""
+
+# Discover agents
+echo "Available Agents:"
+find .claude-plugin/ plugins/ -name "*.md" -path "*/agents/*" -type f 2>/dev/null | while read f; do
+    name=$(basename "$f" .md)
+    echo "  - $name"
+done
+echo ""
+
+echo "=== OPTIMIZATION WORKFLOW ==="
+echo "1. Parse input from $ARGUMENTS or TUI"
+echo "2. Scan YOUR project resources (as shown above)"
+echo "3. Start Sequential-Thinking for analysis"
+echo "4. Query Context7 for latest documentation"
+echo "5. Perform web research for examples"
+echo "6. Generate optimized prompt with YOUR resources"
+echo "7. Apply task decomposition patterns"
+echo "8. Create TUI-guided refinement options"
+echo "9. Output final optimized prompt"
+echo "10. Provide implementation guidance"
 ```
 
 ---
