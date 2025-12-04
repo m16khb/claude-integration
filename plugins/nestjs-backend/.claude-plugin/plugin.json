@@ -10,14 +10,14 @@
   "repository": "https://github.com/m16khb/claude-integration",
   "license": "MIT",
   "keywords": ["nestjs", "fastify", "typeorm", "redis", "bullmq", "cqrs", "microservices", "routing"],
-  "agents": [
-    "./agents/bullmq-queue-expert.md",
-    "./agents/cqrs-expert.md",
-    "./agents/microservices-expert.md",
-    "./agents/nestjs-fastify-expert.md",
-    "./agents/redis-cache-expert.md",
-    "./agents/suites-testing-expert.md",
-    "./agents/typeorm-expert.md"
-  ],
+  "agents": {
+    "bullmq-queue-expert": "./agents/bullmq-queue-expert.md",
+    "cqrs-expert": "./agents/cqrs-expert.md",
+    "microservices-expert": "./agents/microservices-expert.md",
+    "nestjs-fastify-expert": "./agents/nestjs-fastify-expert.md",
+    "redis-cache-expert": "./agents/redis-cache-expert.md",
+    "suites-testing-expert": "./agents/suites-testing-expert.md",
+    "typeorm-expert": "./agents/typeorm-expert.md"
+  },
   "skills": "./skills/"
 }
