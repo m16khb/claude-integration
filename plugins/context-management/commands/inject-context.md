@@ -1,5 +1,5 @@
 ---
-name: context-management/inject-context
+name: context-management:inject-context
 description: "대용량 파일 구조 인식 청킹 및 컨텍스트 주입"
 argument-hint: <file_path> [task_instruction]
 allowed-tools:

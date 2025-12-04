@@ -1,5 +1,5 @@
 ---
-name: code-quality/review
+name: code-quality:review
 description: '코드 리뷰 실행 커맨드 (보안, 성능, 품질 분석)'
 argument-hint: '[file-path]'
 allowed-tools:

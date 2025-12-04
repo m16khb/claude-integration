@@ -56,14 +56,14 @@ claude-integration/
 
 | 커맨드 | 플러그인 | 설명 |
 |--------|---------|------|
-| `/dev-flow` | full-stack-orchestration | 리뷰 → 테스트 → 커밋 워크플로우 |
-| `/review` | code-quality | 코드 리뷰 실행 |
-| `/git-commit` | git-workflows | Git Flow 기반 스마트 커밋 |
-| `/continue-context` | context-management | 컨텍스트 분석 및 작업 추천 |
-| `/inject-context` | context-management | 대용량 파일 구조 인식 청킹 |
-| `/factory` | automation-tools | Agent, Skill, Command 생성기 |
-| `/setup-statusline` | automation-tools | YAML 기반 status line 구성 |
-| `/claude-sync` | automation-tools | CLAUDE.md 자동 동기화 |
+| `/full-stack-orchestration:dev-flow` | full-stack-orchestration | 리뷰 → 테스트 → 커밋 워크플로우 |
+| `/code-quality:review` | code-quality | 코드 리뷰 실행 |
+| `/git-workflows:git-commit` | git-workflows | Git Flow 기반 스마트 커밋 |
+| `/context-management:continue-context` | context-management | 컨텍스트 분석 및 작업 추천 |
+| `/context-management:inject-context` | context-management | 대용량 파일 구조 인식 청킹 |
+| `/automation-tools:factory` | automation-tools | Agent, Skill, Command 생성기 |
+| `/automation-tools:setup-statusline` | automation-tools | YAML 기반 status line 구성 |
+| `/automation-tools:claude-sync` | automation-tools | CLAUDE.md 자동 동기화 |
 
 ## 에이전트 계층
 
@@ -89,14 +89,16 @@ routing-table.json에서 키워드 점수 관리 (primary 3점)
 /plugin install claude-integration
 ```
 
-## MCP 서버 (내장)
+## MCP 서버 (별도 설치 필요)
 
-| MCP 서버 | 설명 | 요구사항 |
-|----------|------|---------|
-| `playwright` | 브라우저 자동화 | Node.js 18+ |
-| `context7` | 최신 문서 주입 | Node.js 18+ |
-| `sequential-thinking` | 단계별 사고 | Node.js 18+ |
-| `chrome-devtools` | 크롬 개발자 도구 | Node.js 22+, Chrome |
+이 프로젝트는 다음 MCP 서버들과 연동됩니다. 각 사용자가 직접 설치해야 합니다:
+
+| MCP 서버 | 설명 | 설치 명령어 |
+|----------|------|-----------|
+| `playwright` | 브라우저 자동화 | `npx -y @playwright/mcp@latest` |
+| `context7` | 최신 문서 주입 | `npx -y @upstash/context7-mcp@latest` |
+| `sequential-thinking` | 단계별 사고 | `npx -y @modelcontextprotocol/server-sequential-thinking` |
+| `chrome-devtools` | 크롬 개발자 도구 | `npx -y chrome-devtools-mcp@latest` |
 
 ## 상세 문서
 
@@ -114,13 +116,13 @@ routing-table.json에서 키워드 점수 관리 (primary 3점)
 ## 빠른 시작
 
 ```bash
-/review          # 코드 리뷰
-/dev-flow        # 전체 워크플로우
-/git-commit push # 커밋
+/code-quality:review          # 코드 리뷰
+/full-stack-orchestration:dev-flow        # 전체 워크플로우
+/git-workflows:git-commit push # 커밋
 
 "Redis 캐시 설정" # 자동 에이전트 선택
-/inject-context file.ts # 대용량 파일
-/claude-sync     # 동기화
+/context-management:inject-context file.ts # 대용량 파일
+/automation-tools:claude-sync     # 동기화
 ```
 
 ## 개발 가이드

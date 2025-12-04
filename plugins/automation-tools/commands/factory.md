@@ -1,5 +1,5 @@
 ---
-name: automation-tools/factory
+name: automation-tools:factory
 description: 'Agent, Skill, Command 컴포넌트 생성기 (WebFetch 기반 문서 분석)'
 argument-hint: '[type] [name]'
 allowed-tools:

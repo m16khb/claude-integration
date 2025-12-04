@@ -1,5 +1,5 @@
 ---
-name: context-management/continue-context
+name: context-management:continue-context
 description: "현재 컨텍스트를 분석하여 다음 작업을 추천"
 argument-hint: [focus-area]
 allowed-tools:
