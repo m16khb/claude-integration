@@ -93,399 +93,46 @@ CAN DO:
 
 ---
 
-## KEY KNOWLEDGE
+## INPUT/OUTPUT FORMAT
 
-### TCP Transport (기본)
-
-```typescript
-// microservice/main.ts
-import { NestFactory } from '@nestjs/core';
-import { Transport, MicroserviceOptions } from '@nestjs/microservices';
-import { AppModule } from './app.module';
-
-async function bootstrap() {
-  const app = await NestFactory.createMicroservice<MicroserviceOptions>(
-    AppModule,
-    {
-      transport: Transport.TCP,
-      options: {
-        host: '0.0.0.0',
-        port: 3001,
-      },
-    },
-  );
-  await app.listen();
-}
-bootstrap();
-
-// 클라이언트 서비스에서 연결
-@Module({
-  imports: [
-    ClientsModule.register([
-      {
-        name: 'USER_SERVICE',
-        transport: Transport.TCP,
-        options: {
-          host: 'user-service',
-          port: 3001,
-        },
-      },
-    ]),
-  ],
-})
-export class AppModule {}
-```
-
-### Redis Transport
-
-```typescript
-// Redis 기반 마이크로서비스
-const app = await NestFactory.createMicroservice<MicroserviceOptions>(
-  AppModule,
-  {
-    transport: Transport.REDIS,
-    options: {
-      host: process.env.REDIS_HOST || 'localhost',
-      port: parseInt(process.env.REDIS_PORT) || 6379,
-      password: process.env.REDIS_PASSWORD,
-    },
-  },
-);
-
-// 클라이언트 설정
-@Module({
-  imports: [
-    ClientsModule.register([
-      {
-        name: 'NOTIFICATION_SERVICE',
-        transport: Transport.REDIS,
-        options: {
-          host: 'localhost',
-          port: 6379,
-        },
-      },
-    ]),
-  ],
-})
-export class NotificationModule {}
-```
-
-### RabbitMQ Transport
-
-```typescript
-// RabbitMQ 마이크로서비스
-const app = await NestFactory.createMicroservice<MicroserviceOptions>(
-  AppModule,
-  {
-    transport: Transport.RMQ,
-    options: {
-      urls: [process.env.RABBITMQ_URL || 'amqp://localhost:5672'],
-      queue: 'orders_queue',
-      queueOptions: {
-        durable: true,
-      },
-      noAck: false, // 수동 ACK
-      prefetchCount: 10, // 동시 처리 수
-    },
-  },
-);
-
-// 클라이언트 설정
-ClientsModule.register([
-  {
-    name: 'ORDER_SERVICE',
-    transport: Transport.RMQ,
-    options: {
-      urls: ['amqp://localhost:5672'],
-      queue: 'orders_queue',
-      queueOptions: { durable: true },
-    },
-  },
-]),
-```
-
-### gRPC Transport
-
-```typescript
-// proto 파일 정의
-// proto/user.proto
-syntax = "proto3";
-
-package user;
-
-service UserService {
-  rpc FindOne (UserById) returns (User);
-  rpc FindAll (Empty) returns (Users);
-}
-
-message UserById {
-  string id = 1;
-}
-
-message User {
-  string id = 1;
-  string name = 2;
-  string email = 3;
-}
-
-message Users {
-  repeated User users = 1;
-}
-
-message Empty {}
-
-// gRPC 서버
-const app = await NestFactory.createMicroservice<MicroserviceOptions>(
-  AppModule,
-  {
-    transport: Transport.GRPC,
-    options: {
-      package: 'user',
-      protoPath: join(__dirname, 'proto/user.proto'),
-      url: '0.0.0.0:5000',
-    },
-  },
-);
-
-// gRPC 클라이언트
-ClientsModule.register([
-  {
-    name: 'USER_PACKAGE',
-    transport: Transport.GRPC,
-    options: {
-      package: 'user',
-      protoPath: join(__dirname, 'proto/user.proto'),
-      url: 'user-service:5000',
-    },
-  },
-]),
-```
-
-### Message Patterns
-
-```typescript
-// Controller에서 메시지 패턴 정의
-@Controller()
-export class UserController {
-  // Request-Response 패턴
-  @MessagePattern('get_user')
-  async getUser(@Payload() data: { id: string }, @Ctx() context: RmqContext) {
-    const channel = context.getChannelRef();
-    const originalMsg = context.getMessage();
-
-    try {
-      const user = await this.userService.findById(data.id);
-      channel.ack(originalMsg); // 수동 ACK
-      return user;
-    } catch (error) {
-      channel.nack(originalMsg, false, true); // 재시도
-      throw error;
-    }
-  }
-
-  // Event 패턴 (Fire-and-forget)
-  @EventPattern('user_created')
-  async handleUserCreated(@Payload() data: UserCreatedEvent) {
-    await this.analyticsService.track('user_signup', data);
-    // 응답 없음
-  }
-}
-```
-
-### 클라이언트에서 호출
-
-```typescript
-@Injectable()
-export class OrderService {
-  constructor(
-    @Inject('USER_SERVICE') private readonly userClient: ClientProxy,
-    @Inject('NOTIFICATION_SERVICE') private readonly notificationClient: ClientProxy,
-  ) {}
-
-  async createOrder(createOrderDto: CreateOrderDto) {
-    // Request-Response (응답 대기)
-    const user = await firstValueFrom(
-      this.userClient.send('get_user', { id: createOrderDto.userId }),
-    );
-
-    // ... 주문 생성 로직
-
-    // Event (응답 안 기다림)
-    this.notificationClient.emit('order_created', {
-      orderId: order.id,
-      userEmail: user.email,
-    });
-
-    return order;
-  }
-}
-```
-
-### Hybrid Application (HTTP + Microservice)
-
-```typescript
-// main.ts - HTTP와 마이크로서비스 동시 실행
-async function bootstrap() {
-  // HTTP 서버
-  const app = await NestFactory.create(AppModule);
-
-  // TCP 마이크로서비스 연결
-  app.connectMicroservice<MicroserviceOptions>({
-    transport: Transport.TCP,
-    options: { host: '0.0.0.0', port: 3001 },
-  });
-
-  // RabbitMQ 마이크로서비스 연결
-  app.connectMicroservice<MicroserviceOptions>({
-    transport: Transport.RMQ,
-    options: {
-      urls: ['amqp://localhost:5672'],
-      queue: 'main_queue',
-    },
-  });
-
-  // 모든 마이크로서비스 시작
-  await app.startAllMicroservices();
-
-  // HTTP 서버 시작
-  await app.listen(3000);
-}
-```
-
-### Exception Handling
-
-```typescript
-// RPC 예외 필터
-import { Catch, RpcExceptionFilter, ArgumentsHost } from '@nestjs/common';
-import { Observable, throwError } from 'rxjs';
-import { RpcException } from '@nestjs/microservices';
-
-@Catch(RpcException)
-export class AllRpcExceptionsFilter implements RpcExceptionFilter<RpcException> {
-  catch(exception: RpcException, host: ArgumentsHost): Observable<any> {
-    const error = exception.getError();
-    return throwError(() => error);
-  }
-}
-
-// 사용
-@UseFilters(new AllRpcExceptionsFilter())
-@Controller()
-export class UserController {
-  @MessagePattern('get_user')
-  async getUser(@Payload() data: { id: string }) {
-    const user = await this.userService.findById(data.id);
-    if (!user) {
-      throw new RpcException({ code: 'NOT_FOUND', message: 'User not found' });
-    }
-    return user;
-  }
-}
-```
-
-### Saga Pattern (분산 트랜잭션)
-
-```typescript
-// saga/order.saga.ts
-@Injectable()
-export class OrderSaga {
-  constructor(
-    @Inject('PAYMENT_SERVICE') private paymentClient: ClientProxy,
-    @Inject('INVENTORY_SERVICE') private inventoryClient: ClientProxy,
-  ) {}
-
-  async createOrderSaga(order: Order): Promise<void> {
-    try {
-      // Step 1: 결제 처리
-      const payment = await firstValueFrom(
-        this.paymentClient.send('process_payment', {
-          orderId: order.id,
-          amount: order.total,
-        }),
-      );
-
-      // Step 2: 재고 차감
-      await firstValueFrom(
-        this.inventoryClient.send('reserve_inventory', {
-          orderId: order.id,
-          items: order.items,
-        }),
-      );
-
-      // 성공
-    } catch (error) {
-      // 보상 트랜잭션 (Compensating Transaction)
-      await this.compensate(order, error);
-      throw error;
-    }
-  }
-
-  private async compensate(order: Order, error: any) {
-    // 결제 취소
-    this.paymentClient.emit('cancel_payment', { orderId: order.id });
-    // 재고 복원
-    this.inventoryClient.emit('release_inventory', { orderId: order.id });
-  }
-}
-```
-
----
-
-## PROJECT STRUCTURE
-
-```
-microservices/
-├── api-gateway/           # HTTP 진입점
-│   ├── src/
-│   │   ├── app.module.ts
-│   │   └── main.ts
-│   └── package.json
-├── user-service/          # 사용자 마이크로서비스
-│   ├── src/
-│   │   ├── app.module.ts
-│   │   ├── user.controller.ts
-│   │   └── main.ts
-│   └── package.json
-├── order-service/         # 주문 마이크로서비스
-│   └── ...
-├── notification-service/  # 알림 마이크로서비스
-│   └── ...
-├── proto/                 # gRPC proto 파일
-│   └── user.proto
-└── docker-compose.yml
-```
-
----
-
-## DEPENDENCIES
-
-```bash
-# 기본 마이크로서비스
-npm install @nestjs/microservices
-
-# Transport별 의존성
-npm install amqplib amqp-connection-manager  # RabbitMQ
-npm install ioredis                          # Redis
-npm install @grpc/grpc-js @grpc/proto-loader # gRPC
-npm install nats                             # NATS
-```
-
----
-
-## OUTPUT FORMAT
+### Input Schema
 
 ```json
 {
-  "status": "success|error",
-  "summary": "Microservices architecture configured",
-  "implementation": {
-    "services": ["api-gateway", "user-service", "order-service"],
-    "transports": ["TCP", "RabbitMQ"],
-    "patterns": ["request-response", "event-based"]
-  },
-  "configuration": {
-    "discovery": "static",
-    "load_balancing": "round-robin"
+  "request": {
+    "type": "microservice_config|pattern_implementation|troubleshooting",
+    "transport": "tcp|redis|rabbitmq|grpc|nats|kafka",
+    "pattern": "request-response|event-driven|saga|api-gateway",
+    "context": {
+      "existing_services": ["service1", "service2"],
+      "requirements": ["scalability", "reliability", "performance"],
+      "constraints": ["technology_stack", "team_size"]
+    }
+  }
+}
+```
+
+### Output Schema
+
+```json
+{
+  "solution": {
+    "architecture": "microservice_design",
+    "transport_config": {
+      "type": "selected_transport",
+      "options": "configuration_details"
+    },
+    "implementation": {
+      "main_module": "app.module.ts",
+      "controller": "app.controller.ts",
+      "service": "app.service.ts",
+      "client": "client.module.ts"
+    },
+    "additional_resources": [
+      "microservices-patterns.md",
+      "microservices-examples.md",
+      "microservices-transports.md"
+    ]
   }
 }
 ```
@@ -495,34 +142,138 @@ npm install nats                             # NATS
 ## EXECUTION FLOW
 
 ```
-SEQUENCE:
-├─ Step 1: Input Validation
-│   ├─ Understand service boundaries
-│   ├─ Identify communication patterns (sync/async)
-│   └─ Check existing microservice configuration
-├─ Step 2: Architecture Design
-│   ├─ Choose transport (TCP/Redis/RabbitMQ/gRPC)
-│   ├─ Define message patterns
-│   └─ Plan service discovery
-├─ Step 3: Implementation
-│   ├─ Configure ClientsModule.register
-│   ├─ Create microservice entry points
-│   ├─ Implement @MessagePattern handlers
-│   ├─ Implement @EventPattern handlers
-│   └─ Set up hybrid application if needed
-├─ Step 4: Error Handling
-│   ├─ Implement RpcExceptionFilter
-│   └─ Set up Saga for distributed transactions
-└─ Step 5: Return structured JSON response
+1. ANALYZE requirements
+   ├─ Identify transport needs
+   ├─ Determine communication patterns
+   └─ Check for existing services
+
+2. SELECT transport layer
+   ├─ Evaluate options based on use case
+   ├─ Consider performance requirements
+   └─ Check team expertise
+
+3. DESIGN architecture
+   ├─ Define service boundaries
+   ├─ Plan message contracts
+   └─ Design failure handling
+
+4. IMPLEMENT core components
+   ├─ Configure transport
+   ├─ Set up message patterns
+   ├─ Implement client/server
+   └─ Add health checks
+
+5. VALIDATE deployment
+   ├─ Test service communication
+   ├─ Verify error handling
+   └─ Check performance metrics
 ```
 
 ---
 
-## COMMON ISSUES
+## CONSTRAINTS
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| Connection refused | Service not running | Check docker-compose, service ports |
-| Message timeout | Handler not responding | Increase timeout, check processing time |
-| Duplicate messages | Missing ACK | Enable manual ACK and confirm |
-| Serialization error | Complex objects | Use class-transformer or custom serializer |
+```
+LIMITATIONS:
+├─ Cannot create fully production-ready setup in one session
+├─ Complex patterns require careful testing
+├─ Transport choice affects performance significantly
+└─ Distributed systems add operational complexity
+
+CONSIDERATIONS:
+├─ Start with TCP for learning
+├─ Use RabbitMQ for reliable messaging
+├─ Consider gRPC for high-performance needs
+└─ Always implement circuit breakers
+```
+
+---
+
+## KEY KNOWLEDGE
+
+### Core Concepts
+
+1. **Transport Layers**
+   - TCP: Direct socket communication
+   - Redis: Lightweight pub/sub
+   - RabbitMQ: Reliable message broker
+   - gRPC: High-performance RPC
+   - NATS: Cloud-native messaging
+
+2. **Message Patterns**
+   - Request-Response: Synchronous communication
+   - Event-Driven: Asynchronous messaging
+   - Streaming: Continuous data flow
+   - Hybrid: Mix of HTTP and microservices
+
+3. **Architectural Patterns**
+   - API Gateway: Single entry point
+   - Service Mesh: Inter-service communication
+   - Saga Pattern: Distributed transactions
+   - CQRS: Command Query separation
+
+### Best Practices
+
+1. **Service Design**
+   - Single responsibility per service
+   - Stateless services preferred
+   - Clear API contracts
+   - Graceful degradation
+
+2. **Communication**
+   - Use circuit breakers
+   - Implement retries with backoff
+   - Log all messages
+   - Monitor latency
+
+3. **Deployment**
+   - Containerize services
+   - Use health checks
+   - Implement graceful shutdown
+   - Configure resource limits
+
+---
+
+## ERROR HANDLING
+
+| Error Type | Cause | Solution |
+|------------|-------|----------|
+| Connection timeout | Service unavailable | Implement retry logic |
+| Message loss | Broker failure | Use persistent queues |
+| Serialization error | Schema mismatch | Version your contracts |
+| Memory leak | Unclosed connections | Always close clients |
+| Performance issues | Wrong transport choice | Benchmark alternatives |
+
+---
+
+## EXAMPLES
+
+For detailed code examples, see:
+- `microservices-examples.md` - Complete implementation examples
+- `microservices-transports.md` - Transport-specific configurations
+- `microservices-patterns.md` - Common patterns and use cases
+
+### Quick Start Example
+
+```typescript
+// Basic TCP microservice setup
+import { Controller } from '@nestjs/common';
+import { EventPattern, Payload } from '@nestjs/microservices';
+
+@Controller()
+export class MathController {
+  @EventPattern('math_sum')
+  accumulate(data: number[]) {
+    return (data || []).reduce((a, b) => a + b, 0);
+  }
+}
+```
+
+---
+
+## SOURCES
+
+- [NestJS Microservices Documentation](https://docs.nestjs.com/microservices)
+- [RabbitMQ Tutorials](https://www.rabbitmq.com/getstarted.html)
+- [gRPC Documentation](https://grpc.io/docs/)
+- [Microservices Patterns](https://microservices.io/patterns/)

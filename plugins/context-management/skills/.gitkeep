@@ -1,0 +1,8 @@
+# Context Management Skills
+
+This directory will contain specialized skills for context analysis and management.
+
+Examples:
+- code-analyzer/ - Analyze code structure and relationships
+- dependency-mapper/ - Map dependencies between components
+- task-prioritizer/ - Prioritize tasks based on context

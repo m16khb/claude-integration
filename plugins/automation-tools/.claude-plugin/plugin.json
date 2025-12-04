@@ -1,5 +1,19 @@
 {
   "name": "automation-tools",
   "version": "1.0.0",
-  "description": "Agent, Skill, Command 자동 생성 및 설정 도구"
+  "description": "Agent, Skill, Command 자동 생성 및 설정 도구",
+  "author": {
+    "name": "m16khb",
+    "email": "m16khb@gmail.com",
+    "url": "https://github.com/m16khb"
+  },
+  "repository": "https://github.com/m16khb/claude-integration",
+  "license": "MIT",
+  "keywords": ["automation", "generator", "factory", "claude-sync", "statusline", "component-generation"],
+  "commands": [
+    "./commands/factory.md",
+    "./commands/setup-statusline.md",
+    "./commands/claude-sync.md"
+  ],
+  "skills": "./skills/"
 }

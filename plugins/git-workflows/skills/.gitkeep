@@ -1,0 +1,8 @@
+# Git Workflows Skills
+
+This directory will contain specialized skills for Git workflow automation.
+
+Examples:
+- commit-analyzer/ - Analyze changes and suggest commit messages
+- conflict-resolver/ - Help resolve merge conflicts
+- release-automation/ - Automate release workflows

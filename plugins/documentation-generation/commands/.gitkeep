@@ -1,0 +1,8 @@
+# Documentation Generation Commands
+
+This directory will contain specialized commands for documentation generation.
+
+Examples:
+- api-docs.md - Generate API documentation from code
+- user-guide.md - Create user guides from features
+- changelog.md - Generate changelog from commits

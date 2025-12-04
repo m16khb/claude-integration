@@ -8,17 +8,6 @@
     "email": "m16khb@gmail.com",
     "url": "https://github.com/m16khb"
   },
-  "metadata": {
-    "license": "MIT",
-    "repository": "https://github.com/m16khb/claude-integration",
-    "documentation": "./docs",
-    "stats": {
-      "total_plugins": 7,
-      "total_agents": 11,
-      "total_commands": 8,
-      "total_skills": 4
-    }
-  },
   "plugins": [
     {
       "name": "nestjs-backend",

@@ -1,0 +1,8 @@
+# Git Workflows Agents
+
+This directory will contain specialized agents for Git workflow automation.
+
+Examples:
+- commit-advisor.md - Smart commit message generation
+- branch-manager.md - Branch creation and management
+- merge-coordinator.md - Pull request and merge automation
