@@ -125,7 +125,44 @@ DATA SOURCES:
 └─ Custom Commands: any shell command
 ```
 
-### 3. Claude Code Synchronization
+### 3. Prompt Optimizer
+
+**용도**: TUI 기반 프롬프트 최적화 엔진
+
+#### 최적화 프로세스
+```
+최적화 흐름:
+1. Input Collection
+├─ Direct text/file/URL
+├─ Interactive TUI collection
+└─ Context extraction
+
+2. Sequential Analysis
+├─ Intent clarification
+├─ Task identification
+└─ Structure planning
+
+3. Research Integration
+├─ Context7 최신 문서
+├─ Web 검색 및 예시
+└─ Best practices 적용
+
+4. Optimization
+├─ Task decomposition
+├─ Prompt restructuring
+└─ Quality validation
+```
+
+#### 지원 최적화 유형
+```
+OPTIMIZATION TYPES:
+├─ 작업 자동화: 반복 작업을 자동화 프롬프트로
+├─ 문서 생성: 구조화된 문서 생성용으로
+├─ 코드 생성: 코드 생성 및 리뷰용으로
+└─ 분석 리서치: 데이터 분석 및 리서치용으로
+```
+
+### 4. Claude Code Synchronization
 
 **용도**: 코드베이스 변경 감지 및 CLAUDE.md 자동 동기화
 
@@ -201,7 +238,23 @@ INTEGRATION TARGETS:
 - `plugins/database-experts/agents/redis-expert.md`
 - `plugins/database-experts/skills/database-routing.md`
 
-### 2. Status Line 설정
+### 2. 프롬프트 최적화
+
+```bash
+# 직접 텍스트 입력 최적화
+/prompt-optimizer "React 컴포넌트 만들어줘"
+
+# 파일에서 프롬프트 읽어 최적화
+/prompt-optimizer prompt.txt
+
+# 대화형 최적화
+/prompt-optimizer
+
+# URL 기반 문서를 프롬프트로 변환
+/prompt-optimizer https://docs.example.com/guide
+```
+
+### 3. Status Line 설정
 
 ```bash
 # 대화형 설정
@@ -214,7 +267,7 @@ INTEGRATION TARGETS:
 /setup-statusline --template fullstack
 ```
 
-### 3. 자동 동기화 활성화
+### 4. 자동 동기화 활성화
 
 ```bash
 # 전체 프로젝트 동기화
