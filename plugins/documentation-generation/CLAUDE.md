@@ -15,19 +15,11 @@ category: documentation
 - **계층적 구조**: 개요 > 상세 > 참조의 3단계 구성
 - **Progressive Disclosure**: 라인 제한 준수 (Root 150, Module 80, Submodule 50)
 
-## 구조
+## Architecture
 
 ```
-documentation-generation/
-├── agents/
-│   └── document-builder.md    # 문서 생성 전문가 에이전트
-├── skills/
-│   └── document-templates/    # 재사용 가능한 템플릿 스킬
-├── commands/                  # 슬래시 커맨드 (예정)
-└── agent-docs/               # 상세 문서
-    ├── detailed-guides.md    # 작성 가이드, 패턴
-    ├── examples.md           # 실제 사용 예제
-    └── references.md         # 참조, 설정, 트러블슈팅
+문서 생성 프로세스:
+코드 분석 → AST 파싱 → 의존성 추출 → 문서 생성
 ```
 
 ## 컴포넌트
@@ -71,10 +63,8 @@ documentation-generation/
 
 ## 상세 문서
 
-- [상세 가이드](agent-docs/detailed-guides.md) - 커맨드/에이전트/스킬 작성법, 라우팅 시스템
-- [예제 모음](agent-docs/examples.md) - 실제 사용 시나리오, 워크플로우
-- [참고 자료](agent-docs/references.md) - 설정, 성능, 보안, 트러블슈팅
+- [template-library.md](agent-docs/template-library.md) - 문서 템플릿 카탈로그, 재사용 패턴
+- [code-analysis.md](agent-docs/code-analysis.md) - AST 파싱, 의존성 분석, 자동 추출
+- [progressive-disclosure.md](agent-docs/progressive-disclosure.md) - 계층적 구조, 라인 제한, 네비게이션
 
----
-
-[parent](../../CLAUDE.md)
+[parent](../CLAUDE.md)

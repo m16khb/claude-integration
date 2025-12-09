@@ -18,22 +18,11 @@ Git 워크플로우 원칙:
 └─ 컨텍스트 인식: 브랜치와 작업 유형에 따른 적절한 메시지
 ```
 
-## 파일 구조
+## Components
 
-```
-plugins/git-workflows/
-├── CLAUDE.md              # 본 문서
-├── agent-docs/            # 상세 문서
-│   ├── detailed-guides.md # Git Flow, 커밋 규약 상세
-│   ├── examples.md        # 사용 예제
-│   └── references.md      # Best Practices, 문제 해결
-├── commands/
-│   └── git-commit.md      # 스마트 커밋 커맨드
-├── agents/
-│   └── .gitkeep
-└── skills/
-    └── .gitkeep
-```
+| 컴포넌트 | 타입 | 설명 |
+|---------|------|------|
+| [git-commit](commands/git-commit.md) | Command | 변경사항 분석 및 스마트 커밋 |
 
 ## Commands
 
@@ -74,8 +63,8 @@ plugins/git-workflows/
 
 ## 상세 문서
 
-- [detailed-guides.md](agent-docs/detailed-guides.md) - Git Flow, 커밋 규약
-- [examples.md](agent-docs/examples.md) - 사용 예제
-- [references.md](agent-docs/references.md) - Best Practices, Troubleshooting
+- [commit-conventions.md](agent-docs/commit-conventions.md) - Conventional Commits, 커밋 타입, 메시지 템플릿
+- [branch-strategies.md](agent-docs/branch-strategies.md) - Git Flow, 브랜치 관리, 워크플로우
+- [automation-patterns.md](agent-docs/automation-patterns.md) - 다중 커밋, 그룹화, 자동화 기능
 
 [parent](../CLAUDE.md)

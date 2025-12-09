@@ -63,12 +63,9 @@ category: quality
 
 ## Detailed Documentation
 
-| Document | Contents |
-|----------|----------|
-| [detailed-guides.md](agent-docs/detailed-guides.md) | 분석 카테고리, 스캔 레벨, 테스트 생성 전략 |
-| [examples.md](agent-docs/examples.md) | CI/CD 통합, Git Hooks, 사용 예제 |
-| [references.md](agent-docs/references.md) | 베스트 프랙티스, 트러블슈팅, 성능 최적화 |
-
----
+- [security-analysis.md](agent-docs/security-analysis.md) - OWASP Top 10 기반 보안 분석
+- [testing-strategies.md](agent-docs/testing-strategies.md) - Suites 3.x 테스트 패턴
+- [test-container.md](agent-docs/test-container.md) - Testcontainers Integration/E2E 테스트
+- [review-workflow.md](agent-docs/review-workflow.md) - 리뷰 프로세스, CI/CD 통합
 
 [parent](../CLAUDE.md)

@@ -69,12 +69,8 @@ category: productivity
 
 ## 상세 문서
 
-| 문서 | 설명 |
-|-----|------|
-| [상세 가이드](agent-docs/detailed-guides.md) | 청킹 알고리즘, 분석 프로세스, 복구 패턴 |
-| [예제](agent-docs/examples.md) | 사용 예제, 통합 패턴, 결과물 예시 |
-| [참고 자료](agent-docs/references.md) | 베스트 프랙티스, 문제 해결, 성능 최적화 |
-
----
+- [chunking-algorithm.md](agent-docs/chunking-algorithm.md) - 구조 인식 청킹, 언어별 파싱, AST 경계
+- [context-analysis.md](agent-docs/context-analysis.md) - 컨텍스트 분석, 패턴 인식, 작업 추천
+- [recovery-patterns.md](agent-docs/recovery-patterns.md) - 세션 복구, 작업 연속성, MCP 연동
 
 [parent](../CLAUDE.md)

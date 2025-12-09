@@ -1,5 +1,5 @@
 {
-  "last_synced": "2025-12-05T00:00:00.000Z",
+  "last_synced": "2025-12-09T00:00:00.000Z",
   "version": "1.0.0",
   "agents": {
     "code-reviewer": {
@@ -157,6 +157,31 @@
       "path": "plugins/automation-tools/skills/factory-orchestrator/SKILL.md",
       "triggers": ["팩토리 조율", "orchestration", "생성 관리"],
       "plugin": "automation-tools"
+    },
+    "ai-partner": {
+      "path": "plugins/automation-tools/skills/ai-partner/SKILL.md",
+      "triggers": ["AI 파트너", "partner", "협업"],
+      "plugin": "automation-tools"
+    },
+    "prompt-engineering": {
+      "path": ".claude/skills/prompt-engineering/SKILL.md",
+      "triggers": ["프롬프트", "prompt", "LLM 상호작용"],
+      "plugin": "core"
+    },
+    "software-architecture": {
+      "path": ".claude/skills/software-architecture/SKILL.md",
+      "triggers": ["아키텍처", "architecture", "소프트웨어 설계"],
+      "plugin": "core"
+    },
+    "test-driven-development": {
+      "path": ".claude/skills/test-driven-development/SKILL.md",
+      "triggers": ["TDD", "테스트 주도 개발", "red-green-refactor"],
+      "plugin": "core"
+    },
+    "subagent-driven-development": {
+      "path": ".claude/skills/subagent-driven-development/SKILL.md",
+      "triggers": ["서브에이전트", "subagent", "병렬 개발"],
+      "plugin": "core"
     }
   },
   "commands": {
@@ -213,6 +238,16 @@
     "prompt-optimizer": {
       "path": "plugins/automation-tools/commands/prompt-optimizer.md",
       "triggers": ["/prompt-optimizer", "/automation-tools:prompt-optimizer"],
+      "plugin": "automation-tools"
+    },
+    "optimize": {
+      "path": "plugins/automation-tools/commands/optimize.md",
+      "triggers": ["/optimize", "/automation-tools:optimize"],
+      "plugin": "automation-tools"
+    },
+    "partner": {
+      "path": "plugins/automation-tools/commands/partner.md",
+      "triggers": ["/partner", "/automation-tools:partner"],
       "plugin": "automation-tools"
     }
   },

@@ -56,12 +56,8 @@ plugins/nestjs-backend/
 
 ## Documentation
 
-| 문서 | 내용 |
-|------|------|
-| [detailed-guides.md](agent-docs/detailed-guides.md) | 전문가 상세, 라우팅 알고리즘 |
-| [examples.md](agent-docs/examples.md) | 코드 예제, 통합 패턴 |
-| [references.md](agent-docs/references.md) | Best Practices, 트러블슈팅 |
-
----
+- [routing-algorithm.md](agent-docs/routing-algorithm.md) - 키워드 매칭, 점수 계산, 실행 전략
+- [expert-profiles.md](agent-docs/expert-profiles.md) - 7명 전문가 상세 프로필과 역할
+- [integration-patterns.md](agent-docs/integration-patterns.md) - 전문가 간 협업, 오케스트레이션 패턴
 
 [parent](../CLAUDE.md)

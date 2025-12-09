@@ -69,12 +69,9 @@ category: workflows
 
 ## 상세 문서
 
-| 문서 | 내용 |
-|------|------|
-| [detailed-guides.md](agent-docs/detailed-guides.md) | Workflow Engine, Pipeline, CI/CD Patterns |
-| [examples.md](agent-docs/examples.md) | Feature/Hotfix/Docs 워크플로우 예제 |
-| [references.md](agent-docs/references.md) | Best Practices, Troubleshooting, Configuration |
-
----
+- [pipeline-architecture.md](agent-docs/pipeline-architecture.md) - 파이프라인 아키텍처, Quality Gates
+- [workflow-patterns.md](agent-docs/workflow-patterns.md) - /dev-flow 사용법, 시나리오별 패턴
+- [ci-cd-integration.md](agent-docs/ci-cd-integration.md) - GitHub Actions, GitLab CI, Jenkins 템플릿
+- [troubleshooting.md](agent-docs/troubleshooting.md) - 문제 해결, Best Practices
 
 [parent](../CLAUDE.md)

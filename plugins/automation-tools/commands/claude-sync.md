@@ -355,15 +355,9 @@ mcp__sequential-thinking__sequentialthinking:
 ```
 WHEN CLAUDE.md exceeds line limit:
 
-  FILE NAMING STRATEGY (의미 기반 동적 파일명):
-  ┌──────────────────────────────────────────────────────────────────┐
-  │ ❌ 기존 방식 (고정 파일명)                                        │
-  │    detailed-guides.md, examples.md, references.md                │
-  │                                                                  │
-  │ ✅ 새로운 방식 (의미 기반 파일명)                                  │
-  │    콘텐츠의 핵심 주제를 반영한 파일명 사용                         │
-  │    예: typeorm.md, dayjs.md, module-naming.md, api-design.md     │
-  └──────────────────────────────────────────────────────────────────┘
+  FILE NAMING STRATEGY (의미 기반 파일명):
+  ├─ 콘텐츠의 핵심 주제를 반영
+  └─ 예: typeorm.md, dayjs.md, module-naming.md, api-design.md
 
   IDENTIFY extractable sections by TOPIC (주제별 분류):
   ┌────────────────────┬───────────┬───────────────────────────────────┐
