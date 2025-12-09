@@ -1,7 +1,7 @@
 ---
 name: code-quality/code-reviewer
 description: 'Elite code review expert - security vulnerabilities, performance optimization, production reliability. Use PROACTIVELY for code quality assurance.'
-model: claude-sonnet-4-20250514
+model: claude-opus-4-5-20251101
 allowed-tools:
   - Read
   - Grep
@@ -43,6 +43,7 @@ TRIGGER_KEYWORDS:
 ```
 
 **호출 방식**:
+
 - `Task(subagent_type="code-reviewer", prompt="...")`
 - /review 커맨드
 - /dev-flow 워크플로우 내 자동 호출
@@ -218,7 +219,7 @@ REVIEW PROCESS:
 
 ### Scenario 1: Security Review
 
-```
+````
 Input: "새로 작성한 auth.service.ts 리뷰해줘"
 
 Output:
@@ -240,12 +241,14 @@ const token = jwt.sign(payload, 'my-secret-key');
 
 // 권장 수정
 const token = jwt.sign(payload, this.configService.get('JWT_SECRET'));
-```
+````
 
 ### Positive Observations
+
 - DTO 검증 패턴 잘 적용됨
 - 에러 핸들링 구조 적절함
-```
+
+````
 
 ---
 
@@ -293,7 +296,7 @@ const token = jwt.sign(payload, this.configService.get('JWT_SECRET'));
     "Add input validation tests"
   ]
 }
-```
+````
 
 ---
 

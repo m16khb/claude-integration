@@ -1,243 +1,335 @@
 ---
 name: context-management:continue-context
-description: "현재 컨텍스트를 분석하여 다음 작업을 추천"
-argument-hint: [focus-area]
+description: '현재 컨텍스트를 분석하여 다음 작업을 추천'
+argument-hint: '[focus-area]'
 allowed-tools:
   - Read
   - Glob
   - Grep
+  - Bash
   - AskUserQuestion
   - TodoWrite
-model: claude-opus-4-5-20251101
+  - mcp__sequential-thinking__sequentialthinking
+model: claude-opus-4-5-20251001
 ---
 
-# Context-Aware Task Recommender
+# Context-Aware Task Continuation
 
 ## MISSION
 
-Analyze current conversation context and recommend logical next actions.
-Help user decide what to do next based on loaded files, completed tasks, and pending work.
+현재 대화에 로드된 **모든 컨텍스트를 완전히 숙지**하고,
+마지막에 **끊긴 작업을 이어서 진행**합니다.
+
+단순 추천이 아닌, **실제 작업 재개**가 목표입니다.
 
 **Focus Area** (optional): $ARGUMENTS
 
 ---
 
-## MCP INTEGRATION
+## CORE PRINCIPLES
 
 ```
-CONTEXT ANALYSIS:
-├─ Sequential-Thinking MCP 호출 (컨텍스트 분석)
-│   ├─ 로드된 파일/완료된 작업/미완료 항목 분석
-│   ├─ 논리적 다음 단계 도출
-│   ├─ 우선순위 결정
-│   └─ 추천 작업 목록 생성
-│
-└─ 적용 시점:
-    ├─ 복잡한 컨텍스트 분석 시
-    ├─ 다중 작업 우선순위 결정 시
-    └─ 워크플로우 전환점 감지 시
+컨텍스트 연속성 원칙:
+├─ 로드된 모든 컨텍스트를 완전히 파악
+├─ 대화 흐름에서 마지막 작업 지점 식별
+├─ 끊긴 작업을 자동으로 이어서 진행
+├─ 사용자 개입 최소화
+└─ Sequential Thinking으로 논리적 분석
 ```
 
 ---
 
-## PHASE 1: Context Scan
+## PHASE 1: Deep Context Analysis with Sequential Thinking
+
+**Sequential Thinking MCP**로 현재 컨텍스트를 심층 분석합니다:
 
 ```
-SCAN conversation history and extract:
+mcp__sequential-thinking__sequentialthinking:
+  thought: "현재 대화 컨텍스트를 심층 분석합니다.
+    1. 로드된 파일 목록 파악
+    2. 각 파일의 핵심 내용 이해
+    3. 파일 간 관계 및 의존성 파악
+    4. 대화에서 수행된 작업 추적
+    5. 마지막 작업 지점 식별
+    6. 미완료 작업 탐지"
+  thoughtNumber: 1
+  totalThoughts: 4
+  nextThoughtNeeded: true
+```
 
-1. LOADED FILES:
-   ├─ inject-context markers: "📁 파일 컨텍스트"
-   ├─ Read tool results
-   └─ Recently edited files
+### 1.1 Loaded Context Inventory
 
-2. COMPLETED TASKS:
-   ├─ Commits made
-   ├─ Files created/modified
-   ├─ Tests run
-   └─ Commands executed
+```
+SCAN conversation and extract:
 
-3. PENDING ITEMS:
-   ├─ TodoWrite items with status != completed
-   ├─ Mentioned but not done
-   ├─ Errors/warnings not resolved
-   └─ Follow-up suggestions not acted on
+1. LOADED FILES (inject-context 또는 Read로 로드된 파일):
+   FOR each file_marker in conversation:
+     EXTRACT:
+       ├─ 파일 경로
+       ├─ 파일 크기/라인 수
+       ├─ 핵심 구조 (클래스, 함수, 모듈)
+       ├─ 주요 의존성
+       └─ 파일의 역할 (서비스, 컨트롤러, 유틸 등)
 
-4. PROJECT STATE:
-   ├─ Git status (uncommitted changes?)
-   ├─ Build/test status (if known)
-   └─ Current working directory
+2. FILE RELATIONSHIPS:
+   ├─ import/export 관계
+   ├─ 상속/구현 관계
+   ├─ 호출 관계
+   └─ 설정 의존성
 
-BUILD context_summary:
-{
-  files_loaded: [paths],
-  tasks_completed: [summaries],
-  tasks_pending: [items],
-  recent_changes: [files],
-  current_focus: $ARGUMENTS or inferred
-}
+3. KEY UNDERSTANDING:
+   ├─ 코드베이스의 아키텍처
+   ├─ 사용된 패턴 (DI, Repository, etc.)
+   ├─ 기술 스택
+   └─ 프로젝트 구조
+```
+
+### 1.2 Work History Tracking
+
+```
+TRACK conversation history:
+
+1. COMPLETED TASKS:
+   ├─ 파일 생성/수정
+   ├─ 커밋 수행
+   ├─ 테스트 실행
+   ├─ 분석/설명 제공
+   └─ 오류 해결
+
+2. IN-PROGRESS TASKS:
+   ├─ 시작했으나 완료되지 않은 작업
+   ├─ 중단된 구현
+   ├─ 대기 중인 확인 사항
+   └─ 미해결 질문
+
+3. LAST WORK POINT:
+   ├─ 마지막 사용자 요청
+   ├─ 마지막 Claude 작업
+   ├─ 마지막 파일 수정
+   └─ 중단 지점의 상태
 ```
 
 ---
 
-## PHASE 2: Context Report (Korean)
+## PHASE 2: Context Summary with Sequential Thinking
+
+```
+mcp__sequential-thinking__sequentialthinking:
+  thought: "컨텍스트 분석 결과를 정리합니다.
+    - 로드된 파일: {file_count}개
+    - 완료된 작업: {completed_count}개
+    - 진행 중 작업: {in_progress_count}개
+    - 마지막 작업: {last_task}
+    - 중단 지점: {break_point}
+    - 재개 가능 여부: {can_resume}"
+  thoughtNumber: 2
+  totalThoughts: 4
+  nextThoughtNeeded: true
+```
+
+### Context Report (Korean)
 
 ```markdown
-## 📊 현재 컨텍스트 분석
+## 📊 컨텍스트 분석 결과
 
-### 로드된 파일
-| 파일 | 라인 | 주요 내용 |
-|------|------|----------|
-| {path} | {lines} | {key_elements} |
+### 📁 로드된 파일 ({count}개)
+| 파일 | 라인 | 역할 | 핵심 요소 |
+|------|------|------|----------|
+| {path} | {lines} | {role} | {key_elements} |
 
-### 완료된 작업
-- ✅ {task1}
-- ✅ {task2}
+### 🔗 파일 관계
+{dependency_graph}
 
-### 미완료 항목
-- ⏳ {pending1}
-- ⏳ {pending2}
+### ✅ 완료된 작업
+- {task1}
+- {task2}
 
-### 현재 상태
-| 항목 | 상태 |
+### 🔄 진행 중/중단된 작업
+- ⏸️ {interrupted_task}
+- 중단 지점: {break_point}
+- 상태: {status}
+
+### 📍 마지막 작업 지점
+| 항목 | 내용 |
 |------|------|
-| Git | {uncommitted changes / clean} |
-| 포커스 | {$ARGUMENTS or inferred area} |
+| 작업 | {last_task} |
+| 시점 | {timestamp} |
+| 상태 | {state} |
 ```
 
 ---
 
-## PHASE 3: Generate Recommendations
+## PHASE 3: Determine Continuation Strategy
 
 ```
-ANALYZE context and generate recommendations:
-
-CATEGORY 1 - Immediate Actions (based on pending items):
-├─ Uncommitted changes → "커밋하기"
-├─ Failed tests → "테스트 수정"
-├─ TODO items → "할 일 처리"
-└─ Errors in output → "오류 해결"
-
-CATEGORY 2 - Logical Next Steps (based on completed work):
-├─ Code written → ["테스트 작성", "문서화", "리팩토링"]
-├─ Feature added → ["통합 테스트", "PR 생성"]
-├─ Bug fixed → ["회귀 테스트", "관련 이슈 확인"]
-└─ Analysis done → ["구현 시작", "설계 검토"]
-
-CATEGORY 3 - Context Exploration (based on loaded files):
-├─ Related files not loaded → "관련 파일 탐색"
-├─ Dependencies → "의존성 분석"
-└─ Patterns detected → "패턴 적용 확장"
-
-CATEGORY 4 - Quality Improvements:
-├─ No tests → "테스트 커버리지 추가"
-├─ No docs → "문서화"
-├─ Complex code → "리팩토링"
-└─ Security concerns → "보안 검토"
-
-SELECT top 4 recommendations based on:
-├─ Urgency (pending items first)
-├─ Relevance (to current focus)
-├─ Impact (high value actions)
-└─ Feasibility (can be done with current context)
+mcp__sequential-thinking__sequentialthinking:
+  thought: "작업 재개 전략을 결정합니다.
+    1. 중단된 작업이 있는가? → 있으면 재개
+    2. 명시적 다음 단계가 있는가? → 있으면 진행
+    3. 논리적 다음 단계가 있는가? → 추론하여 진행
+    4. 추천만 필요한가? → TUI로 선택 제공"
+  thoughtNumber: 3
+  totalThoughts: 4
+  nextThoughtNeeded: true
 ```
+
+### Decision Tree
+
+```
+DECISION LOGIC:
+
+IF interrupted_task EXISTS:
+    # 중단된 작업 자동 재개
+    → "마지막 작업을 이어서 진행합니다: {interrupted_task}"
+    → EXECUTE interrupted_task from break_point
+
+ELIF explicit_next_step EXISTS:
+    # 명시적 다음 단계 진행
+    → "다음 단계를 진행합니다: {next_step}"
+    → EXECUTE next_step
+
+ELIF $ARGUMENTS (focus-area) PROVIDED:
+    # 사용자 지정 영역 작업
+    → "'{focus-area}' 영역 작업을 진행합니다"
+    → EXECUTE work on focus-area
+
+ELIF logical_next_step INFERRED:
+    # 논리적 다음 단계 추론
+    → "논리적 다음 단계를 진행합니다: {inferred_step}"
+    → EXECUTE inferred_step
+
+ELSE:
+    # 명확한 다음 단계 없음 - TUI로 선택
+    → Show recommendation TUI (PHASE 4)
+```
+
+### Continuation Patterns
+
+| 마지막 작업 | 논리적 다음 단계 |
+|------------|-----------------|
+| 코드 작성 완료 | 테스트 작성 → 커밋 |
+| 분석 완료 | 구현 시작 |
+| 테스트 실패 | 버그 수정 |
+| 버그 수정 완료 | 테스트 재실행 → 커밋 |
+| 리팩토링 완료 | 테스트 확인 → 커밋 |
+| 파일 로드 완료 | 요청된 작업 수행 |
+| 커밋 완료 | 푸시 또는 다음 작업 |
+| PR 생성 완료 | 다음 기능 또는 종료 |
 
 ---
 
-## PHASE 4: Recommendation TUI (Required)
+## PHASE 4: Execute or Recommend
 
-**Always show recommendations:**
-
-```
-AskUserQuestion:
-  question: "컨텍스트 분석이 완료되었습니다. 다음 작업을 선택하세요."
-  header: "추천 작업"
-  options:
-    - label: "{recommendation_1}"
-      description: "{why_recommended_1}"
-    - label: "{recommendation_2}"
-      description: "{why_recommended_2}"
-    - label: "{recommendation_3}"
-      description: "{why_recommended_3}"
-    - label: "직접 입력"
-      description: "다른 작업을 직접 지정합니다"
-```
-
-**Dynamic options based on context:**
+### 4.1 자동 재개 (중단된 작업이 있을 때)
 
 ```
+IF can_auto_resume:
+
+  mcp__sequential-thinking__sequentialthinking:
+    thought: "중단된 작업을 재개합니다.
+      - 작업: {interrupted_task}
+      - 중단 지점: {break_point}
+      - 재개 방법: {resume_strategy}
+      - 예상 결과: {expected_outcome}"
+    thoughtNumber: 4
+    totalThoughts: 4
+    nextThoughtNeeded: false
+
+  PRINT "🔄 마지막 작업을 이어서 진행합니다..."
+  PRINT "작업: {interrupted_task}"
+  PRINT "중단 지점: {break_point}"
+  PRINT "─────────────────────────────────────"
+
+  EXECUTE interrupted_task from break_point
+
+  → 작업 완료 후 PHASE 1로 돌아가 다음 작업 확인
+```
+
+### 4.2 추천 TUI (명확한 다음 단계가 없을 때)
+
+```
+IF need_user_selection:
+
+  AskUserQuestion:
+    question: "컨텍스트 분석이 완료되었습니다. 어떤 작업을 진행하시겠습니까?"
+    header: "작업 선택"
+    options:
+      - label: "{recommendation_1}"
+        description: "{why_1} (추천)"
+      - label: "{recommendation_2}"
+        description: "{why_2}"
+      - label: "{recommendation_3}"
+        description: "{why_3}"
+      - label: "직접 지시"
+        description: "다른 작업을 직접 입력합니다"
+```
+
+### 4.3 Dynamic Recommendations
+
+```
+GENERATE recommendations based on context:
+
 IF uncommitted_changes:
-  ADD option: "변경사항 커밋" → /git-commit
+  ADD: "변경사항 커밋" → /git-commit
 
-IF loaded_files AND no_analysis_done:
-  ADD option: "파일 분석" → analyze files
+IF loaded_files AND no_work_done:
+  ADD: "파일 분석 및 설명"
 
-IF tests_exist AND not_recently_run:
-  ADD option: "테스트 실행" → run tests
+IF code_written AND no_tests:
+  ADD: "테스트 작성"
+
+IF tests_exist AND not_run:
+  ADD: "테스트 실행"
+
+IF tests_failed:
+  ADD: "테스트 수정"
 
 IF todo_items_pending:
-  ADD option: "할 일 처리" → work on todo
+  ADD: "할 일 처리: {todo}"
 
-IF complex_code_detected:
-  ADD option: "리팩토링" → refactor suggestions
+IF complex_code:
+  ADD: "리팩토링 제안"
 
 IF no_documentation:
-  ADD option: "문서 작성" → generate docs
+  ADD: "문서 작성"
 ```
 
 ---
 
-## PHASE 5: Execute Selected Action
+## PHASE 5: Handle Selection and Execute
 
 ```
 SWITCH selection:
-  "변경사항 커밋":
-    → Execute /git-commit flow
-    → Return to recommendation TUI
 
-  "파일 분석":
-    → Analyze loaded files
-    → Report findings
-    → Suggest next actions
+  "{recommendation}":
+    → PRINT "'{recommendation}' 작업을 진행합니다..."
+    → EXECUTE selected_task
+    → REPORT result
+    → LOOP back to PHASE 1
 
-  "테스트 실행":
-    → Run appropriate test command
-    → Report results
-    → Suggest fixes if failed
-
-  "할 일 처리":
-    → Show pending TodoWrite items
-    → TUI: select item to work on
-    → Execute selected task
-
-  "리팩토링":
-    → Identify refactoring targets
-    → TUI: select what to refactor
-    → Execute with confirmation
-
-  "문서 작성":
-    → Identify undocumented code
-    → Generate documentation
-    → Apply with confirmation
-
-  "직접 입력":
-    → TUI: free text input
-    → Parse and execute
+  "직접 지시":
+    → PRINT "어떤 작업을 진행하시겠습니까?"
+    → WAIT for user input
+    → EXECUTE user_task
+    → LOOP back to PHASE 1
 ```
 
 ---
 
-## COMMON RECOMMENDATION PATTERNS
+## CONTEXT UNDERSTANDING CHECKLIST
 
-| Context | Recommendations |
-|---------|-----------------|
-| Just finished coding | 테스트 작성, 커밋, 코드 리뷰 |
-| Just committed | 푸시, PR 생성, 다음 기능 |
-| Just analyzed | 구현 시작, 설계 문서화, 리팩토링 |
-| Tests failing | 버그 수정, 디버깅, 관련 코드 확인 |
-| Large file loaded | 구조 분석, 핵심 로직 파악, 의존성 확인 |
-| Multiple files loaded | 관계 분석, 통합 포인트 확인, 아키텍처 검토 |
-| Error occurred | 오류 해결, 로그 확인, 롤백 고려 |
-| Nothing pending | 새 작업 시작, 기술 부채 해결, 문서화 |
+작업 재개 전 반드시 확인:
+
+```
+□ 모든 로드된 파일 내용 파악
+□ 파일 간 의존성/관계 이해
+□ 프로젝트 아키텍처 파악
+□ 사용된 기술 스택 확인
+□ 완료된 작업 목록 정리
+□ 중단된 작업 식별
+□ 마지막 작업 지점 확인
+□ 다음 단계 결정
+```
 
 ---
 
@@ -245,17 +337,22 @@ SWITCH selection:
 
 | Error | Response (Korean) |
 |-------|-------------------|
-| No context | "컨텍스트가 없습니다. 파일을 로드하거나 작업을 시작하세요" |
-| Empty history | "대화 기록이 없습니다. 무엇을 도와드릴까요?" |
-| Ambiguous focus | TUI로 포커스 영역 선택 요청 |
+| No context loaded | "로드된 컨텍스트가 없습니다. /inject-context로 파일을 먼저 로드하세요." |
+| Empty conversation | "대화 기록이 없습니다. 무엇을 도와드릴까요?" |
+| Ambiguous state | Sequential Thinking으로 상태 분석 후 TUI 제공 |
+| Multiple interrupted tasks | 우선순위 기반으로 정렬 후 TUI로 선택 |
 
 ---
 
 ## EXECUTE NOW
 
-1. Scan conversation context (PHASE 1)
-2. Report context summary in Korean (PHASE 2)
-3. Generate smart recommendations (PHASE 3)
-4. **Show recommendation TUI** (PHASE 4) ← REQUIRED
-5. Execute selected action (PHASE 5)
-6. Loop back to PHASE 1 for continuous assistance
+1. **Sequential Thinking**: 현재 컨텍스트 심층 분석 (PHASE 1)
+2. 로드된 파일 목록 및 내용 완전 파악
+3. 작업 히스토리 추적 (완료/진행중/중단)
+4. **Sequential Thinking**: 컨텍스트 요약 (PHASE 2)
+5. 컨텍스트 리포트 출력
+6. **Sequential Thinking**: 재개 전략 결정 (PHASE 3)
+7. 중단된 작업 있으면 → **자동 재개** (PHASE 4.1)
+8. 없으면 → 추천 TUI 표시 (PHASE 4.2)
+9. 선택된 작업 실행 (PHASE 5)
+10. 작업 완료 후 → PHASE 1로 돌아가 연속 지원
