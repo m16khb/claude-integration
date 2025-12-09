@@ -223,7 +223,7 @@ feat: JWT 기반 인증 시스템 구현
 
 Closes #123
 
-🤖 Generated with Claude Code
+Generated with Claude Code
 ```
 
 ### 2. 프리훅 통합
@@ -235,6 +235,67 @@ Closes #123
 1. code-reviewer 자동 실행
 2. 테스트 실패 시 커밋 중단
 3. 보안 취약점 발견 시 경고
+```
+
+## 문서 생성 워크플로우 예제
+
+### Discovery Phase
+
+```bash
+# 코드베이스 스캔
+/doc-scan --path ./src --output ./.claude/discovery.json
+
+# 결과 예시
+{
+  "project": {
+    "name": "my-app",
+    "language": "typescript",
+    "framework": "nestjs",
+    "architecture": "microservices"
+  },
+  "apis": [
+    {
+      "path": "/api/users",
+      "method": "GET",
+      "controller": "UserController",
+      "auth": "required"
+    }
+  ],
+  "entities": [
+    {
+      "name": "User",
+      "fields": ["id", "email", "name"],
+      "relations": ["Profile", "Posts"]
+    }
+  ]
+}
+```
+
+### Template Selection
+
+```typescript
+// 템플릿 선택 로직
+function selectTemplates(discovery: DiscoveryResult): Template[] {
+  const templates = [];
+
+  // 기본 템플릿
+  templates.push('project/CLAUDE.md');
+  templates.push('project/README.md');
+
+  // API가 있는 경우
+  if (discovery.apis.length > 0) {
+    templates.push('api/openapi.yml');
+    templates.push('api/usage-guide.md');
+  }
+
+  // 마이크로서비스인 경우
+  if (discovery.architecture === 'microservices') {
+    templates.push('architecture/microservices.md');
+    templates.push('deployment/kubernetes.md');
+  }
+
+  return templates;
+}
 ```
 
 ## MCP 서버 통합 예제
@@ -267,34 +328,30 @@ test('게임 로그인', async ({ page }) => {
 - 최신 문서 주입
 ```
 
-## 에러 핸들링 예제
+## 인터랙티브 API 문서 예제
 
-### 1. 라우팅 실패
-
-```bash
-# 사용자 요청
-"양자 컴퓨팅 알고리즘 구현"
-
-# 라우팅 결과
-- 매칭되는 에이전트 없음
-- 유사 키워드: '알고리즘' (2점)
-
-# 응답
-"죄송합니다, 양자 컴퓨팅은 현재 지원하지 않는 도메인입니다.
-일반 알고리즘 구현이 필요하시면 알려주세요."
-```
-
-### 2. 병렬 실행 충돌
-
-```bash
-# 충돌 상황
-- redis-cache-expert: localhost:6379 제안
-- 기존 설정: localhost:6380 사용 중
-
-# 해결
-- 사용자에게 선택지 제공
-- 자동 포트 충돌 감지
-- 안전한 기본값 제안
+```typescript
+// 인터랙티브 API 문서 예시
+/**
+ * @api {get} /api/users Get user list
+ * @apiGroup Users
+ * @apiDescription 사용자 목록을 페이지네이션하여 조회합니다.
+ *
+ * @apiParam {Number} [page=1] 페이지 번호
+ * @apiParam {Number} [limit=10] 페이지당 항목 수
+ *
+ * @apiSuccess {Object[]} data 사용자 목록
+ * @apiSuccess {String} data.id 사용자 ID
+ * @apiSuccess {String} data.email 이메일
+ * @apiSuccess {Object} meta 페이지 정보
+ * @apiSuccess {Number} meta.total 전체 항목 수
+ *
+ * @apiExample {bash} 요청 예시
+ * curl -X GET "https://api.example.com/users?page=1&limit=10"
+ *
+ * @apiExample {javascript} JavaScript 예시
+ * const users = await api.users.list({ page: 1, limit: 10 });
+ */
 ```
 
 ## 성능 최적화 예제
@@ -326,4 +383,34 @@ export class GameEventProcessor {
     // ...
   }
 }
+```
+
+## 에러 핸들링 예제
+
+### 1. 라우팅 실패
+
+```bash
+# 사용자 요청
+"양자 컴퓨팅 알고리즘 구현"
+
+# 라우팅 결과
+- 매칭되는 에이전트 없음
+- 유사 키워드: '알고리즘' (2점)
+
+# 응답
+"죄송합니다, 양자 컴퓨팅은 현재 지원하지 않는 도메인입니다.
+일반 알고리즘 구현이 필요하시면 알려주세요."
+```
+
+### 2. 병렬 실행 충돌
+
+```bash
+# 충돌 상황
+- redis-cache-expert: localhost:6379 제안
+- 기존 설정: localhost:6380 사용 중
+
+# 해결
+- 사용자에게 선택지 제공
+- 자동 포트 충돌 감지
+- 안전한 기본값 제안
 ```

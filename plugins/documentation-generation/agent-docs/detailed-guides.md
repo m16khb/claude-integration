@@ -63,6 +63,76 @@ skill-name/
 └── resources/        # 추가 리소스
 ```
 
+## Document Builder Agent
+
+### 역할
+코드베이스 분석을 통한 지능적 문서 생성 전문가
+
+### 핵심 기능
+- **코드 분석**: AST 파싱, 의존성 분석, 패턴 인식
+- **문서 유추**: 코드에서 자동으로 문서 내용 추출
+- **구조화**: 계층적인 문서 구조 자동 생성
+- **다이어그램**: Mermaid를 통한 시각화 자동 생성
+- **검증**: 생성된 문서의 정확성 검증
+
+### 분석 대상
+
+```
+ANALYSIS TARGETS:
+├─ 소스 코드
+│   ├─ TypeScript/JavaScript 인터페이스
+│   ├─ Python 클래스와 메서드
+│   ├─ Go 구조체와 인터페이스
+│   └─ Java 클래스와 패키지
+│
+├─ 설정 파일
+│   ├─ package.json, requirements.txt
+│   ├─ Dockerfile, docker-compose.yml
+│   ├─ Kubernetes 매니페스트
+│   └─ CI/CD 파이프라인
+│
+├─ API 정의
+│   ├─ OpenAPI/Swagger 스펙
+│   ├─ GraphQL 스키마
+│   ├─ gRPC 프로토콜
+│   └─ REST API 엔드포인트
+│
+└─ 아키텍처
+    ├─ 모듈 의존성 그래프
+    ├─ 데이터 흐름 다이어그램
+    ├─ 시퀀스 다이어그램
+    └─ 배포 아키텍처
+```
+
+## 문서 템플릿 라이브러리
+
+```
+TEMPLATE LIBRARY:
+├─ 프로젝트 문서
+│   ├─ CLAUDE.md (Claude Code 설정)
+│   ├─ README.md (프로젝트 소개)
+│   ├─ CONTRIBUTING.md (기여 가이드)
+│   └─ CHANGELOG.md (변경 이력)
+│
+├─ API 문서
+│   ├─ OpenAPI 3.0 스펙
+│   ├─ Postman 컬렉션
+│   ├─ API 사용 가이드
+│   └─ SDK 생성 템플릿
+│
+├─ 아키텍처 문서
+│   ├─ 시스템 아키텍처
+│   ├─ 데이터 모델
+│   ├─ 배포 가이드
+│   └─ 운영 가이드
+│
+└─ 기술 문서
+    ├─ 튜토리얼
+    ├─ How-to 가이드
+    ├─ 트러블슈팅
+    └─ FAQ
+```
+
 ## Agent Routing System
 
 ### 키워드 기반 자동 선택

@@ -87,6 +87,97 @@ Level 3: agent-docs/ (상세)
 └── 참조
 ```
 
+## 설정 가이드
+
+### 문서 생성 설정 (.claude/docs.yml)
+
+```yaml
+project:
+  name: "${PROJECT_NAME}"
+  version: "${PROJECT_VERSION}"
+  description: "${PROJECT_DESCRIPTION}"
+
+generation:
+  sources:
+    - path: "src/**/*.ts"
+      parser: "typescript"
+    - path: "src/**/*.py"
+      parser: "python"
+    - path: "api/**/*.yml"
+      parser: "openapi"
+
+  output:
+    directory: "docs"
+    format: ["markdown", "html"]
+    theme: "default"
+
+  templates:
+    base_dir: ".claude/templates"
+    custom_dir: "docs/templates"
+
+  features:
+    diagrams: true
+    code_examples: true
+    search_index: true
+    version_comparison: true
+
+  exclude:
+    paths: ["**/*.test.ts", "**/*.spec.ts"]
+    patterns: ["internal/", "debug/"]
+
+  post_processing:
+    - spell_check
+    - link_validation
+    - markdown_lint
+    - accessibility_check
+```
+
+### 문서 버전 관리
+
+```yaml
+# .claude/docs-config.yml
+versioning:
+  strategy: "semantic"  # semantic, date, custom
+  auto_tag: true
+  changelog:
+    generate: true
+    format: "keepachangelog"
+    sections:
+      - "Added"
+      - "Changed"
+      - "Deprecated"
+      - "Removed"
+      - "Fixed"
+      - "Security"
+
+multiversion:
+  enabled: true
+  max_versions: 5
+  latest_alias: "current"
+  legacy_redirect: true
+```
+
+### 커스텀 문서 섹션
+
+```yaml
+# .claude/custom-sections.yml
+sections:
+  - name: "Quick Start"
+    template: "sections/quick-start.md"
+    priority: 1
+
+  - name: "Authentication"
+    template: "sections/auth.md"
+    required: true
+    conditions:
+      - has_auth: true
+
+  - name: "Rate Limiting"
+    template: "sections/rate-limiting.md"
+    auto_generate: true
+    source: "rate-limiter.config"
+```
+
 ## 베스트 프랙티스
 
 ### 1. 에이전트 설계
@@ -123,6 +214,12 @@ Level 3: agent-docs/ (상세)
 | 중간 | Sonnet 3.5 | 코드 리뷰, 일반 구현 |
 | 낮음 | Haiku 3.5 | 단순 작업, 결정론적 출력 |
 
+### 4. 문서 생성 성능
+- **증분 생성**: 변경된 부분만 재생성
+- **병렬 처리**: 독립적인 섹션은 병렬로 생성
+- **캐싱**: 템플릿 파싱 결과 캐싱
+- **프리컴파일**: 자주 사용되는 다이어그램 미리 생성
+
 ## 보안 가이드라인
 
 ### 1. 데이터 처리
@@ -140,6 +237,51 @@ Level 3: agent-docs/ (상세)
 - 취약점 스캔 주기적 실행
 - 의존성 최신화
 
+## 트러블슈팅
+
+### 일반적인 문제
+
+#### 생성된 문서가 불완전할 때
+```
+원인: 코드 분석 실패 또는 템플릿 오류
+해결:
+1. 로그 확인: /generate-docs --verbose
+2. 소스 코드 검증: 주석과 타입 정의 확인
+3. 템플릿 디버깅: --debug-template
+```
+
+#### API 문서가 올바르지 않을 때
+```
+원인: 데코레이터 미사용 또는 스펙 오류
+해결:
+1. API 데코레이터 확인 (@ApiOperation, @ApiResponse)
+2. OpenAPI 스펙 검증
+3. 엔드포인트 그룹화 확인
+```
+
+### 디버깅 가이드
+
+#### 1. 로깅 전략
+```typescript
+// 구조화된 로깅
+logger.info('Agent execution', {
+  agent: 'typeorm-expert',
+  input: { action: 'create-entity', type: 'User' },
+  duration: 1250,
+  result: 'success'
+});
+```
+
+#### 2. 오류 처리
+- 상세한 에러 메시지
+- 복구 가능한 오류 처리
+- 롤백 전략
+
+#### 3. 모니터링
+- 실행 시간 추적
+- 성능 지표 수집
+- 예외 패턴 분석
+
 ## 테스트 전략
 
 ### 1. 단위 테스트
@@ -156,29 +298,6 @@ Level 3: agent-docs/ (상세)
 - 실제 시나리오 기반
 - Playwright 자동화
 - 성능 벤치마크
-
-## 디버깅 가이드
-
-### 1. 로깅 전략
-```typescript
-// 구조화된 로깅
-logger.info('Agent execution', {
-  agent: 'typeorm-expert',
-  input: { action: 'create-entity', type: 'User' },
-  duration: 1250,
-  result: 'success'
-});
-```
-
-### 2. 오류 처리
-- 상세한 에러 메시지
-- 복구 가능한 오류 처리
-- 롤백 전략
-
-### 3. 모니터링
-- 실행 시간 추적
-- 성능 지표 수집
-- 예외 패턴 분석
 
 ## 커뮤니티 리소스
 
