@@ -7,6 +7,7 @@ allowed-tools:
   - Grep
   - Glob
   - Bash(npm:*, eslint:*, tsc:*)
+  - mcp__sequential-thinking__sequentialthinking
 ---
 
 # Code Reviewer Agent

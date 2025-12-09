@@ -8,7 +8,8 @@ allowed-tools:
   - Glob
   - Task
   - AskUserQuestion
-model: claude-haiku-4-20250414
+  - mcp__sequential-thinking__sequentialthinking
+model: claude-opus-4-5-20251101
 ---
 
 # Code Review Command
@@ -107,40 +108,51 @@ Task(
 
 ## PHASE 3: Report Summary
 
-```markdown
+````markdown
 ## 🔍 코드 리뷰 완료
 
 ### 요약
-| 항목 | 값 |
-|------|-----|
-| 검토 파일 | {count}개 |
-| 발견 이슈 | {total}개 |
-| CRITICAL | {critical}개 |
-| HIGH | {high}개 |
+
+| 항목      | 값           |
+| --------- | ------------ |
+| 검토 파일 | {count}개    |
+| 발견 이슈 | {total}개    |
+| CRITICAL  | {critical}개 |
+| HIGH      | {high}개     |
 
 ### 주요 이슈
 
 #### CRITICAL: {issue_title}
+
 📁 `{file_path}:{line}`
 
 **문제**: {description}
 
 **수정 방안**:
+
 ```typescript
 // Before
-{before_code}
+{
+  before_code;
+}
 
 // After
-{after_code}
+{
+  after_code;
+}
 ```
+````
 
 ### 긍정적 관찰
+
 - {positive_1}
 - {positive_2}
 
 ### 권장 사항
+
 - [ ] {recommendation_1}
 - [ ] {recommendation_2}
+
 ```
 
 ---
@@ -148,38 +160,38 @@ Task(
 ## PHASE 4: Follow-up TUI
 
 ```
+
 AskUserQuestion:
-  question: "다음 작업을 선택하세요"
-  header: "후속"
-  options:
-    - label: "이슈 자동 수정"
-      description: "발견된 이슈를 자동으로 수정합니다"
-    - label: "테스트 생성"
-      description: "리뷰된 코드에 대한 테스트를 생성합니다"
-    - label: "커밋 진행"
-      description: "수정 없이 커밋을 진행합니다"
-    - label: "완료"
-      description: "리뷰만 확인하고 종료합니다"
+question: "다음 작업을 선택하세요"
+header: "후속"
+options: - label: "이슈 자동 수정"
+description: "발견된 이슈를 자동으로 수정합니다" - label: "테스트 생성"
+description: "리뷰된 코드에 대한 테스트를 생성합니다" - label: "커밋 진행"
+description: "수정 없이 커밋을 진행합니다" - label: "완료"
+description: "리뷰만 확인하고 종료합니다"
+
 ```
 
 ### Handle Selection:
 
 ```
+
 SWITCH selection:
-  "이슈 자동 수정":
-    → FOR EACH critical/high issue:
-        Edit file with suggested fix
-    → Re-run review to verify
+"이슈 자동 수정":
+→ FOR EACH critical/high issue:
+Edit file with suggested fix
+→ Re-run review to verify
 
-  "테스트 생성":
-    → Task(subagent_type="test-automator", prompt="...")
+"테스트 생성":
+→ Task(subagent_type="test-automator", prompt="...")
 
-  "커밋 진행":
-    → Execute /git-commit
+"커밋 진행":
+→ Execute /git-commit
 
-  "완료":
-    → Print final summary
-    → Exit
+"완료":
+→ Print final summary
+→ Exit
+
 ```
 
 ---
@@ -202,3 +214,4 @@ SWITCH selection:
 4. Display review summary in Korean
 5. Show follow-up TUI
 6. Execute selected action
+```
