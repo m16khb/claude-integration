@@ -10,6 +10,11 @@ allowed-tools:
   - Grep
   - Task
   - AskUserQuestion
+  # Sequential Thinking for analysis
+  - mcp__sequential-thinking__sequentialthinking
+  # Context7 for best practices
+  - mcp__context7__resolve-library-id
+  - mcp__context7__get-library-docs
 model: claude-opus-4-5-20251101
 ---
 
@@ -19,6 +24,12 @@ model: claude-opus-4-5-20251101
 
 Build and synchronize hierarchical documentation orchestration system.
 Scan project → identify modules → create/update CLAUDE.md and agent-docs → parallel document-builder invocation.
+
+**핵심 원칙:**
+- 모듈마다 CLAUDE.md 작성 (모듈식 아키텍처)
+- LOC 초과 시 agent-docs로 분할 (간결성 유지)
+- 모든 CLAUDE.md는 상위에서 참조 (계층적 연결)
+- 고아 파일 0개 (무결성 보장)
 
 ---
 
@@ -53,6 +64,20 @@ Scan project → identify modules → create/update CLAUDE.md and agent-docs →
 ---
 
 ## PHASE 0: Component Registry Sync (routing-table.json)
+
+**Sequential Thinking으로 컴포넌트 분석:**
+
+```
+mcp__sequential-thinking__sequentialthinking:
+  thought: "프로젝트 컴포넌트를 분석합니다.
+    1. agents, skills, commands 파일 탐색
+    2. 각 컴포넌트의 메타데이터 추출
+    3. routing-table.json 갱신 필요성 판단
+    4. 변경된 컴포넌트 목록 생성"
+  thoughtNumber: 1
+  totalThoughts: 6
+  nextThoughtNeeded: true
+```
 
 ```
 EXECUTE PARALLEL:
@@ -91,7 +116,81 @@ UPDATE .claude-plugin/routing-table.json:
 
 ---
 
+## PHASE 0.5: Best Practices Reference (Context7)
+
+**Context7로 최신 CLAUDE.md 베스트 프랙티스 조회:**
+
+```
+mcp__sequential-thinking__sequentialthinking:
+  thought: "CLAUDE.md 베스트 프랙티스를 Context7에서 조회합니다.
+    1. Claude Code 공식 문서 검색
+    2. 계층적 문서화 패턴 확인
+    3. LOC 제한 및 분할 기준 파악
+    4. 프로젝트 기술 스택에 맞는 가이드라인 적용"
+  thoughtNumber: 2
+  totalThoughts: 6
+  nextThoughtNeeded: true
+```
+
+```
+# Context7 베스트 프랙티스 조회
+mcp__context7__resolve-library-id:
+  libraryName: "Claude Code CLAUDE.md"
+
+mcp__context7__get-library-docs:
+  context7CompatibleLibraryID: "{resolved_id}"
+  topic: "CLAUDE.md hierarchical documentation"
+  mode: "info"
+```
+
+### CLAUDE.md 베스트 프랙티스 (2025 기준)
+
+```
+BEST PRACTICES (Anthropic Official + Community):
+├─ 간결성
+│   ├─ CLAUDE.md는 시스템 프롬프트에 포함됨
+│   ├─ 정보를 별도 markdown 파일로 분리하고 참조
+│   └─ 민감 정보 포함 금지
+│
+├─ 계층적 구조
+│   ├─ ~/.claude/CLAUDE.md (전역)
+│   ├─ parent directories (상위)
+│   └─ project root (프로젝트)
+│
+├─ 모듈식 아키텍처
+│   ├─ 단일 monolithic 대신 모듈별 분리
+│   ├─ "Use nested CLAUDE.md files for different development areas"
+│   └─ context-specific files: backend/, frontend/, database/
+│
+├─ LOC 제한 (Line of Code)
+│   ├─ ROOT: max 150 lines
+│   ├─ MODULE: max 80 lines
+│   └─ SUBMODULE: max 50 lines
+│
+└─ 참조 규칙
+    ├─ 중복 방지: 각 가이드라인은 한 곳에만
+    ├─ 외부 문서 링크 활용, 복사 금지
+    └─ 하위 CLAUDE.md는 상위에서 참조
+```
+
+---
+
 ## PHASE 1: Hierarchical Scan
+
+**Sequential Thinking으로 계층 구조 분석:**
+
+```
+mcp__sequential-thinking__sequentialthinking:
+  thought: "프로젝트 계층 구조를 분석합니다.
+    1. 루트 디렉토리 및 모듈 탐색
+    2. 기존 CLAUDE.md 파일 위치 파악
+    3. agent-docs 디렉토리 존재 여부 확인
+    4. 모듈 간 관계 및 의존성 파악
+    5. 누락된 CLAUDE.md 위치 식별"
+  thoughtNumber: 3
+  totalThoughts: 6
+  nextThoughtNeeded: true
+```
 
 ```
 EXECUTE PARALLEL:
@@ -144,34 +243,66 @@ COLLECT → HIERARCHY:
 
 ## PHASE 2: Gap Analysis
 
+**Sequential Thinking으로 갭 분석:**
+
+```
+mcp__sequential-thinking__sequentialthinking:
+  thought: "CLAUDE.md 갭 분석을 수행합니다.
+    1. 각 모듈의 CLAUDE.md 존재 여부 확인
+    2. 기존 CLAUDE.md의 LOC 측정
+    3. agent-docs 필요성 판단
+    4. 상위/하위 참조 무결성 검사
+    5. 작업 큐 우선순위 결정"
+  thoughtNumber: 4
+  totalThoughts: 6
+  nextThoughtNeeded: true
+```
+
 ```
 FOR each item in HIERARCHY:
   ANALYZE:
   ├─ CLAUDE.md exists?
   ├─ CLAUDE.md line count (if exists)
   ├─ agent-docs/ exists?
-  ├─ Parent CLAUDE.md referenced?
-  ├─ Child modules linked?
+  ├─ Parent CLAUDE.md referenced? ← 상위에서 이 모듈을 참조하는가?
+  ├─ Child modules linked? ← 하위 모듈을 참조하는가?
+  ├─ agent-docs linked? ← agent-docs를 참조하는가?
   └─ Content up-to-date?
 
-  LINE COUNT RULES:
-  ├─ ROOT CLAUDE.md: max 150 lines
-  ├─ MODULE CLAUDE.md: max 80 lines
-  └─ SUBMODULE CLAUDE.md: max 50 lines
+  LINE COUNT RULES (LOC 제한 - 유연한 가이드라인):
+  ┌─────────────────┬───────────┬───────────┬─────────────────────────────┐
+  │ Level           │ Soft Limit│ Hard Limit│ Rationale                   │
+  ├─────────────────┼───────────┼───────────┼─────────────────────────────┤
+  │ ROOT CLAUDE.md  │ 200       │ 300       │ 네비게이션 허브, 전체 개요   │
+  │ MODULE CLAUDE.md│ 150       │ 250       │ 모듈별 핵심 정보            │
+  │ SUBMODULE       │ 100       │ 150       │ 세부 컴포넌트 설명          │
+  └─────────────────┴───────────┴───────────┴─────────────────────────────┘
 
-  IF line_count > limit:
-    CLASSIFY as NEEDS_AGENT_DOCS
+  SOFT LIMIT: 경고 표시, agent-docs 분할 권장
+  HARD LIMIT: 강제 분할 필요, agent-docs 생성 필수
+
+  IF line_count > HARD_LIMIT:
+    CLASSIFY as NEEDS_AGENT_DOCS (강제)
     ├─ Extract reference sections to agent-docs/
     ├─ Keep only summaries in CLAUDE.md
     └─ Add links to detailed docs
 
+  ELIF line_count > SOFT_LIMIT:
+    CLASSIFY as RECOMMEND_AGENT_DOCS (권장)
+    ├─ 경고 표시
+    ├─ 분할 제안
+    └─ 사용자 선택에 따라 진행
+
   CLASSIFY:
-  ├─ CREATE_CLAUDE_MD: CLAUDE.md missing
-  ├─ CREATE_AGENT_DOCS: agent-docs/ needed but missing
-  ├─ NEEDS_AGENT_DOCS: CLAUDE.md too large, needs refactoring
-  ├─ UPDATE_CLAUDE_MD: file structure changed
-  ├─ UPDATE_LINKS: reference links broken
-  └─ OK: up-to-date
+  ├─ CREATE_CLAUDE_MD: CLAUDE.md 누락
+  ├─ CREATE_AGENT_DOCS: agent-docs/ 필요하지만 없음
+  ├─ NEEDS_AGENT_DOCS: HARD_LIMIT 초과, 강제 분할 필요
+  ├─ RECOMMEND_AGENT_DOCS: SOFT_LIMIT 초과, 분할 권장
+  ├─ UPDATE_CLAUDE_MD: 파일 구조 변경됨
+  ├─ UPDATE_LINKS: 참조 링크 깨짐
+  ├─ ADD_PARENT_LINK: 상위 참조 누락
+  ├─ ADD_CHILD_LINK: 하위 모듈 참조 누락
+  └─ OK: 최신 상태
 
 BUILD TASK_QUEUE:
 [
@@ -204,45 +335,134 @@ BUILD TASK_QUEUE:
 
 ## PHASE 2.5: Agent-docs Auto-generation
 
+**Sequential Thinking으로 분할 결정:**
+
+```
+mcp__sequential-thinking__sequentialthinking:
+  thought: "CLAUDE.md 분할 전략을 결정합니다.
+    1. LOC 초과 CLAUDE.md 식별
+    2. 추출 가능한 섹션 분류
+    3. agent-docs 파일 구조 설계
+    4. 참조 링크 생성 계획
+    5. 분할 후 LOC 검증"
+  thoughtNumber: 5
+  totalThoughts: 6
+  nextThoughtNeeded: true
+```
+
+### 분할 기준 및 규칙
+
 ```
 WHEN CLAUDE.md exceeds line limit:
 
   IDENTIFY extractable sections:
-  ├─ Detailed guides (> 20 lines)
-  ├─ Code examples (> 10 lines)
-  ├─ Reference tables (> 15 rows)
-  └─ Architecture diagrams
+  ┌────────────────────┬───────────┬──────────────────────────────┐
+  │ Section Type       │ Threshold │ Target File                  │
+  ├────────────────────┼───────────┼──────────────────────────────┤
+  │ Detailed guides    │ > 20 lines│ agent-docs/detailed-guide.md │
+  │ Code examples      │ > 10 lines│ agent-docs/examples.md       │
+  │ Reference tables   │ > 15 rows │ agent-docs/references.md     │
+  │ API documentation  │ > 30 lines│ agent-docs/api-reference.md  │
+  │ Architecture docs  │ > 25 lines│ agent-docs/architecture.md   │
+  │ Troubleshooting    │ > 15 lines│ agent-docs/troubleshooting.md│
+  └────────────────────┴───────────┴──────────────────────────────┘
 
-  CREATE agent-docs/ at same level:
-  ├─ {module}/agent-docs/
-  │   ├─ detailed-guide.md      # Extracted detailed content
-  │   ├─ examples.md            # Code examples
-  │   └─ references.md          # External links, resources
+  CREATE agent-docs/ at SAME LEVEL as CLAUDE.md:
+  ├─ {module}/CLAUDE.md
+  ├─ {module}/agent-docs/           ← 같은 레벨!
+  │   ├─ detailed-guide.md
+  │   ├─ examples.md
+  │   ├─ references.md
+  │   └─ [additional files as needed]
   │
   └─ Directory structure mirrors CLAUDE.md level
+```
 
-  UPDATE CLAUDE.md:
-  ├─ Replace detailed sections with summaries
-  ├─ Add links: "상세 내용은 [agent-docs/detailed-guide.md](agent-docs/detailed-guide.md) 참조"
-  └─ Verify line count within limit
+### CLAUDE.md 필수 구조 (분할 후)
 
-  EXTRACTION RULES:
-  ├─ Keep: Overview, Quick Start, Essential info
-  ├─ Extract: Detailed guides, Full examples, References
-  └─ Link: All extracted content must be linked from CLAUDE.md
+```markdown
+# {Module Name}
 
+{1-2문장 개요}
+
+## 핵심 기능
+{간결한 기능 설명}
+
+## 주요 구성요소
+| 이름 | 역할 | 설명 |
+|------|------|------|
+
+## 빠른 시작
+{필수 명령어만}
+
+## 상세 문서
+- [상세 가이드](agent-docs/detailed-guide.md) - 전체 가이드
+- [예제 모음](agent-docs/examples.md) - 코드 예제
+- [참조 자료](agent-docs/references.md) - 외부 링크
+
+## 하위 모듈 (있을 경우)
+- [submodule/](submodule/CLAUDE.md) - 설명
+
+[parent](../CLAUDE.md)  ← 필수! (root 제외)
+```
+
+### agent-docs 파일 헤더 템플릿
+
+```markdown
+# {Title}
+
+> 이 문서는 [{parent_module}/CLAUDE.md](../CLAUDE.md)의 상세 문서입니다.
+
+## 개요
+{섹션 개요}
+
+## 상세 내용
+{추출된 상세 내용}
+
+---
+[← CLAUDE.md로 돌아가기](../CLAUDE.md)
+```
+
+### 분할 실행 규칙
+
+```
+EXTRACTION RULES:
+├─ Keep in CLAUDE.md:
+│   ├─ Overview (개요)
+│   ├─ Quick Start (빠른 시작)
+│   ├─ Key Components table (주요 구성요소 테이블)
+│   └─ Links to agent-docs and child modules
+│
+├─ Extract to agent-docs/:
+│   ├─ Detailed guides (> 20 lines)
+│   ├─ Full code examples (> 10 lines)
+│   ├─ Reference materials
+│   ├─ Architecture deep-dives
+│   └─ Troubleshooting guides
+│
+└─ MANDATORY:
+    ├─ All extracted content MUST be linked from CLAUDE.md
+    ├─ All agent-docs files MUST link back to CLAUDE.md
+    └─ No orphan files allowed
+```
+
+### 분할 예시
+
+```
 EXAMPLE:
   commands/CLAUDE.md (95 lines) → exceeds 80 line limit
 
   EXTRACT:
-  ├─ "## 커맨드 작성 상세 가이드" → commands/agent-docs/command-writing.md
-  └─ "## 예제 모음" → commands/agent-docs/examples.md
+  ├─ "## 커맨드 작성 상세 가이드" (35 lines) → commands/agent-docs/detailed-guide.md
+  ├─ "## 예제 모음" (25 lines) → commands/agent-docs/examples.md
+  └─ "## 참조 자료" (15 lines) → commands/agent-docs/references.md
 
   RESULT:
-  ├─ commands/CLAUDE.md (52 lines) ✅
+  ├─ commands/CLAUDE.md (52 lines) ✅ LOC 준수
   └─ commands/agent-docs/
-      ├─ command-writing.md
-      └─ examples.md
+      ├─ detailed-guide.md ← ../CLAUDE.md에서 참조됨
+      ├─ examples.md ← ../CLAUDE.md에서 참조됨
+      └─ references.md ← ../CLAUDE.md에서 참조됨
 ```
 
 ---
@@ -386,6 +606,118 @@ AFTER all document-builder tasks complete:
 
 ---
 
+## PHASE 6.5: Orphan Detection & Auto-Fix (고아 방지)
+
+**Sequential Thinking으로 고아 파일 탐지:**
+
+```
+mcp__sequential-thinking__sequentialthinking:
+  thought: "고아 CLAUDE.md와 agent-docs를 탐지하고 수정합니다.
+    1. 모든 CLAUDE.md 파일 수집
+    2. 상위 CLAUDE.md에서 참조 여부 확인
+    3. 모든 agent-docs 파일 수집
+    4. 해당 CLAUDE.md에서 참조 여부 확인
+    5. 누락된 참조 자동 추가"
+  thoughtNumber: 6
+  totalThoughts: 6
+  nextThoughtNeeded: false
+```
+
+### 고아 정의 및 탐지
+
+```
+ORPHAN DEFINITIONS:
+├─ 고아 CLAUDE.md: 상위 CLAUDE.md에서 참조되지 않는 CLAUDE.md
+│   ├─ 예외: ROOT CLAUDE.md (최상위이므로 상위 없음)
+│   └─ 해결: 상위에 [module/](module/CLAUDE.md) 링크 추가
+│
+├─ 고아 agent-docs: 해당 레벨 CLAUDE.md에서 참조되지 않는 agent-docs/*.md
+│   └─ 해결: CLAUDE.md의 "상세 문서" 섹션에 링크 추가
+│
+└─ 역방향 고아: [parent](../CLAUDE.md) 링크가 없는 CLAUDE.md
+    ├─ 예외: ROOT CLAUDE.md
+    └─ 해결: 파일 끝에 [parent](../CLAUDE.md) 추가
+
+DETECTION LOGIC:
+FOR each CLAUDE.md file (excluding ROOT):
+  parent_dir = dirname(dirname(CLAUDE.md))
+  parent_claude = parent_dir + "/CLAUDE.md"
+
+  IF parent_claude exists:
+    content = READ(parent_claude)
+    link_pattern = "[{module_name}/]({module_name}/CLAUDE.md)"
+
+    IF link_pattern NOT IN content:
+      CLASSIFY as ORPHAN_CLAUDE_MD
+      FIX: Add link to parent's "하위 모듈" section
+
+FOR each agent-docs/*.md file:
+  parent_claude = dirname(agent-docs) + "/CLAUDE.md"
+
+  IF parent_claude exists:
+    content = READ(parent_claude)
+    link_pattern = "[{filename}](agent-docs/{filename})"
+
+    IF link_pattern NOT IN content:
+      CLASSIFY as ORPHAN_AGENT_DOC
+      FIX: Add link to parent's "상세 문서" section
+```
+
+### 자동 수정 로직
+
+```
+AUTO-FIX ORPHANS:
+
+1. ORPHAN_CLAUDE_MD 수정:
+   parent_claude = "../CLAUDE.md"
+
+   IF "## 하위 모듈" section exists:
+     APPEND link to section
+   ELSE:
+     CREATE "## 하위 모듈" section with link
+
+   ADD to CLAUDE.md:
+   ## 하위 모듈
+   - [{module_name}/]({module_name}/CLAUDE.md) - {auto_generated_description}
+
+2. ORPHAN_AGENT_DOC 수정:
+   parent_claude = "../CLAUDE.md"
+
+   IF "## 상세 문서" section exists:
+     APPEND link to section
+   ELSE:
+     CREATE "## 상세 문서" section with link
+
+   ADD to CLAUDE.md:
+   ## 상세 문서
+   - [{filename}](agent-docs/{filename}) - {auto_generated_description}
+
+3. MISSING_PARENT_LINK 수정:
+   IF "[parent]" NOT IN CLAUDE.md:
+     APPEND "\n\n[parent](../CLAUDE.md)" to file end
+```
+
+### 검증 결과 리포트
+
+```markdown
+## 🔍 고아 파일 탐지 결과
+
+### 탐지된 고아 파일
+| 유형 | 파일 경로 | 문제점 | 자동 수정 |
+|------|----------|--------|----------|
+| CLAUDE.md | plugins/new-plugin/CLAUDE.md | 상위 참조 없음 | ✅ 추가됨 |
+| agent-docs | commands/agent-docs/new-guide.md | CLAUDE.md 링크 없음 | ✅ 추가됨 |
+| parent 링크 | plugins/test/CLAUDE.md | [parent] 누락 | ✅ 추가됨 |
+
+### 수정 후 상태
+- ✅ 모든 CLAUDE.md가 상위에서 참조됨
+- ✅ 모든 agent-docs가 해당 CLAUDE.md에서 참조됨
+- ✅ 모든 CLAUDE.md에 parent 링크 존재 (root 제외)
+- ✅ 고아 파일: 0개
+```
+
+---
+
 ## PHASE 7: Validation & Report
 
 ```
@@ -393,8 +725,10 @@ FINAL VALIDATION:
 ├─ All CLAUDE.md files exist
 ├─ All @import paths resolve
 ├─ All inter-document links work
-├─ No orphan CLAUDE.md files
-├─ Line counts within limits
+├─ No orphan CLAUDE.md files ← PHASE 6.5에서 처리됨
+├─ No orphan agent-docs files ← PHASE 6.5에서 처리됨
+├─ All parent links valid ← PHASE 6.5에서 처리됨
+├─ Line counts within limits (soft/hard)
 └─ Hierarchy integrity maintained
 
 IF validation_errors:
@@ -515,12 +849,64 @@ FOR SUBMODULE at path:
 
 ## EXECUTE NOW
 
-0. **Phase 0**: Component Registry Sync (routing-table.json 자동 갱신)
-1. **Phase 1**: Scan project hierarchy
-2. **Phase 2**: Gap analysis and build task queue
-3. **Phase 3**: Report analysis results (Korean)
-4. **Phase 4**: Request user confirmation
-5. **Phase 5**: Parallel/sequential document-builder invocation
-6. **Phase 6**: Update root CLAUDE.md
-7. **Phase 7**: Final validation and completion report (Korean)
-8. **Phase 8**: Show follow-up TUI ← REQUIRED
+### Execution Flow (Sequential Thinking 기반)
+
+```
+0. **Phase 0**: Component Registry Sync
+   └─ routing-table.json 자동 갱신
+
+0.5. **Phase 0.5**: Best Practices Reference ← NEW
+   ├─ Context7로 최신 CLAUDE.md 가이드라인 조회
+   └─ 프로젝트 기술 스택에 맞는 베스트 프랙티스 적용
+
+1. **Phase 1**: Hierarchical Scan (ST 1/6)
+   ├─ 프로젝트 계층 구조 분석
+   └─ 기존 CLAUDE.md/agent-docs 위치 파악
+
+2. **Phase 2**: Gap Analysis (ST 2/6)
+   ├─ LOC 측정 (Soft: 200/150/100, Hard: 300/250/150)
+   ├─ 누락된 CLAUDE.md 식별
+   └─ 참조 무결성 검사
+
+2.5. **Phase 2.5**: Agent-docs Strategy (ST 3/6) ← ENHANCED
+   ├─ LOC 초과 파일 분할 전략 수립
+   ├─ 같은 레벨에 agent-docs/ 생성
+   └─ 추출 섹션 및 링크 계획
+
+3. **Phase 3**: Report & Confirm
+   └─ 분석 결과 한글 리포트
+
+4. **Phase 4**: User Confirmation
+   └─ TUI로 작업 선택
+
+5. **Phase 5**: Parallel Execution
+   ├─ document-builder 에이전트 병렬 호출
+   └─ 우선순위 기반 그룹 실행
+
+6. **Phase 6**: Update Root CLAUDE.md
+   └─ 새 모듈 링크 추가
+
+6.5. **Phase 6.5**: Orphan Detection (ST 6/6) ← NEW
+   ├─ 고아 CLAUDE.md 탐지 및 자동 수정
+   ├─ 고아 agent-docs 탐지 및 자동 수정
+   └─ parent 링크 누락 자동 추가
+
+7. **Phase 7**: Validation & Report
+   ├─ 전체 검증 (링크, LOC, 계층)
+   └─ 완료 리포트 (Korean)
+
+8. **Phase 8**: Follow-up TUI ← REQUIRED
+   └─ 커밋, 검토, 재동기화 선택
+```
+
+### 핵심 보장 사항
+
+```
+✅ 모든 모듈에 CLAUDE.md 생성
+✅ LOC 초과 시 agent-docs로 자동 분할
+✅ 모든 CLAUDE.md는 상위에서 참조됨
+✅ 모든 agent-docs는 해당 CLAUDE.md에서 참조됨
+✅ 고아 파일 0개 보장
+✅ Sequential Thinking 6단계 분석
+✅ Context7 베스트 프랙티스 적용
+```
