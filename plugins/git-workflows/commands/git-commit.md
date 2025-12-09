@@ -1,8 +1,10 @@
 ---
 name: git-workflows:git-commit
 description: '스마트 git 커밋 (인자: push - 커밋 후 푸시)'
-allowed-tools: Bash(git *)
-model: claude-haiku-4-5-20251001
+allowed-tools:
+  - Bash(git *)
+  - mcp__sequential-thinking__sequentialthinking
+model: claude-opus-4-5-20251101
 ---
 
 # Smart Git Commit
@@ -335,25 +337,30 @@ IF "push" in $ARGUMENTS:
 ## ✅ 다중 커밋 완료 ({N}개)
 
 ### 커밋 목록
-| # | 해시 | 타입 | 스코프 | 메시지 | 파일 수 |
-|---|------|------|--------|--------|---------|
-| 1 | `abc1234` | feat | auth | JWT 인증 구현 | 3 |
-| 2 | `def5678` | test | auth | 인증 테스트 추가 | 2 |
-| 3 | `ghi9012` | docs | - | README 업데이트 | 1 |
+
+| #   | 해시      | 타입 | 스코프 | 메시지           | 파일 수 |
+| --- | --------- | ---- | ------ | ---------------- | ------- |
+| 1   | `abc1234` | feat | auth   | JWT 인증 구현    | 3       |
+| 2   | `def5678` | test | auth   | 인증 테스트 추가 | 2       |
+| 3   | `ghi9012` | docs | -      | README 업데이트  | 1       |
 
 ### 요약
-| 항목 | 내용 |
-|------|------|
-| 브랜치 | <branch> (Git Flow: <type>) |
-| 총 커밋 | {N}개 |
+
+| 항목    | 내용                                          |
+| ------- | --------------------------------------------- |
+| 브랜치  | <branch> (Git Flow: <type>)                   |
+| 총 커밋 | {N}개                                         |
 | 총 변경 | +<insertions> / -<deletions> in <files> files |
-| 푸시 | ✅ 완료 / ⏭️ 스킵 / ❌ 실패 |
+| 푸시    | ✅ 완료 / ⏭️ 스킵 / ❌ 실패                   |
 
 ### 커밋 순서 (Git Flow 권장)
 ```
+
 {commit_order_visualization}
 chore → refactor → feat → fix → test → docs
+
 ```
+
 ```
 
 ---

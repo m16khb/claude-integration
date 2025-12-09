@@ -273,9 +273,9 @@ FOR each item in HIERARCHY:
   ┌─────────────────┬───────────┬───────────┬─────────────────────────────┐
   │ Level           │ Soft Limit│ Hard Limit│ Rationale                   │
   ├─────────────────┼───────────┼───────────┼─────────────────────────────┤
-  │ ROOT CLAUDE.md  │ 200       │ 300       │ 네비게이션 허브, 전체 개요   │
-  │ MODULE CLAUDE.md│ 150       │ 250       │ 모듈별 핵심 정보            │
-  │ SUBMODULE       │ 100       │ 150       │ 세부 컴포넌트 설명          │
+  │ ROOT CLAUDE.md  │ 300       │ 500       │ 네비게이션 허브, 전체 개요   │
+  │ MODULE CLAUDE.md│ 200       │ 350       │ 모듈별 핵심 정보            │
+  │ SUBMODULE       │ 150       │ 250       │ 세부 컴포넌트 설명          │
   └─────────────────┴───────────┴───────────┴─────────────────────────────┘
 
   SOFT LIMIT: 경고 표시, agent-docs 분할 권장
@@ -355,25 +355,41 @@ mcp__sequential-thinking__sequentialthinking:
 ```
 WHEN CLAUDE.md exceeds line limit:
 
-  IDENTIFY extractable sections:
-  ┌────────────────────┬───────────┬──────────────────────────────┐
-  │ Section Type       │ Threshold │ Target File                  │
-  ├────────────────────┼───────────┼──────────────────────────────┤
-  │ Detailed guides    │ > 20 lines│ agent-docs/detailed-guide.md │
-  │ Code examples      │ > 10 lines│ agent-docs/examples.md       │
-  │ Reference tables   │ > 15 rows │ agent-docs/references.md     │
-  │ API documentation  │ > 30 lines│ agent-docs/api-reference.md  │
-  │ Architecture docs  │ > 25 lines│ agent-docs/architecture.md   │
-  │ Troubleshooting    │ > 15 lines│ agent-docs/troubleshooting.md│
-  └────────────────────┴───────────┴──────────────────────────────┘
+  FILE NAMING STRATEGY (의미 기반 동적 파일명):
+  ┌──────────────────────────────────────────────────────────────────┐
+  │ ❌ 기존 방식 (고정 파일명)                                        │
+  │    detailed-guides.md, examples.md, references.md                │
+  │                                                                  │
+  │ ✅ 새로운 방식 (의미 기반 파일명)                                  │
+  │    콘텐츠의 핵심 주제를 반영한 파일명 사용                         │
+  │    예: typeorm.md, dayjs.md, module-naming.md, api-design.md     │
+  └──────────────────────────────────────────────────────────────────┘
+
+  IDENTIFY extractable sections by TOPIC (주제별 분류):
+  ┌────────────────────┬───────────┬───────────────────────────────────┐
+  │ Content Category   │ Threshold │ File Naming Rule                  │
+  ├────────────────────┼───────────┼───────────────────────────────────┤
+  │ Library/Framework  │ > 30 lines│ {library-name}.md                 │
+  │                    │           │ 예: typeorm.md, dayjs.md          │
+  │ Design Pattern     │ > 25 lines│ {pattern-name}.md                 │
+  │                    │           │ 예: module-naming.md, cqrs.md     │
+  │ API/Endpoint       │ > 30 lines│ {api-domain}.md                   │
+  │                    │           │ 예: user-api.md, payment-api.md   │
+  │ Configuration      │ > 20 lines│ {config-topic}.md                 │
+  │                    │           │ 예: env-setup.md, docker-config.md│
+  │ Integration        │ > 25 lines│ {integration-target}.md           │
+  │                    │           │ 예: redis-integration.md          │
+  │ Workflow/Process   │ > 20 lines│ {workflow-name}.md                │
+  │                    │           │ 예: deployment-flow.md, ci-cd.md  │
+  └────────────────────┴───────────┴───────────────────────────────────┘
 
   CREATE agent-docs/ at SAME LEVEL as CLAUDE.md:
   ├─ {module}/CLAUDE.md
   ├─ {module}/agent-docs/           ← 같은 레벨!
-  │   ├─ detailed-guide.md
-  │   ├─ examples.md
-  │   ├─ references.md
-  │   └─ [additional files as needed]
+  │   ├─ {topic-1}.md               ← 의미 있는 파일명
+  │   ├─ {topic-2}.md
+  │   ├─ {topic-3}.md
+  │   └─ [as many as needed by content]
   │
   └─ Directory structure mirrors CLAUDE.md level
 ```
@@ -396,9 +412,16 @@ WHEN CLAUDE.md exceeds line limit:
 {필수 명령어만}
 
 ## 상세 문서
-- [상세 가이드](agent-docs/detailed-guide.md) - 전체 가이드
-- [예제 모음](agent-docs/examples.md) - 코드 예제
-- [참조 자료](agent-docs/references.md) - 외부 링크
+{의미 기반 파일명으로 분리된 문서들}
+- [{topic-1}](agent-docs/{topic-1}.md) - {topic-1 설명}
+- [{topic-2}](agent-docs/{topic-2}.md) - {topic-2 설명}
+- [{topic-3}](agent-docs/{topic-3}.md) - {topic-3 설명}
+
+예시:
+- [TypeORM 가이드](agent-docs/typeorm.md) - Entity, Repository 패턴
+- [날짜 처리](agent-docs/dayjs.md) - dayjs 사용법
+- [모듈 네이밍](agent-docs/module-naming.md) - 명명 규칙
+- [API 설계](agent-docs/api-design.md) - RESTful 설계 원칙
 
 ## 하위 모듈 (있을 경우)
 - [submodule/](submodule/CLAUDE.md) - 설명
@@ -449,20 +472,43 @@ EXTRACTION RULES:
 ### 분할 예시
 
 ```
-EXAMPLE:
-  commands/CLAUDE.md (95 lines) → exceeds 80 line limit
+EXAMPLE 1 - Backend Module:
+  backend/CLAUDE.md (280 lines) → exceeds 200 line soft limit
 
-  EXTRACT:
-  ├─ "## 커맨드 작성 상세 가이드" (35 lines) → commands/agent-docs/detailed-guide.md
-  ├─ "## 예제 모음" (25 lines) → commands/agent-docs/examples.md
-  └─ "## 참조 자료" (15 lines) → commands/agent-docs/references.md
+  ANALYZE CONTENT TOPICS:
+  ├─ TypeORM 사용법 (45 lines) → 별도 문서 가치 있음
+  ├─ Redis 캐싱 전략 (35 lines) → 별도 문서 가치 있음
+  ├─ API 설계 원칙 (40 lines) → 별도 문서 가치 있음
+  └─ 환경 설정 (30 lines) → 별도 문서 가치 있음
+
+  EXTRACT (의미 기반 파일명):
+  ├─ TypeORM 관련 → backend/agent-docs/typeorm.md
+  ├─ Redis 관련 → backend/agent-docs/redis-caching.md
+  ├─ API 설계 → backend/agent-docs/api-design.md
+  └─ 환경 설정 → backend/agent-docs/env-config.md
 
   RESULT:
-  ├─ commands/CLAUDE.md (52 lines) ✅ LOC 준수
-  └─ commands/agent-docs/
-      ├─ detailed-guide.md ← ../CLAUDE.md에서 참조됨
-      ├─ examples.md ← ../CLAUDE.md에서 참조됨
-      └─ references.md ← ../CLAUDE.md에서 참조됨
+  ├─ backend/CLAUDE.md (130 lines) ✅ LOC 준수
+  └─ backend/agent-docs/
+      ├─ typeorm.md           ← Entity, Repository, Migration
+      ├─ redis-caching.md     ← 캐시 전략, TTL 설정
+      ├─ api-design.md        ← RESTful 원칙, 응답 형식
+      └─ env-config.md        ← 환경변수, Docker 설정
+
+EXAMPLE 2 - Frontend Module:
+  frontend/CLAUDE.md (220 lines) → exceeds 200 line soft limit
+
+  EXTRACT (의미 기반 파일명):
+  ├─ 상태 관리 → frontend/agent-docs/state-management.md
+  ├─ 컴포넌트 패턴 → frontend/agent-docs/component-patterns.md
+  └─ 스타일링 → frontend/agent-docs/styling-guide.md
+
+  RESULT:
+  ├─ frontend/CLAUDE.md (95 lines) ✅ LOC 준수
+  └─ frontend/agent-docs/
+      ├─ state-management.md  ← Redux, Context API
+      ├─ component-patterns.md ← HOC, Render Props, Hooks
+      └─ styling-guide.md     ← CSS Modules, Styled Components
 ```
 
 ---
@@ -864,7 +910,7 @@ FOR SUBMODULE at path:
    └─ 기존 CLAUDE.md/agent-docs 위치 파악
 
 2. **Phase 2**: Gap Analysis (ST 2/6)
-   ├─ LOC 측정 (Soft: 200/150/100, Hard: 300/250/150)
+   ├─ LOC 측정 (Soft: 300/200/150, Hard: 500/350/250)
    ├─ 누락된 CLAUDE.md 식별
    └─ 참조 무결성 검사
 
@@ -904,6 +950,7 @@ FOR SUBMODULE at path:
 ```
 ✅ 모든 모듈에 CLAUDE.md 생성
 ✅ LOC 초과 시 agent-docs로 자동 분할
+✅ 의미 기반 파일명 사용 (typeorm.md, dayjs.md 등)
 ✅ 모든 CLAUDE.md는 상위에서 참조됨
 ✅ 모든 agent-docs는 해당 CLAUDE.md에서 참조됨
 ✅ 고아 파일 0개 보장
