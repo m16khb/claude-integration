@@ -323,4 +323,4 @@ plugins/my-plugin/commands/
 
 ---
 
-[CLAUDE.md](../CLAUDE.md) | [sync-orchestration.md](sync-orchestration.md) | [optimization-guide.md](optimization-guide.md)
+@../CLAUDE.md | @sync-orchestration.md | @optimization-guide.md

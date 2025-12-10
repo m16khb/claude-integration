@@ -21,7 +21,7 @@
 | **플러그인 버전 관리** | Semantic Versioning (MAJOR.MINOR.PATCH) 준수 |
 | **파일 레퍼런싱 @ 문법** | 모든 파일 참조 시 `@경로` 형식 필수 |
 
-> 상세 내용: [@docs/constitution.md](docs/constitution.md)
+> 상세 내용: @docs/constitution.md
 
 ## 아키텍처
 
@@ -56,13 +56,13 @@ claude-integration/
 
 | 플러그인 | 카테고리 | 주요 기능 |
 |---------|---------|----------|
-| [nestjs-backend/](plugins/nestjs-backend/CLAUDE.md) | development | NestJS 생태계 전문가 7명 |
-| [code-quality/](plugins/code-quality/CLAUDE.md) | quality | 코드 리뷰, 테스트 자동화 |
-| [full-stack-orchestration/](plugins/full-stack-orchestration/CLAUDE.md) | workflows | 개발 워크플로우 오케스트레이션 |
-| [documentation-generation/](plugins/documentation-generation/CLAUDE.md) | documentation | 계층적 문서 자동 생성 |
-| [git-workflows/](plugins/git-workflows/CLAUDE.md) | development | Git Flow 기반 스마트 커밋 |
-| [context-management/](plugins/context-management/CLAUDE.md) | productivity | 컨텍스트 분석, 대용량 처리 |
-| [automation-tools/](plugins/automation-tools/CLAUDE.md) | productivity | 컴포넌트 자동 생성, 동기화 |
+| @plugins/nestjs-backend/CLAUDE.md | development | NestJS 생태계 전문가 7명 |
+| @plugins/code-quality/CLAUDE.md | quality | 코드 리뷰, 테스트 자동화 |
+| @plugins/full-stack-orchestration/CLAUDE.md | workflows | 개발 워크플로우 오케스트레이션 |
+| @plugins/documentation-generation/CLAUDE.md | documentation | 계층적 문서 자동 생성 |
+| @plugins/git-workflows/CLAUDE.md | development | Git Flow 기반 스마트 커밋 |
+| @plugins/context-management/CLAUDE.md | productivity | 컨텍스트 분석, 대용량 처리 |
+| @plugins/automation-tools/CLAUDE.md | productivity | 컴포넌트 자동 생성, 동기화 |
 
 ## 주요 커맨드
 
@@ -118,16 +118,16 @@ routing-table.json에서 키워드 점수 관리 (primary 3점)
 ## 상세 문서
 
 ### 문서화 가이드
-- [template-library.md](plugins/documentation-generation/agent-docs/template-library.md) - 문서 템플릿 카탈로그
-- [code-analysis.md](plugins/documentation-generation/agent-docs/code-analysis.md) - 코드 분석 및 AST 파싱
-- [progressive-disclosure.md](plugins/documentation-generation/agent-docs/progressive-disclosure.md) - 계층적 문서 구조
+- @plugins/documentation-generation/agent-docs/template-library.md - 문서 템플릿 카탈로그
+- @plugins/documentation-generation/agent-docs/code-analysis.md - 코드 분석 및 AST 파싱
+- @plugins/documentation-generation/agent-docs/progressive-disclosure.md - 계층적 문서 구조
 
 ### 공식 문서
-- [@docs/architecture.md](docs/architecture.md) - 아키텍처 설계 원칙
-- [@docs/guides/usage.md](docs/guides/usage.md) - 사용 가이드
-- [@docs/references/agents.md](docs/references/agents.md) - 에이전트 레퍼런스
-- [@docs/references/plugins.md](docs/references/plugins.md) - 플러그인 레퍼런스
-- [@docs/references/agent-skills.md](docs/references/agent-skills.md) - 에이전트 스킬 레퍼런스
+- @docs/architecture.md - 아키텍처 설계 원칙
+- @docs/guides/usage.md - 사용 가이드
+- @docs/references/agents.md - 에이전트 레퍼런스
+- @docs/references/plugins.md - 플러그인 레퍼런스
+- @docs/references/agent-skills.md - 에이전트 스킬 레퍼런스
 
 ## 빠른 시작
 

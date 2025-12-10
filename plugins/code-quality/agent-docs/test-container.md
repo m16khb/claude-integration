@@ -280,4 +280,4 @@ module.exports = {
 
 ---
 
-[← CLAUDE.md](../CLAUDE.md) | [testing-strategies.md](testing-strategies.md)
+@../CLAUDE.md | @testing-strategies.md

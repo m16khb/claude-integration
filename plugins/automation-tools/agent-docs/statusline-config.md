@@ -432,4 +432,4 @@ performance:
 
 ---
 
-[CLAUDE.md](../CLAUDE.md) | [factory-system.md](factory-system.md) | [sync-orchestration.md](sync-orchestration.md)
+@../CLAUDE.md | @factory-system.md | @sync-orchestration.md

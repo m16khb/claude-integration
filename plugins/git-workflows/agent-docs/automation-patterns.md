@@ -638,4 +638,4 @@ git commit --no-verify
 
 ---
 
-[CLAUDE.md](../CLAUDE.md) | [commit-conventions.md](commit-conventions.md) | [branch-strategies.md](branch-strategies.md)
+@../CLAUDE.md | @commit-conventions.md | @branch-strategies.md

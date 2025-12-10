@@ -447,4 +447,4 @@ Closes PROJ-123
 
 ---
 
-[CLAUDE.md](../CLAUDE.md) | [branch-strategies.md](branch-strategies.md) | [automation-patterns.md](automation-patterns.md)
+@../CLAUDE.md | @branch-strategies.md | @automation-patterns.md

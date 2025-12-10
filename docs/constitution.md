@@ -139,4 +139,4 @@ src/main.ts 15번째 줄에서 에러 발생
 
 ---
 
-[← CLAUDE.md로 돌아가기](../CLAUDE.md)
+@../CLAUDE.md

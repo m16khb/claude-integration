@@ -425,4 +425,4 @@ ignore:
 
 ---
 
-[CLAUDE.md](../CLAUDE.md) | [security-analysis.md](security-analysis.md) | [testing-strategies.md](testing-strategies.md)
+@../CLAUDE.md | @security-analysis.md | @testing-strategies.md

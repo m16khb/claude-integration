@@ -22,7 +22,7 @@ Git 워크플로우 원칙:
 
 | 컴포넌트 | 타입 | 설명 |
 |---------|------|------|
-| [git-commit](commands/git-commit.md) | Command | 변경사항 분석 및 스마트 커밋 |
+| @commands/git-commit.md | Command | 변경사항 분석 및 스마트 커밋 |
 
 ## Commands
 
@@ -63,8 +63,8 @@ Git 워크플로우 원칙:
 
 ## 상세 문서
 
-- [commit-conventions.md](agent-docs/commit-conventions.md) - Conventional Commits, 커밋 타입, 메시지 템플릿
-- [branch-strategies.md](agent-docs/branch-strategies.md) - Git Flow, 브랜치 관리, 워크플로우
-- [automation-patterns.md](agent-docs/automation-patterns.md) - 다중 커밋, 그룹화, 자동화 기능
+- @agent-docs/commit-conventions.md - Conventional Commits, 커밋 타입, 메시지 템플릿
+- @agent-docs/branch-strategies.md - Git Flow, 브랜치 관리, 워크플로우
+- @agent-docs/automation-patterns.md - 다중 커밋, 그룹화, 자동화 기능
 
-[parent](../CLAUDE.md)
+@../CLAUDE.md

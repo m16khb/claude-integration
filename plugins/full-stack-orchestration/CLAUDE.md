@@ -36,9 +36,9 @@ category: workflows
 
 | 컴포넌트 | 타입 | 설명 |
 |---------|------|------|
-| [full-stack-orchestrator](agents/full-stack-orchestrator.md) | Agent | 워크플로우 조율자 |
-| [/dev-flow](commands/dev-flow.md) | Command | 파이프라인 실행 |
-| [ci-cd-patterns](skills/ci-cd-patterns/SKILL.md) | Skill | CI/CD 템플릿 |
+| @agents/full-stack-orchestrator.md | Agent | 워크플로우 조율자 |
+| @commands/dev-flow.md | Command | 파이프라인 실행 |
+| @skills/ci-cd-patterns/SKILL.md | Skill | CI/CD 템플릿 |
 
 ## Quick Start
 
@@ -69,9 +69,9 @@ category: workflows
 
 ## 상세 문서
 
-- [pipeline-architecture.md](agent-docs/pipeline-architecture.md) - 파이프라인 아키텍처, Quality Gates
-- [workflow-patterns.md](agent-docs/workflow-patterns.md) - /dev-flow 사용법, 시나리오별 패턴
-- [ci-cd-integration.md](agent-docs/ci-cd-integration.md) - GitHub Actions, GitLab CI, Jenkins 템플릿
-- [troubleshooting.md](agent-docs/troubleshooting.md) - 문제 해결, Best Practices
+- @agent-docs/pipeline-architecture.md - 파이프라인 아키텍처, Quality Gates
+- @agent-docs/workflow-patterns.md - /dev-flow 사용법, 시나리오별 패턴
+- @agent-docs/ci-cd-integration.md - GitHub Actions, GitLab CI, Jenkins 템플릿
+- @agent-docs/troubleshooting.md - 문제 해결, Best Practices
 
-[parent](../CLAUDE.md)
+@../CLAUDE.md

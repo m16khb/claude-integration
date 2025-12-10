@@ -494,4 +494,4 @@ BRANCH MANAGEMENT PRINCIPLES:
 
 ---
 
-[CLAUDE.md](../CLAUDE.md) | [commit-conventions.md](commit-conventions.md) | [automation-patterns.md](automation-patterns.md)
+@../CLAUDE.md | @commit-conventions.md | @automation-patterns.md

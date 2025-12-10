@@ -347,4 +347,4 @@ parallel:
 
 ---
 
-[CLAUDE.md](../CLAUDE.md) | [context-analysis.md](context-analysis.md) | [recovery-patterns.md](recovery-patterns.md)
+@../CLAUDE.md | @context-analysis.md | @recovery-patterns.md

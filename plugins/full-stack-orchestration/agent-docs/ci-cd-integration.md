@@ -494,4 +494,4 @@ sequential:
 
 ---
 
-[CLAUDE.md](../CLAUDE.md) | [pipeline-architecture.md](pipeline-architecture.md) | [workflow-patterns.md](workflow-patterns.md)
+@../CLAUDE.md | @pipeline-architecture.md | @workflow-patterns.md

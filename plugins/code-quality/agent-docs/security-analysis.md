@@ -277,4 +277,4 @@ const insecureConfigs = {
 
 ---
 
-[CLAUDE.md](../CLAUDE.md) | [testing-strategies.md](testing-strategies.md) | [review-workflow.md](review-workflow.md)
+@../CLAUDE.md | @testing-strategies.md | @review-workflow.md

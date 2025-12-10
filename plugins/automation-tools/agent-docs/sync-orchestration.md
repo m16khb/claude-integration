@@ -379,4 +379,4 @@ module.exports = {
 
 ---
 
-[CLAUDE.md](../CLAUDE.md) | [factory-system.md](factory-system.md) | [optimization-guide.md](optimization-guide.md)
+@../CLAUDE.md | @factory-system.md | @optimization-guide.md

@@ -26,8 +26,8 @@ category: documentation
 
 | 타입 | 이름 | 설명 |
 |------|------|------|
-| Agent | [document-builder](agents/document-builder.md) | 코드 분석 기반 문서 생성 전문가 |
-| Skill | [document-templates](skills/document-templates/SKILL.md) | CLAUDE.md, README, API 문서 템플릿 |
+| Agent | @agents/document-builder.md | 코드 분석 기반 문서 생성 전문가 |
+| Skill | @skills/document-templates/SKILL.md | CLAUDE.md, README, API 문서 템플릿 |
 
 ## 핵심 기능
 
@@ -63,8 +63,8 @@ category: documentation
 
 ## 상세 문서
 
-- [template-library.md](agent-docs/template-library.md) - 문서 템플릿 카탈로그, 재사용 패턴
-- [code-analysis.md](agent-docs/code-analysis.md) - AST 파싱, 의존성 분석, 자동 추출
-- [progressive-disclosure.md](agent-docs/progressive-disclosure.md) - 계층적 구조, 라인 제한, 네비게이션
+- @agent-docs/template-library.md - 문서 템플릿 카탈로그, 재사용 패턴
+- @agent-docs/code-analysis.md - AST 파싱, 의존성 분석, 자동 추출
+- @agent-docs/progressive-disclosure.md - 계층적 구조, 라인 제한, 네비게이션
 
-[parent](../CLAUDE.md)
+@../CLAUDE.md

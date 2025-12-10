@@ -39,8 +39,8 @@ category: productivity
 
 | 컴포넌트 | 타입 | 설명 |
 |---------|------|------|
-| [continue-context](commands/continue-context.md) | Command | 컨텍스트 분석 및 다음 작업 추천 |
-| [inject-context](commands/inject-context.md) | Command | 대용량 파일 구조 인식 청킹 |
+| @commands/continue-context.md | Command | 컨텍스트 분석 및 다음 작업 추천 |
+| @commands/inject-context.md | Command | 대용량 파일 구조 인식 청킹 |
 
 ## 주요 기능
 
@@ -69,8 +69,8 @@ category: productivity
 
 ## 상세 문서
 
-- [chunking-algorithm.md](agent-docs/chunking-algorithm.md) - 구조 인식 청킹, 언어별 파싱, AST 경계
-- [context-analysis.md](agent-docs/context-analysis.md) - 컨텍스트 분석, 패턴 인식, 작업 추천
-- [recovery-patterns.md](agent-docs/recovery-patterns.md) - 세션 복구, 작업 연속성, MCP 연동
+- @agent-docs/chunking-algorithm.md - 구조 인식 청킹, 언어별 파싱, AST 경계
+- @agent-docs/context-analysis.md - 컨텍스트 분석, 패턴 인식, 작업 추천
+- @agent-docs/recovery-patterns.md - 세션 복구, 작업 연속성, MCP 연동
 
-[parent](../CLAUDE.md)
+@../CLAUDE.md

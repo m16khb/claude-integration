@@ -676,4 +676,4 @@ Root (150) → Module (80) → Detailed (Unlimited)
 
 ---
 
-[CLAUDE.md](../CLAUDE.md) | [template-library.md](template-library.md) | [code-analysis.md](code-analysis.md)
+@../CLAUDE.md | @template-library.md | @code-analysis.md

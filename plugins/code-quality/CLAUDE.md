@@ -22,10 +22,10 @@ category: quality
 
 | Type | Name | Description |
 |------|------|-------------|
-| Agent | [code-reviewer](agents/code-reviewer.md) | 보안, 성능, 유지보수성, 신뢰성 분석 |
-| Agent | [test-automator](agents/test-automator.md) | Suites 3.x 기반 테스트 자동 생성 |
-| Command | [/review](commands/review.md) | 실시간 코드 리뷰 실행 |
-| Skill | [testing-patterns](skills/testing-patterns/SKILL.md) | 테스트 패턴 및 모킹 전략 |
+| Agent | @agents/code-reviewer.md | 보안, 성능, 유지보수성, 신뢰성 분석 |
+| Agent | @agents/test-automator.md | Suites 3.x 기반 테스트 자동 생성 |
+| Command | @commands/review.md | 실시간 코드 리뷰 실행 |
+| Skill | @skills/testing-patterns/SKILL.md | 테스트 패턴 및 모킹 전략 |
 
 ## Quick Usage
 
@@ -63,9 +63,9 @@ category: quality
 
 ## Detailed Documentation
 
-- [security-analysis.md](agent-docs/security-analysis.md) - OWASP Top 10 기반 보안 분석
-- [testing-strategies.md](agent-docs/testing-strategies.md) - Suites 3.x 테스트 패턴
-- [test-container.md](agent-docs/test-container.md) - Testcontainers Integration/E2E 테스트
-- [review-workflow.md](agent-docs/review-workflow.md) - 리뷰 프로세스, CI/CD 통합
+- @agent-docs/security-analysis.md - OWASP Top 10 기반 보안 분석
+- @agent-docs/testing-strategies.md - Suites 3.x 테스트 패턴
+- @agent-docs/test-container.md - Testcontainers Integration/E2E 테스트
+- @agent-docs/review-workflow.md - 리뷰 프로세스, CI/CD 통합
 
-[parent](../CLAUDE.md)
+@../CLAUDE.md

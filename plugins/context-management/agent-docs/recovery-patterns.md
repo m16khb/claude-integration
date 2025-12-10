@@ -446,4 +446,4 @@ git merge --continue
 
 ---
 
-[CLAUDE.md](../CLAUDE.md) | [chunking-algorithm.md](chunking-algorithm.md) | [context-analysis.md](context-analysis.md)
+@../CLAUDE.md | @chunking-algorithm.md | @context-analysis.md

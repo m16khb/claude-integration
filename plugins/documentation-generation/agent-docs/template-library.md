@@ -918,4 +918,4 @@ rules:
 
 ---
 
-[CLAUDE.md](../CLAUDE.md) | [code-analysis.md](code-analysis.md) | [progressive-disclosure.md](progressive-disclosure.md)
+@../CLAUDE.md | @code-analysis.md | @progressive-disclosure.md

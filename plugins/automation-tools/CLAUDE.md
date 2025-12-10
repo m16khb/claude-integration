@@ -72,9 +72,9 @@ automation-tools/
 
 ## 상세 문서
 
-- [factory-system.md](agent-docs/factory-system.md) - Agent/Skill/Command 자동 생성 시스템
-- [sync-orchestration.md](agent-docs/sync-orchestration.md) - CLAUDE.md 동기화 및 routing-table 관리
-- [optimization-guide.md](agent-docs/optimization-guide.md) - 프롬프트/에이전트/커맨드 최적화
-- [statusline-config.md](agent-docs/statusline-config.md) - Status Line 설정 및 커스터마이징
+- @agent-docs/factory-system.md - Agent/Skill/Command 자동 생성 시스템
+- @agent-docs/sync-orchestration.md - CLAUDE.md 동기화 및 routing-table 관리
+- @agent-docs/optimization-guide.md - 프롬프트/에이전트/커맨드 최적화
+- @agent-docs/statusline-config.md - Status Line 설정 및 커스터마이징
 
-[parent](../CLAUDE.md)
+@../CLAUDE.md
