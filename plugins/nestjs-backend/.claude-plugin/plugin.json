@@ -1,6 +1,6 @@
 {
   "name": "nestjs-backend",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "NestJS + Fastify 백엔드 개발을 위한 전문 에이전트 및 라우팅 시스템",
   "author": {
     "name": "m16khb",

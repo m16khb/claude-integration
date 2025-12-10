@@ -1,6 +1,6 @@
 {
   "name": "git-workflows",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Git Flow 기반 스마트 커밋 및 브랜치 관리",
   "author": {
     "name": "m16khb",
