@@ -22,21 +22,20 @@ category: productivity
 
 ```
 automation-tools/
-├─ commands/          # 6개 커맨드
+├─ commands/          # 5개 커맨드
 ├─ skills/            # 5개 스킬
 └─ agent-docs/        # 상세 문서
 ```
 
-## Commands (6개)
+## Commands (5개)
 
 | 커맨드 | 설명 |
 |-------|------|
 | `/automation-tools:factory` | Agent/Skill/Command 자동 생성 |
-| `/automation-tools:prompt-optimizer` | TUI 기반 프롬프트 최적화 |
+| `/automation-tools:optimize` | 에이전트/커맨드/프롬프트 최적화 |
+| `/automation-tools:partner` | AI 파트너 관리 |
 | `/automation-tools:setup-statusline` | YAML 기반 상태 라인 구성 |
 | `/automation-tools:claude-sync` | CLAUDE.md 자동 동기화 |
-| `/automation-tools:optimize` | 최적화 실행 |
-| `/automation-tools:partner` | AI 파트너 관리 |
 
 ## Skills (5개)
 
@@ -54,8 +53,11 @@ automation-tools/
 # 에이전트 생성
 /automation-tools:factory agent "React 전문가"
 
-# 프롬프트 최적화
-/automation-tools:prompt-optimizer "코드 리뷰해줘"
+# 통합 최적화
+/automation-tools:optimize agent agents/my-agent.md
+
+# AI 파트너 관리
+/automation-tools:partner select
 
 # 상태 라인 설정
 /automation-tools:setup-statusline --template fullstack
