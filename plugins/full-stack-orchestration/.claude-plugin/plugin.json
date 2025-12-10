@@ -1,6 +1,6 @@
 {
   "name": "full-stack-orchestration",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "다중 에이전트 워크플로우 오케스트레이션 및 CI/CD 자동화",
   "author": {
     "name": "m16khb",
