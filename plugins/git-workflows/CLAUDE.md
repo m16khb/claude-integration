@@ -11,12 +11,21 @@ category: development
 ## Core Philosophy
 
 ```
-Git 워크플로우 원칙:
-├─ 의미 있는 커밋: 변경의 "왜"와 "무엇"을 명확히 전달
-├─ 일관된 형식: Conventional Commits 표준
-├─ 자동화: 반복적인 Git 작업을 자동으로 처리
-└─ 컨텍스트 인식: 브랜치와 작업 유형에 따른 적절한 메시지
+SMART COMMIT PIPELINE:
+┌─────────────────────────────────────────────────────────┐
+│  Git Changes → Analysis → Grouping → Message → Commit  │
+│                                                         │
+│  ├─ File type detection                                │
+│  ├─ Path-based semantic grouping                       │
+│  ├─ Commit type suggestion                             │
+│  └─ Security check                                     │
+└─────────────────────────────────────────────────────────┘
 ```
+
+- **의미 있는 커밋**: 변경의 "왜"와 "무엇"을 명확히 전달
+- **일관된 형식**: Conventional Commits 표준 준수
+- **자동 그룹화**: 논리적 단위로 변경사항 자동 분할
+- **컨텍스트 인식**: 브랜치와 작업 유형에 따른 메시지
 
 ## Components
 
@@ -28,43 +37,191 @@ Git 워크플로우 원칙:
 
 | 커맨드 | 설명 | 인자 |
 |--------|------|------|
-| `git-commit` | 변경사항 분석 및 스마트 커밋 | `push` - 커밋 후 자동 푸시 |
+| `/git-workflows:git-commit` | 변경사항 분석 및 스마트 커밋 | `push` - 커밋 후 자동 푸시 |
 
-## 주요 기능
+## Commit Message Structure
 
-| 기능 | 설명 |
-|------|------|
-| **변경 분석** | Git diff 분석, 파일 유형 식별, 그룹화 |
-| **메시지 생성** | Conventional Commits 형식 자동 생성 |
-| **다중 커밋** | 논리적 단위로 자동 분할 및 개별 커밋 |
-| **Git Flow** | 브랜치 타입별 컨텍스트 인식 |
-| **보안 검사** | 민감 파일 자동 감지 및 경고 |
-
-## 커밋 타입
-
-| 타입 | 설명 |
-|------|------|
-| `feat` | 새로운 기능 추가 |
-| `fix` | 버그 수정 |
-| `refactor` | 코드 구조 개선 |
-| `docs` | 문서 변경 |
-| `test` | 테스트 추가/수정 |
-| `chore` | 빌드/설정 변경 |
-
-## 사용법
-
-```bash
-# 기본 커밋
-/git-workflows:git-commit
-
-# 커밋 후 푸시
-/git-workflows:git-commit push
+```
+COMMIT MESSAGE FORMAT:
+┌─────────────────────────────────────────────────────────┐
+│ <type>(<scope>): <subject>                              │ ← 헤더 (50자)
+│                                                         │
+│ [optional body]                                         │ ← 본문 (72자 줄바꿈)
+│ - 변경 이유 설명                                          │
+│ - 어떻게 변경했는지                                       │
+│                                                         │
+│ [optional footer]                                       │ ← 꼬리말
+│ Closes #123                                             │
+│                                                         │
+│ 🤖 Generated with [Claude Code]                         │ ← 자동 추가
+│ Co-Authored-By: Claude <noreply@anthropic.com>         │
+└─────────────────────────────────────────────────────────┘
 ```
 
-## 상세 문서
+## Commit Types
 
-- @agent-docs/commit-conventions.md - Conventional Commits, 커밋 타입, 메시지 템플릿
-- @agent-docs/branch-strategies.md - Git Flow, 브랜치 관리, 워크플로우
-- @agent-docs/automation-patterns.md - 다중 커밋, 그룹화, 자동화 기능
+| 타입 | 설명 | 사용 시점 |
+|------|------|----------|
+| `feat` | 새로운 기능 추가 | 새 파일, 새 API 구현 |
+| `fix` | 버그 수정 | 오류 해결, 예외 처리 |
+| `refactor` | 코드 구조 개선 | 동작 변경 없이 구조만 개선 |
+| `docs` | 문서만 수정 | README, 주석, API 문서 |
+| `test` | 테스트 추가/수정 | 테스트 케이스 작성 |
+| `chore` | 빌드/설정/의존성 | package.json, 설정 파일 |
+| `perf` | 성능 개선 | 최적화 관련 변경 |
+| `ci` | CI/CD 설정 | GitHub Actions, Jenkins |
+
+## Type Detection Matrix
+
+```
+CHANGE PATTERN → COMMIT TYPE:
+├─ 새 파일 추가     → feat (기능), test (테스트), docs (문서)
+├─ 기존 파일 수정   → fix (버그), refactor (구조), perf (성능)
+├─ 파일 삭제       → refactor (정리), chore (미사용)
+├─ package.json    → chore (의존성), feat (새 패키지)
+├─ *.test.ts       → test
+├─ *.md            → docs
+└─ .yml, .json     → ci (CI), chore (설정)
+```
+
+## Smart Grouping
+
+변경사항을 논리적 단위로 자동 그룹화합니다:
+
+```
+8 FILES CHANGED → 4 GROUPS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Group 1: auth (source) - feat
+├─ src/auth/auth.service.ts
+├─ src/auth/jwt.guard.ts
+└─ src/auth/dto/login.dto.ts
+
+Group 2: test - test
+├─ tests/auth/auth.service.spec.ts
+└─ tests/auth/jwt.guard.spec.ts
+
+Group 3: docs - docs
+├─ docs/api/auth.md
+└─ README.md
+
+Group 4: config - chore
+└─ package.json
+```
+
+## Commit Strategy
+
+| 전략 | 조건 | 결과 |
+|------|------|------|
+| **Single** | 1개 그룹 | 단일 커밋 |
+| **Multi** | 2-5개 그룹 | 그룹별 개별 커밋 (권장) |
+| **Batch** | 5개+ 그룹 | 자동 분할 커밋 |
+
+## Branch Context
+
+| 브랜치 패턴 | 예상 커밋 타입 | 권장 스코프 |
+|------------|--------------|------------|
+| `feature/*` | feat, refactor | 기능명 |
+| `hotfix/*` | fix | 긴급 |
+| `bugfix/*` | fix | 버그 |
+| `release/*` | fix, chore, docs | - |
+| `chore/*` | chore, ci | deps, config |
+
+## Security Features
+
+```
+SECURITY CHECKS:
+├─ 민감 파일 자동 감지 (.env, *.key, *secret*)
+├─ 스테이징 자동 취소 + 경고
+├─ .gitignore 추가 제안
+├─ main/master 직접 푸시 경고
+└─ 대용량 파일 경고 (>100KB → 분할 권장)
+```
+
+## Usage
+
+```bash
+# 기본 사용 - 자동 분석 및 커밋
+/git-workflows:git-commit
+
+# 커밋 후 자동 푸시
+/git-workflows:git-commit push
+
+# 이슈 연결
+/git-workflows:git-commit --issue PROJ-123
+```
+
+### 예상 출력
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 변경 분석 결과
+
+📁 변경 파일: 4개
+📊 타입: feat (신뢰도: 95%)
+📌 스코프: auth
+
+💬 생성된 커밋 메시지:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+feat(auth): JWT 기반 인증 시스템 구현
+
+- Access Token 및 Refresh Token 발급
+- JWT Guard를 이용한 라우트 보호
+- 로그인 DTO 추가 및 검증
+
+🤖 Generated with [Claude Code]
+Co-Authored-By: Claude <noreply@anthropic.com>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ 커밋하시겠습니까? (y/n)
+```
+
+## Git Flow Support
+
+```
+GIT FLOW:
+main ────●───────────●─────────►
+         │           │
+        v1.0       v1.1
+         │           │
+develop ─┴───●───●───┴──●───●──►
+             │   │      │   │
+          feature/   hotfix/
+          login      bug-fix
+```
+
+## Best Practices
+
+```
+DO ✅:
+├─ 논리적 단위로 커밋 분할 (자동 그룹화 활용)
+├─ 이슈 번호 연결 (추적성)
+├─ 브랜치 컨텍스트 활용
+└─ Pre-commit 훅 활용
+
+DON'T ❌:
+├─ 모든 변경 하나로 커밋
+├─ 민감 파일 커밋 (.env, *.key)
+├─ main 브랜치 직접 푸시
+└─ 훅 무시 (--no-verify)
+```
+
+## Structure
+
+```
+plugins/git-workflows/
+├─ CLAUDE.md                    # 본 문서
+├─ commands/
+│   └─ git-commit.md            # 스마트 커밋 커맨드
+└─ agent-docs/                  # 상세 문서
+    ├─ commit-conventions.md    # 커밋 컨벤션 상세
+    ├─ branch-strategies.md     # 브랜치 전략 상세
+    └─ automation-patterns.md   # 자동화 패턴 상세
+```
+
+## Documentation
+
+- @agent-docs/commit-conventions.md - Conventional Commits 상세, 타입 감지, 메시지 템플릿
+- @agent-docs/branch-strategies.md - Git Flow 상세, 브랜치 명명, 워크플로우
+- @agent-docs/automation-patterns.md - 다중 커밋, 스마트 그룹화, 보안 검사
 
 @../CLAUDE.md
