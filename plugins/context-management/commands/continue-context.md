@@ -10,7 +10,7 @@ allowed-tools:
   - AskUserQuestion
   - TodoWrite
   - mcp__sequential-thinking__sequentialthinking
-model: claude-opus-4-5-20251001
+model: claude-opus-4-5-20251101
 ---
 
 # Context-Aware Task Continuation
