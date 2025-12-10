@@ -12,13 +12,31 @@
 - **정확한 동작**: 각 에이전트가 자신의 전문 영역에서 완벽한 결과물 생성
 - **정확한 의도 파악**: 키워드 기반 라우팅으로 적절한 도구 활성화
 
+## 필수 규칙 (헌법)
+
+### 플러그인 버전 관리 (Semantic Versioning)
+
+플러그인 변경 시 **반드시** 아래 규칙에 따라 `plugin.json`의 버전을 업데이트해야 합니다:
+
+| 변경 유형 | 버전 | 예시 |
+|----------|------|------|
+| **MAJOR** | 호환성 깨지는 변경 | 1.0.0 → 2.0.0 |
+| **MINOR** | 하위 호환 새 기능 추가 | 1.0.0 → 1.1.0 |
+| **PATCH** | 버그 수정, 문서 수정 | 1.0.0 → 1.0.1 |
+
+```
+MAJOR: API 변경, 커맨드 삭제/이름 변경, 에이전트 인터페이스 변경
+MINOR: 새 커맨드/에이전트/스킬 추가, 새 기능 추가
+PATCH: 버그 수정, 오타 수정, 문서 업데이트, 성능 개선
+```
+
 ## 아키텍처
 
 이 마켓플레이스는 **단일 책임 원칙**을 따릅니다:
 
 - **7개 전문화된 플러그인**
 - **11개 전문 에이전트** (2개 오케스트레이터 + 9개 전문가)
-- **10개 슬래시 커맨드**
+- **11개 슬래시 커맨드**
 - **9개 에이전트 스킬** (라우팅 시스템 포함)
 
 ## 기술 스택
@@ -67,6 +85,7 @@ claude-integration/
 | `/automation-tools:partner` | automation-tools | AI 파트너 관리 |
 | `/automation-tools:setup-statusline` | automation-tools | YAML 기반 status line 구성 |
 | `/automation-tools:claude-sync` | automation-tools | CLAUDE.md 자동 동기화 |
+| `/automation-tools:constitution` | automation-tools | 프로젝트 헌법 관리 |
 
 ## 에이전트 계층
 
@@ -129,6 +148,4 @@ routing-table.json에서 키워드 점수 관리 (primary 3점)
 /automation-tools:claude-sync     # 동기화
 ```
 
-## 개발 가이드
-
-상세 가이드는 각 플러그인의 agent-docs/ 디렉토리를 참조하세요.
+상세 개발 가이드: 각 플러그인의 `agent-docs/` 참조
