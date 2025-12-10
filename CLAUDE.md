@@ -18,8 +18,8 @@
 
 - **7개 전문화된 플러그인**
 - **11개 전문 에이전트** (2개 오케스트레이터 + 9개 전문가)
-- **9개 슬래시 커맨드**
-- **4개 에이전트 스킬** (라우팅 시스템 포함)
+- **10개 슬래시 커맨드**
+- **9개 에이전트 스킬** (라우팅 시스템 포함)
 
 ## 기술 스택
 
@@ -63,6 +63,8 @@ claude-integration/
 | `/context-management:continue-context` | context-management | 컨텍스트 분석 및 작업 추천 |
 | `/context-management:inject-context` | context-management | 대용량 파일 구조 인식 청킹 |
 | `/automation-tools:factory` | automation-tools | Agent, Skill, Command 생성기 |
+| `/automation-tools:optimize` | automation-tools | 에이전트/커맨드/프롬프트 최적화 |
+| `/automation-tools:partner` | automation-tools | AI 파트너 관리 |
 | `/automation-tools:setup-statusline` | automation-tools | YAML 기반 status line 구성 |
 | `/automation-tools:claude-sync` | automation-tools | CLAUDE.md 자동 동기화 |
 
@@ -113,6 +115,7 @@ routing-table.json에서 키워드 점수 관리 (primary 3점)
 - [docs/agents.md](docs/agents.md) - 에이전트 레퍼런스
 - [docs/plugins.md](docs/plugins.md) - 플러그인 레퍼런스
 - [docs/usage.md](docs/usage.md) - 사용 가이드
+- [docs/agent-skills.md](docs/agent-skills.md) - 에이전트 스킬 레퍼런스
 
 ## 빠른 시작
 
