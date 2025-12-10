@@ -167,10 +167,16 @@ BEST PRACTICES (Anthropic Official + Community):
 │   ├─ MODULE: max 80 lines
 │   └─ SUBMODULE: max 50 lines
 │
-└─ 참조 규칙
-    ├─ 중복 방지: 각 가이드라인은 한 곳에만
-    ├─ 외부 문서 링크 활용, 복사 금지
-    └─ 하위 CLAUDE.md는 상위에서 참조
+├─ 참조 규칙
+│   ├─ 중복 방지: 각 가이드라인은 한 곳에만
+│   ├─ 외부 문서 링크 활용, 복사 금지
+│   └─ 하위 CLAUDE.md는 상위에서 참조
+│
+└─ @ 파일 참조 (Claude Code 네이티브)
+    ├─ @파일경로 형식으로 파일 컨텍스트 로드
+    ├─ 예: @CLAUDE.md, @plugins/automation-tools/CLAUDE.md
+    ├─ 상대 경로: @./agent-docs/guide.md
+    └─ CLAUDE.md 내에서 @ 참조로 관련 문서 명시
 ```
 
 ---
@@ -405,22 +411,22 @@ WHEN CLAUDE.md exceeds line limit:
 ## 빠른 시작
 {필수 명령어만}
 
-## 상세 문서
+## 상세 문서 (@ 참조 권장)
 {의미 기반 파일명으로 분리된 문서들}
-- [{topic-1}](agent-docs/{topic-1}.md) - {topic-1 설명}
-- [{topic-2}](agent-docs/{topic-2}.md) - {topic-2 설명}
-- [{topic-3}](agent-docs/{topic-3}.md) - {topic-3 설명}
+- @agent-docs/{topic-1}.md - {topic-1 설명}
+- @agent-docs/{topic-2}.md - {topic-2 설명}
+- @agent-docs/{topic-3}.md - {topic-3 설명}
 
 예시:
-- [TypeORM 가이드](agent-docs/typeorm.md) - Entity, Repository 패턴
-- [날짜 처리](agent-docs/dayjs.md) - dayjs 사용법
-- [모듈 네이밍](agent-docs/module-naming.md) - 명명 규칙
-- [API 설계](agent-docs/api-design.md) - RESTful 설계 원칙
+- @agent-docs/typeorm.md - Entity, Repository 패턴
+- @agent-docs/dayjs.md - dayjs 사용법
+- @agent-docs/module-naming.md - 명명 규칙
+- @agent-docs/api-design.md - RESTful 설계 원칙
 
 ## 하위 모듈 (있을 경우)
-- [submodule/](submodule/CLAUDE.md) - 설명
+- @submodule/CLAUDE.md - 설명
 
-[parent](../CLAUDE.md)  ← 필수! (root 제외)
+@../CLAUDE.md  ← parent 참조 (root 제외)
 ```
 
 ### agent-docs 파일 헤더 템플릿
@@ -428,7 +434,7 @@ WHEN CLAUDE.md exceeds line limit:
 ```markdown
 # {Title}
 
-> 이 문서는 [{parent_module}/CLAUDE.md](../CLAUDE.md)의 상세 문서입니다.
+> 이 문서는 @../CLAUDE.md 의 상세 문서입니다.
 
 ## 개요
 {섹션 개요}
@@ -437,7 +443,7 @@ WHEN CLAUDE.md exceeds line limit:
 {추출된 상세 내용}
 
 ---
-[← CLAUDE.md로 돌아가기](../CLAUDE.md)
+← @../CLAUDE.md (상위 문서)
 ```
 
 ### 분할 실행 규칙
@@ -669,14 +675,14 @@ mcp__sequential-thinking__sequentialthinking:
 ORPHAN DEFINITIONS:
 ├─ 고아 CLAUDE.md: 상위 CLAUDE.md에서 참조되지 않는 CLAUDE.md
 │   ├─ 예외: ROOT CLAUDE.md (최상위이므로 상위 없음)
-│   └─ 해결: 상위에 [module/](module/CLAUDE.md) 링크 추가
+│   └─ 해결: 상위에 @module/CLAUDE.md 참조 추가
 │
 ├─ 고아 agent-docs: 해당 레벨 CLAUDE.md에서 참조되지 않는 agent-docs/*.md
-│   └─ 해결: CLAUDE.md의 "상세 문서" 섹션에 링크 추가
+│   └─ 해결: CLAUDE.md의 "상세 문서" 섹션에 @agent-docs/file.md 추가
 │
-└─ 역방향 고아: [parent](../CLAUDE.md) 링크가 없는 CLAUDE.md
+└─ 역방향 고아: @../CLAUDE.md 참조가 없는 CLAUDE.md
     ├─ 예외: ROOT CLAUDE.md
-    └─ 해결: 파일 끝에 [parent](../CLAUDE.md) 추가
+    └─ 해결: 파일 끝에 @../CLAUDE.md 추가
 
 DETECTION LOGIC:
 FOR each CLAUDE.md file (excluding ROOT):
@@ -685,22 +691,22 @@ FOR each CLAUDE.md file (excluding ROOT):
 
   IF parent_claude exists:
     content = READ(parent_claude)
-    link_pattern = "[{module_name}/]({module_name}/CLAUDE.md)"
+    ref_pattern = "@{module_name}/CLAUDE.md"
 
-    IF link_pattern NOT IN content:
+    IF ref_pattern NOT IN content:
       CLASSIFY as ORPHAN_CLAUDE_MD
-      FIX: Add link to parent's "하위 모듈" section
+      FIX: Add @{module_name}/CLAUDE.md to parent's "하위 모듈" section
 
 FOR each agent-docs/*.md file:
   parent_claude = dirname(agent-docs) + "/CLAUDE.md"
 
   IF parent_claude exists:
     content = READ(parent_claude)
-    link_pattern = "[{filename}](agent-docs/{filename})"
+    ref_pattern = "@agent-docs/{filename}"
 
-    IF link_pattern NOT IN content:
+    IF ref_pattern NOT IN content:
       CLASSIFY as ORPHAN_AGENT_DOC
-      FIX: Add link to parent's "상세 문서" section
+      FIX: Add @agent-docs/{filename} to parent's "상세 문서" section
 ```
 
 ### 자동 수정 로직
@@ -712,29 +718,29 @@ AUTO-FIX ORPHANS:
    parent_claude = "../CLAUDE.md"
 
    IF "## 하위 모듈" section exists:
-     APPEND link to section
+     APPEND @ reference to section
    ELSE:
-     CREATE "## 하위 모듈" section with link
+     CREATE "## 하위 모듈" section with @ reference
 
    ADD to CLAUDE.md:
    ## 하위 모듈
-   - [{module_name}/]({module_name}/CLAUDE.md) - {auto_generated_description}
+   - @{module_name}/CLAUDE.md - {auto_generated_description}
 
 2. ORPHAN_AGENT_DOC 수정:
    parent_claude = "../CLAUDE.md"
 
    IF "## 상세 문서" section exists:
-     APPEND link to section
+     APPEND @ reference to section
    ELSE:
-     CREATE "## 상세 문서" section with link
+     CREATE "## 상세 문서" section with @ reference
 
    ADD to CLAUDE.md:
    ## 상세 문서
-   - [{filename}](agent-docs/{filename}) - {auto_generated_description}
+   - @agent-docs/{filename} - {auto_generated_description}
 
-3. MISSING_PARENT_LINK 수정:
-   IF "[parent]" NOT IN CLAUDE.md:
-     APPEND "\n\n[parent](../CLAUDE.md)" to file end
+3. MISSING_PARENT_REF 수정:
+   IF "@../CLAUDE.md" NOT IN CLAUDE.md:
+     APPEND "\n\n@../CLAUDE.md" to file end
 ```
 
 ### 검증 결과 리포트
@@ -791,14 +797,14 @@ ELSE:
 | templates/CLAUDE.md | MODULE | 38 | ✅ |
 | agents/backend/CLAUDE.md | SUBMODULE | 48 | ✅ |
 
-### 계층 구조
+### 계층 구조 (@ 참조)
 ```
 Root CLAUDE.md
-├── @import ../documentation-generation/agent-docs/commands.md
-├── 참조 → commands/CLAUDE.md
-├── 참조 → agents/CLAUDE.md
-│   └── 참조 → agents/backend/CLAUDE.md
-└── 참조 → templates/CLAUDE.md
+├── @plugins/documentation-generation/agent-docs/commands.md
+├── @commands/CLAUDE.md
+├── @agents/CLAUDE.md
+│   └── @agents/backend/CLAUDE.md
+└── @templates/CLAUDE.md
 ```
 
 ### 검증 결과
@@ -945,8 +951,9 @@ FOR SUBMODULE at path:
 ✅ 모든 모듈에 CLAUDE.md 생성
 ✅ LOC 초과 시 agent-docs로 자동 분할
 ✅ 의미 기반 파일명 사용 (typeorm.md, dayjs.md 등)
-✅ 모든 CLAUDE.md는 상위에서 참조됨
-✅ 모든 agent-docs는 해당 CLAUDE.md에서 참조됨
+✅ @ 파일 참조 표기법 사용 (Claude Code 네이티브)
+✅ 모든 CLAUDE.md는 상위에서 @module/CLAUDE.md로 참조됨
+✅ 모든 agent-docs는 @agent-docs/file.md로 참조됨
 ✅ 고아 파일 0개 보장
 ✅ Sequential Thinking 6단계 분석
 ✅ Context7 베스트 프랙티스 적용
