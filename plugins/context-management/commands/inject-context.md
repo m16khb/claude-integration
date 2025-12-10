@@ -13,7 +13,7 @@ allowed-tools:
   - mcp__memory__store_memory
   - mcp__memory__retrieve_memory
   - mcp__memory__search_memories
-model: claude-opus-4-5-20251001
+model: claude-opus-4-5-20251101
 ---
 
 # Intelligent File Context Loader
