@@ -275,7 +275,7 @@ FOR each item in HIERARCHY:
   ├─ agent-docs linked? ← agent-docs를 참조하는가?
   └─ Content up-to-date?
 
-  LINE COUNT RULES (LOC 제한 - 유연한 가이드라인):
+  LINE COUNT RULES (LOC 제한 - 헌법 규칙):
   ┌─────────────────┬───────────┬───────────┬─────────────────────────────┐
   │ Level           │ Soft Limit│ Hard Limit│ Rationale                   │
   ├─────────────────┼───────────┼───────────┼─────────────────────────────┤
@@ -284,6 +284,8 @@ FOR each item in HIERARCHY:
   │ SUBMODULE       │ 150       │ 250       │ 세부 컴포넌트 설명          │
   └─────────────────┴───────────┴───────────┴─────────────────────────────┘
 
+  ※ 헌법 규칙 (@docs/constitution.md 참조)
+
   SOFT LIMIT: 경고 표시, agent-docs 분할 권장
   HARD LIMIT: 강제 분할 필요, agent-docs 생성 필수
 
@@ -291,7 +293,7 @@ FOR each item in HIERARCHY:
     CLASSIFY as NEEDS_AGENT_DOCS (강제)
     ├─ Extract reference sections to agent-docs/
     ├─ Keep only summaries in CLAUDE.md
-    └─ Add links to detailed docs
+    └─ Add links to detailed docs (@agent-docs/*.md)
 
   ELIF line_count > SOFT_LIMIT:
     CLASSIFY as RECOMMEND_AGENT_DOCS (권장)

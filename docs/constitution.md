@@ -8,6 +8,7 @@ Claude가 **반드시** 따라야 하는 최우선 규칙 모음입니다.
 |---|--------|----------|------|
 | 1 | [플러그인 버전 관리](#1-플러그인-버전-관리-semantic-versioning) | 2 | Semantic Versioning 준수 |
 | 2 | [파일 레퍼런싱 @ 문법](#2-파일-레퍼런싱--문법) | 2 | 모든 파일 참조 시 @ 문법 사용 |
+| 3 | [CLAUDE.md 라인 제한](#3-claudemd-라인-제한-progressive-disclosure) | 3 | Root 300라인, Module 200라인 이하 |
 
 ---
 
@@ -130,12 +131,80 @@ src/main.ts 15번째 줄에서 에러 발생
 
 ---
 
+## 3. CLAUDE.md 라인 제한 (Progressive Disclosure)
+
+### 개요
+
+모든 CLAUDE.md 파일은 **반드시** 라인 제한을 준수해야 합니다. 초과 시 agent-docs/로 분리하여 계층적 문서 구조를 유지합니다.
+
+### 라인 제한 규칙
+
+| 레벨 | Soft Limit | Hard Limit | 설명 |
+|------|-----------|------------|------|
+| **Root** | 300 | 500 | 프로젝트 루트 CLAUDE.md |
+| **Module** | 200 | 350 | 플러그인/모듈 CLAUDE.md |
+| **Submodule** | 150 | 250 | 세부 컴포넌트 CLAUDE.md |
+
+- **Soft Limit**: 경고 표시, agent-docs 분할 **권장**
+- **Hard Limit**: 강제 분할 **필수**, agent-docs 생성 필수
+
+### 초과 시 처리
+
+```
+Soft Limit 초과 시:
+├─ 경고 표시
+├─ agent-docs 분할 권장
+└─ 사용자 선택에 따라 진행
+
+Hard Limit 초과 시:
+├─ 상세 내용을 agent-docs/로 분리 필수
+├─ CLAUDE.md에는 요약과 링크만 유지
+├─ @ 문법으로 상세 문서 참조
+└─ 예: @agent-docs/detailed-guide.md
+```
+
+### 체크리스트
+
+- [ ] Root CLAUDE.md가 Soft 300라인 이하인가? (권장)
+- [ ] Root CLAUDE.md가 Hard 500라인 이하인가? (필수)
+- [ ] Module CLAUDE.md가 Soft 200라인 이하인가? (권장)
+- [ ] Module CLAUDE.md가 Hard 350라인 이하인가? (필수)
+- [ ] 초과 내용이 agent-docs/로 분리되었는가?
+- [ ] 분리된 문서가 @ 문법으로 참조되었는가?
+
+### 예시
+
+```markdown
+# 좋은 예 (Module CLAUDE.md - 180라인)
+# Module Name
+
+간결한 개요
+
+## 핵심 기능
+- 기능 1
+- 기능 2
+
+## 상세 문서
+- @agent-docs/detailed-guide.md - 상세 가이드
+- @agent-docs/examples.md - 사용 예시
+
+# 나쁜 예 (Module CLAUDE.md - 450라인)
+# Module Name
+
+긴 설명...
+상세한 코드 예시...
+모든 내용이 한 파일에...
+```
+
+---
+
 ## 변경 이력
 
 | 날짜 | 변경 내용 |
 |------|----------|
 | 2024-12-10 | 초기 헌법 문서화 |
 | 2024-12-10 | 파일 레퍼런싱 @ 문법 규칙 추가 |
+| 2025-12-10 | CLAUDE.md 라인 제한 규칙 추가 |
 
 ---
 

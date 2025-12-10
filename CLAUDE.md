@@ -20,6 +20,7 @@
 |------|------|
 | **플러그인 버전 관리** | Semantic Versioning (MAJOR.MINOR.PATCH) 준수 |
 | **파일 레퍼런싱 @ 문법** | 모든 파일 참조 시 `@경로` 형식 필수 |
+| **CLAUDE.md 라인 제한** | Soft: 300/200/150, Hard: 500/350/250 (Hard 초과 시 agent-docs 필수) |
 
 > 상세 내용: @docs/constitution.md
 
