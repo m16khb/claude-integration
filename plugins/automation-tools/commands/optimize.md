@@ -255,35 +255,6 @@ templates:
 2. **Gather Feedback**: Collect user experiences
 3. **Iterate**: Continue refining based on results
 
-## MIGRATION GUIDE
-
-### From optimize-agents
-```bash
-# Before
-/optimize-agents agent.md
-
-# After
-/optimize agent agent.md
-```
-
-### From optimize-command
-```bash
-# Before
-/optimize-command command.md
-
-# After
-/optimize command command.md
-```
-
-### From prompt-optimizer
-```bash
-# Before
-/prompt-optimizer "my prompt"
-
-# After
-/optimize prompt --interactive "my prompt"
-```
-
 ## QUALITY ASSURANCE
 
 ### Optimization Validation
@@ -364,11 +335,3 @@ Solution:
 --output <file>                         # Save report
 ```
 
-## DEPRECATION NOTICE
-
-The following commands are deprecated and replaced by `/optimize`:
-- `/optimize-agents` → `/optimize agent`
-- `/optimize-command` → `/optimize command`
-- `/prompt-optimizer` → `/optimize prompt`
-
-Legacy commands will continue to work but will show this deprecation warning.

@@ -301,27 +301,4 @@ MAINTAINABILITY PRINCIPLES:
 
 ---
 
-## Migration Guide
-
-### 기존 커맨드에서 마이그레이션
-
-```bash
-# From optimize-agents
-# Before: /optimize-agents agent.md
-# After:
-/automation-tools:optimize agent agent.md
-
-# From optimize-command
-# Before: /optimize-command command.md
-# After:
-/automation-tools:optimize command command.md
-
-# From prompt-optimizer
-# Before: /prompt-optimizer "my prompt"
-# After:
-/automation-tools:optimize prompt --interactive "my prompt"
-```
-
----
-
 [CLAUDE.md](../CLAUDE.md) | [factory-system.md](factory-system.md) | [sync-orchestration.md](sync-orchestration.md)
