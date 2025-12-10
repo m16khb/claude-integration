@@ -1,6 +1,6 @@
 {
   "name": "automation-tools",
-  "version": "1.0.1",
+  "version": "1.1.3",
   "description": "Agent, Skill, Command 자동 생성 및 설정 도구",
   "author": {
     "name": "m16khb",
@@ -12,8 +12,11 @@
   "keywords": ["automation", "generator", "factory", "claude-sync", "statusline", "component-generation"],
   "commands": [
     "./commands/factory.md",
+    "./commands/optimize.md",
+    "./commands/partner.md",
     "./commands/setup-statusline.md",
-    "./commands/claude-sync.md"
+    "./commands/claude-sync.md",
+    "./commands/constitution.md"
   ],
   "skills": "./skills/"
 }

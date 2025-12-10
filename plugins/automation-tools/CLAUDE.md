@@ -22,12 +22,12 @@ category: productivity
 
 ```
 automation-tools/
-├─ commands/          # 5개 커맨드
+├─ commands/          # 6개 커맨드
 ├─ skills/            # 5개 스킬
 └─ agent-docs/        # 상세 문서
 ```
 
-## Commands (5개)
+## Commands (6개)
 
 | 커맨드 | 설명 |
 |-------|------|
@@ -36,6 +36,7 @@ automation-tools/
 | `/automation-tools:partner` | AI 파트너 관리 |
 | `/automation-tools:setup-statusline` | YAML 기반 상태 라인 구성 |
 | `/automation-tools:claude-sync` | CLAUDE.md 자동 동기화 |
+| `/automation-tools:constitution` | 프로젝트 헌법 (필수 규칙) 관리 |
 
 ## Skills (5개)
 
@@ -64,6 +65,9 @@ automation-tools/
 
 # 문서 동기화
 /automation-tools:claude-sync --watch
+
+# 헌법 관리
+/automation-tools:constitution list  # add, edit, remove, check, history
 ```
 
 ## 상세 문서
