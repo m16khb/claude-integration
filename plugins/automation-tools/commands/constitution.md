@@ -30,8 +30,12 @@ model: claude-opus-4-5-20251101
 
 ## MISSION
 
-프로젝트 CLAUDE.md의 "필수 규칙 (헌법)" 섹션을 체계적으로 관리합니다.
+프로젝트 헌법을 `docs/constitution.md`에서 체계적으로 관리합니다.
 헌법은 Claude가 **반드시** 따라야 하는 최우선 규칙입니다.
+
+**대상 파일**:
+- **상세 관리**: `docs/constitution.md` (규칙 상세, 체크리스트, 예시)
+- **요약 참조**: `CLAUDE.md` 헌법 테이블 (규칙명 + 한줄 설명)
 
 **Target**: $ARGUMENTS
 
@@ -102,10 +106,9 @@ AskUserQuestion:
 ```
 mcp__st__sequentialthinking:
   thought: "현재 헌법 규칙을 분석합니다.
-    1. Root CLAUDE.md에서 '## 필수 규칙 (헌법)' 섹션 찾기
-    2. 모든 ### 서브섹션 추출
-    3. 각 규칙의 요약 정보 수집
-    4. 라인 수 및 여유 공간 계산"
+    1. docs/constitution.md에서 '## 규칙 목록' 테이블 읽기
+    2. 각 규칙의 상세 섹션 추출
+    3. 규칙별 요약 정보 수집"
   thoughtNumber: 1
   totalThoughts: 3
   nextThoughtNeeded: true
@@ -113,20 +116,18 @@ mcp__st__sequentialthinking:
 
 ```
 EXECUTE:
-├─ Read("CLAUDE.md")
-├─ Extract "## 필수 규칙 (헌법)" section
-├─ Parse all ### subsections
-└─ Calculate line stats
+├─ Read("docs/constitution.md")
+├─ Extract "## 규칙 목록" table
+├─ Parse all ## 번호. 규칙명 sections
+└─ Summarize each rule
 
 OUTPUT FORMAT:
 ┌─────────────────────────────────────────┐
 │ 📜 프로젝트 헌법 (Constitution)          │
 ├─────────────────────────────────────────┤
-│ 현재 라인: {current}/150 ({remaining} 여유) │
-├─────────────────────────────────────────┤
-│ 1. {rule_name_1}                        │
+│ 1. {rule_name_1} (우선순위: {priority})  │
 │    └─ {brief_description}               │
-│ 2. {rule_name_2}                        │
+│ 2. {rule_name_2} (우선순위: {priority})  │
 │    └─ {brief_description}               │
 └─────────────────────────────────────────┘
 ```
@@ -138,10 +139,10 @@ OUTPUT FORMAT:
 ```
 mcp__st__sequentialthinking:
   thought: "새 헌법 규칙 추가를 분석합니다.
-    1. 규칙명 중복 검사
-    2. 추가 시 예상 라인 수 계산
-    3. 150줄 제한 준수 여부 확인
-    4. 최적 배치 위치 결정 (우선순위 기반)"
+    1. docs/constitution.md에서 기존 규칙 확인
+    2. 규칙명 중복 검사
+    3. 다음 규칙 번호 결정
+    4. 우선순위 기반 배치 위치 결정"
   thoughtNumber: 1
   totalThoughts: 5
   nextThoughtNeeded: true
@@ -191,14 +192,12 @@ PRIORITY LEVELS:
 ```
 VALIDATE:
 ├─ 중복 규칙명 검사
-├─ 150줄 제한 확인
-└─ 형식 일관성 검증
-
-IF lines > 150:
-  → AskUserQuestion: "라인 초과! agent-docs/로 분리할까요?"
+├─ 형식 일관성 검증
+└─ 규칙 번호 순서 확인
 
 IF valid:
-  → Edit CLAUDE.md
+  → Edit docs/constitution.md (상세 규칙 추가)
+  → Edit CLAUDE.md 헌법 테이블 (요약 1줄 추가)
   → Store change history to Memory
 ```
 
@@ -263,11 +262,11 @@ AskUserQuestion:
 ```
 mcp__st__sequentialthinking:
   thought: "헌법 무결성을 체계적으로 검사합니다.
-    1. CLAUDE.md 라인 수 확인 (150줄 제한)
-    2. 헌법 섹션 존재 여부 확인
-    3. 각 규칙의 형식 일관성 검증
-    4. 참조 링크 유효성 확인
-    5. 플러그인별 규칙 준수 여부 검사"
+    1. docs/constitution.md 파일 존재 여부 확인
+    2. 규칙 목록 테이블과 상세 섹션 일치 여부 검증
+    3. CLAUDE.md 요약 테이블과 동기화 여부 확인
+    4. 각 규칙의 형식 일관성 검증
+    5. 앵커 링크 유효성 확인"
   thoughtNumber: 1
   totalThoughts: 5
   nextThoughtNeeded: true
@@ -275,22 +274,23 @@ mcp__st__sequentialthinking:
 
 ```
 CHECKS:
-├─ [LINE_COUNT] 라인 수 (max 150)
-├─ [SECTION_EXISTS] 헌법 섹션 존재
+├─ [FILE_EXISTS] docs/constitution.md 존재
+├─ [TABLE_SYNC] 규칙 목록과 상세 섹션 일치
+├─ [CLAUDE_SYNC] CLAUDE.md 요약 테이블 동기화
 ├─ [FORMAT_CONSISTENT] 규칙 형식 일관성
-├─ [LINKS_VALID] 참조 문서 링크 유효성
-└─ [PLUGINS_COMPLIANT] 플러그인 규칙 준수
+└─ [LINKS_VALID] 앵커 링크 유효성
 
 OUTPUT:
 === 헌법 무결성 검사 ===
 
-✓ 라인 수: {current}/150
-✓ 헌법 섹션 존재
+✓ docs/constitution.md 존재
+✓ 규칙 목록-상세 동기화
+✓ CLAUDE.md 요약 동기화
 ✓ 규칙 형식 일관성
 
 현재 헌법 규칙:
-1. {rule_1}
-2. {rule_2}
+1. {rule_1} (우선순위: {priority})
+2. {rule_2} (우선순위: {priority})
 
 ⚠️ 경고:
 - {warning_message}
@@ -320,20 +320,39 @@ OUTPUT:
 
 ## CONSTITUTION FORMAT
 
-```markdown
-## 필수 규칙 (헌법)
+**docs/constitution.md 규칙 상세 형식:**
 
-### 규칙명
+```markdown
+## {번호}. {규칙명}
+
+### 개요
 
 규칙 설명 (1-2문장, **반드시** 키워드 포함 권장)
 
-| 항목 | 설명 | 예시 |
-|------|------|------|
-| ... | ... | ... |
+### 상세 규칙
+
+| 항목 | 설명 |
+|------|------|
+| ... | ... |
+
+### 체크리스트
+
+- [ ] 체크 항목 1
+- [ ] 체크 항목 2
+
+### 예시
 
 ```
-상세 코드블록 (필요시)
+코드 예시
 ```
+```
+
+**CLAUDE.md 요약 테이블 형식:**
+
+```markdown
+| 규칙 | 설명 |
+|------|------|
+| **규칙명** | 한줄 설명 |
 ```
 
 ---
@@ -342,9 +361,10 @@ OUTPUT:
 
 | Error | Response |
 |-------|----------|
-| 150줄 초과 | agent-docs/ 분리 제안, TUI로 확인 |
+| constitution.md 없음 | 파일 자동 생성 제안 |
 | 중복 규칙명 | 기존 규칙 수정 제안 |
-| 헌법 섹션 없음 | 섹션 자동 생성 제안 |
+| 테이블-상세 불일치 | 동기화 수정 제안 |
+| CLAUDE.md 미동기화 | 요약 테이블 업데이트 |
 | 잘못된 형식 | 올바른 형식 안내 및 예시 제공 |
 | Memory 연결 실패 | 로컬 백업 후 경고 표시 |
 

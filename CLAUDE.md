@@ -14,21 +14,14 @@
 
 ## 필수 규칙 (헌법)
 
-### 플러그인 버전 관리 (Semantic Versioning)
+> **⚠️ CRITICAL**: 아래 규칙은 Claude가 **반드시** 준수해야 하는 최우선 규칙입니다. 모든 작업 수행 전 헌법 준수 여부를 확인하세요.
 
-플러그인 변경 시 **반드시** 아래 규칙에 따라 `plugin.json`의 버전을 업데이트해야 합니다:
+| 규칙 | 설명 |
+|------|------|
+| **플러그인 버전 관리** | Semantic Versioning (MAJOR.MINOR.PATCH) 준수 |
+| **파일 레퍼런싱 @ 문법** | 모든 파일 참조 시 `@경로` 형식 필수 |
 
-| 변경 유형 | 버전 | 예시 |
-|----------|------|------|
-| **MAJOR** | 호환성 깨지는 변경 | 1.0.0 → 2.0.0 |
-| **MINOR** | 하위 호환 새 기능 추가 | 1.0.0 → 1.1.0 |
-| **PATCH** | 버그 수정, 문서 수정 | 1.0.0 → 1.0.1 |
-
-```
-MAJOR: API 변경, 커맨드 삭제/이름 변경, 에이전트 인터페이스 변경
-MINOR: 새 커맨드/에이전트/스킬 추가, 새 기능 추가
-PATCH: 버그 수정, 오타 수정, 문서 업데이트, 성능 개선
-```
+> 상세 내용: [@docs/constitution.md](docs/constitution.md)
 
 ## 아키텍처
 
@@ -130,11 +123,11 @@ routing-table.json에서 키워드 점수 관리 (primary 3점)
 - [progressive-disclosure.md](plugins/documentation-generation/agent-docs/progressive-disclosure.md) - 계층적 문서 구조
 
 ### 공식 문서
-- [docs/architecture.md](docs/architecture.md) - 아키텍처 설계 원칙
-- [docs/agents.md](docs/agents.md) - 에이전트 레퍼런스
-- [docs/plugins.md](docs/plugins.md) - 플러그인 레퍼런스
-- [docs/usage.md](docs/usage.md) - 사용 가이드
-- [docs/agent-skills.md](docs/agent-skills.md) - 에이전트 스킬 레퍼런스
+- [@docs/architecture.md](docs/architecture.md) - 아키텍처 설계 원칙
+- [@docs/guides/usage.md](docs/guides/usage.md) - 사용 가이드
+- [@docs/references/agents.md](docs/references/agents.md) - 에이전트 레퍼런스
+- [@docs/references/plugins.md](docs/references/plugins.md) - 플러그인 레퍼런스
+- [@docs/references/agent-skills.md](docs/references/agent-skills.md) - 에이전트 스킬 레퍼런스
 
 ## 빠른 시작
 
@@ -147,5 +140,3 @@ routing-table.json에서 키워드 점수 관리 (primary 3점)
 /context-management:inject-context file.ts # 대용량 파일
 /automation-tools:claude-sync     # 동기화
 ```
-
-상세 개발 가이드: 각 플러그인의 `agent-docs/` 참조
