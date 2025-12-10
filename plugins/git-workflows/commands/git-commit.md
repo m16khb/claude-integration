@@ -4,7 +4,7 @@ description: '스마트 git 커밋 (인자: push - 커밋 후 푸시)'
 allowed-tools:
   - Bash(git *)
   - mcp__sequential-thinking__sequentialthinking
-model: claude-haiku-4-5-20250514
+model: claude-haiku-4-5-20251001
 ---
 
 # Smart Git Commit
