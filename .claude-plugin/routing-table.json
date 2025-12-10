@@ -234,6 +234,11 @@
       "path": "plugins/automation-tools/commands/partner.md",
       "triggers": ["/partner", "/automation-tools:partner"],
       "plugin": "automation-tools"
+    },
+    "constitution": {
+      "path": "plugins/automation-tools/commands/constitution.md",
+      "triggers": ["/constitution", "/automation-tools:constitution"],
+      "plugin": "automation-tools"
     }
   },
   "routing_rules": [
