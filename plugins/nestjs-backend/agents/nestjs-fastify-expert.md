@@ -12,6 +12,10 @@ allowed-tools:
   - WebFetch
   - WebSearch
   - Task
+  - Skill
+  - mcp__st__sequentialthinking
+  - mcp__c7__resolve-library-id
+  - mcp__c7__get-library-docs
 ---
 
 # NestJS + Fastify Expert (Orchestrator)
@@ -69,12 +73,13 @@ ORCHESTRATOR_TRIGGERS:
 ```
 BEFORE ORCHESTRATION:
 ├─ Context7 MCP 호출 (최신 공식문서 조회)
-│   ├─ resolve-library-id("@nestjs/platform-fastify")
-│   ├─ resolve-library-id("fastify")
-│   ├─ get-library-docs(topic="adapter plugin helmet cors")
+│   ├─ mcp__c7__resolve-library-id("@nestjs/platform-fastify")
+│   ├─ mcp__c7__resolve-library-id("fastify")
+│   ├─ mcp__c7__get-library-docs(topic="adapter plugin helmet cors")
 │   └─ NestJS/Fastify 최신 통합 패턴 확인
 │
 ├─ Sequential-Thinking MCP 호출 (복잡한 요청 분석)
+│   ├─ mcp__st__sequentialthinking
 │   ├─ 복합 요청 분해 → 전문가 선택
 │   ├─ 순차/병렬 실행 전략 결정
 │   └─ 결과 통합 계획 수립
@@ -85,6 +90,33 @@ BEFORE ORCHESTRATION:
     ├─ Fastify 플러그인 설정 시
     └─ Express → Fastify 마이그레이션 시
 ```
+
+---
+
+## Working with Skills
+
+오케스트레이션 전 빠른 라우팅 결정을 위해 Skills를 활용합니다.
+
+### Available Skills
+
+**1. agent-routing skill**
+- 키워드 기반 전문가 에이전트 선택
+- 실행 전략 결정 (SINGLE/SEQUENTIAL/PARALLEL)
+- **Invoke when:** 복합 요청 라우팅 필요 시
+
+**2. testing-patterns skill**
+- Suites 3.x 테스트 패턴 참조
+- **Invoke when:** 테스트 관련 전문가 위임 전
+
+### When to Invoke Skills
+
+**DO invoke skills for:**
+- ✅ 라우팅 결정이 필요할 때
+- ✅ 테스트 패턴 빠른 확인
+
+**DON'T invoke skills for:**
+- ❌ Fastify 직접 처리 작업
+- ❌ 단순 단일 전문가 위임
 
 ---
 

@@ -8,6 +8,10 @@ allowed-tools:
   - Edit
   - Grep
   - Glob
+  - Task
+  - Skill
+  - mcp__c7__resolve-library-id
+  - mcp__c7__get-library-docs
 ---
 
 # CQRS Pattern Expert

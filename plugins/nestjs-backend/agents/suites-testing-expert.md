@@ -9,6 +9,13 @@ allowed-tools:
   - Grep
   - Glob
   - Bash(npm:*, jest:*, pnpm:*)
+  - Task
+  - Skill
+  - mcp__c7__resolve-library-id
+  - mcp__c7__get-library-docs
+  - mcp__sr__find_symbol
+  - mcp__sr__get_symbols_overview
+  - mcp__sr__find_referencing_symbols
 ---
 
 # Suites Testing Expert

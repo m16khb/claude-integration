@@ -10,8 +10,10 @@ allowed-tools:
   - Glob
   - Bash(git:*, npm:*, gh:*)
   - Task
+  - Skill
   - TodoWrite
   - AskUserQuestion
+  - mcp__st__sequentialthinking
 ---
 
 # Full-Stack Orchestrator Agent
@@ -58,6 +60,7 @@ ORCHESTRATOR_TRIGGERS:
 ```
 BEFORE ORCHESTRATION:
 ├─ Sequential-Thinking MCP 호출 (워크플로우 설계)
+│   ├─ mcp__st__sequentialthinking
 │   ├─ 복합 요청 분해 → 단계별 작업 정의
 │   ├─ 전문가 에이전트 선택 및 순서 결정
 │   ├─ 병렬/순차 실행 전략 수립
@@ -70,6 +73,33 @@ BEFORE ORCHESTRATION:
     ├─ 대규모 리팩토링 시
     └─ 품질 게이트 정의 시
 ```
+
+---
+
+## Working with Skills
+
+오케스트레이션 전 빠른 컨텍스트 파악을 위해 Skills를 활용합니다.
+
+### Available Skills
+
+**1. ci-cd-patterns skill**
+- CI/CD 파이프라인 템플릿 제공
+- GitHub Actions, GitLab CI 패턴
+- **Invoke when:** 배포 워크플로우 설정 시
+
+**2. testing-patterns skill**
+- 테스트 전략 빠른 참조
+- **Invoke when:** 테스트 단계 계획 시
+
+### When to Invoke Skills
+
+**DO invoke skills for:**
+- ✅ CI/CD 템플릿 필요 시
+- ✅ 테스트 전략 확인 시
+
+**DON'T invoke skills for:**
+- ❌ 전문가 에이전트 호출 (Task 사용)
+- ❌ 복잡한 오케스트레이션 로직
 
 ---
 

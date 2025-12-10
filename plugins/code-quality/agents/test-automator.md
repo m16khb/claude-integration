@@ -8,6 +8,14 @@ allowed-tools:
   - Grep
   - Glob
   - Bash(npm:test*, jest:*, vitest:*)
+  - Task
+  - Skill
+  - mcp__st__sequentialthinking
+  - mcp__c7__resolve-library-id
+  - mcp__c7__get-library-docs
+  - mcp__sr__find_symbol
+  - mcp__sr__get_symbols_overview
+  - mcp__sr__find_referencing_symbols
 ---
 
 # Test Automator Agent

@@ -9,6 +9,10 @@ allowed-tools:
   - Grep
   - Glob
   - Bash(npm:*, docker:*)
+  - Task
+  - Skill
+  - mcp__c7__resolve-library-id
+  - mcp__c7__get-library-docs
 ---
 
 # Microservices Expert

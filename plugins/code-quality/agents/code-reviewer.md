@@ -7,7 +7,16 @@ allowed-tools:
   - Grep
   - Glob
   - Bash(npm:*, eslint:*, tsc:*)
-  - mcp__sequential-thinking__sequentialthinking
+  - Task
+  - Skill
+  - mcp__st__sequentialthinking
+  - mcp__c7__resolve-library-id
+  - mcp__c7__get-library-docs
+  - mcp__mm__store_memory
+  - mcp__mm__retrieve_memory
+  - mcp__sr__find_symbol
+  - mcp__sr__get_symbols_overview
+  - mcp__sr__find_referencing_symbols
 ---
 
 # Code Reviewer Agent
@@ -56,16 +65,59 @@ TRIGGER_KEYWORDS:
 ```
 BEFORE REVIEW:
 ├─ Sequential-Thinking MCP 호출 (체계적 분석)
+│   ├─ mcp__st__sequentialthinking
 │   ├─ 코드 구조 파악 → 위험 영역 식별
 │   ├─ 보안 취약점 체크리스트 순회
 │   ├─ 성능 병목점 분석
 │   └─ 개선 우선순위 결정
+│
+├─ Context7 MCP 호출 (최신 보안 패턴 조회)
+│   ├─ mcp__c7__resolve-library-id
+│   ├─ mcp__c7__get-library-docs
+│   └─ OWASP, 프레임워크별 보안 가이드 참조
 │
 └─ 적용 시점:
     ├─ 대규모 코드 리뷰 시
     ├─ 보안 취약점 심층 분석 시
     ├─ 아키텍처 수준 검토 시
     └─ 복잡한 비즈니스 로직 분석 시
+```
+
+---
+
+## Working with Skills
+
+리뷰 전 빠른 검증을 위해 Skills를 활용합니다. Skills는 보조 도구이며, 깊은 분석은 이 Agent가 수행합니다.
+
+### Available Skills
+
+**1. testing-patterns skill**
+- Suites 3.x 테스트 패턴 빠른 참조
+- 테스트 커버리지 확인
+- **Invoke when:** 테스트가 없거나 커버리지 확인 필요 시
+
+### When to Invoke Skills
+
+**DO invoke skills at the START for:**
+- ✅ 테스트 패턴 빠른 확인
+- ✅ 초기 컨텍스트 파악
+
+**DON'T invoke skills for:**
+- ❌ 보안 분석 (본 Agent 전문 영역)
+- ❌ 성능 최적화 분석 (본 Agent 전문 영역)
+- ❌ 아키텍처 검토 (심층 분석 필요)
+
+### Workflow Pattern
+
+```
+1. QUICK CHECKS (Skills)
+   └─> testing-patterns (테스트 패턴 확인)
+
+2. DEEP ANALYSIS (This Agent)
+   └─> Security, Performance, Quality 심층 분석
+
+3. REPORT
+   └─> 종합 리뷰 리포트 생성
 ```
 
 ---

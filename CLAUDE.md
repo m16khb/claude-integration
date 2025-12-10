@@ -103,10 +103,10 @@ routing-table.json에서 키워드 점수 관리 (primary 3점)
 
 ## 상세 문서
 
-### 핵심 가이드
-- [plugins/documentation-generation/agent-docs/detailed-guides.md](plugins/documentation-generation/agent-docs/detailed-guides.md) - 상세 작성 가이드
-- [plugins/documentation-generation/agent-docs/examples.md](plugins/documentation-generation/agent-docs/examples.md) - 풍부한 예제 모음
-- [plugins/documentation-generation/agent-docs/references.md](plugins/documentation-generation/agent-docs/references.md) - 참고 자료
+### 문서화 가이드
+- [template-library.md](plugins/documentation-generation/agent-docs/template-library.md) - 문서 템플릿 카탈로그
+- [code-analysis.md](plugins/documentation-generation/agent-docs/code-analysis.md) - 코드 분석 및 AST 파싱
+- [progressive-disclosure.md](plugins/documentation-generation/agent-docs/progressive-disclosure.md) - 계층적 문서 구조
 
 ### 공식 문서
 - [docs/architecture.md](docs/architecture.md) - 아키텍처 설계 원칙
@@ -128,4 +128,4 @@ routing-table.json에서 키워드 점수 관리 (primary 3점)
 
 ## 개발 가이드
 
-상세 가이드는 [agent-docs/detailed-guides.md](agent-docs/detailed-guides.md) 참조
+상세 가이드는 각 플러그인의 agent-docs/ 디렉토리를 참조하세요.

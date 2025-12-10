@@ -9,6 +9,13 @@ allowed-tools:
   - Glob
   - Grep
   - Bash(ls:*, find:*)
+  - Task
+  - Skill
+  - mcp__st__sequentialthinking
+  - mcp__mm__store_memory
+  - mcp__mm__retrieve_memory
+  - mcp__sr__find_symbol
+  - mcp__sr__get_symbols_overview
 ---
 
 # Document Builder Agent
