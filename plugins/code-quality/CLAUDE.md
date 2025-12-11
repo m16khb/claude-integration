@@ -28,10 +28,10 @@ Code Changes → Analysis → Report → Auto-fix → Commit
 
 | Type | Name | Description |
 |------|------|-------------|
-| Agent | @agents/code-reviewer.md | 보안, 성능, 유지보수성 분석 |
-| Agent | @agents/test-automator.md | Suites 3.x 기반 테스트 자동 생성 |
-| Command | @commands/review.md | 실시간 코드 리뷰 실행 |
-| Skill | @skills/testing-patterns/SKILL.md | 테스트 패턴 및 모킹 전략 |
+| Agent | `agents/code-reviewer.md` | 보안, 성능, 유지보수성 분석 |
+| Agent | `agents/test-automator.md` | Suites 3.x 기반 테스트 자동 생성 |
+| Command | `commands/review.md` | 실시간 코드 리뷰 실행 |
+| Skill | `skills/testing-patterns/SKILL.md` | 테스트 패턴 및 모킹 전략 |
 
 ## /review Command
 
@@ -106,11 +106,13 @@ DON'T ❌:
 └─ 자동 수정 검증 없이 적용
 ```
 
-## Documentation
+## Documentation (필요 시 Read 도구로 로드)
 
-- @agent-docs/security-analysis.md - OWASP Top 10 상세, 취약점 패턴
-- @agent-docs/testing-strategies.md - Suites 3.x API, 테스트 패턴
-- @agent-docs/test-container.md - Testcontainers Integration/E2E 테스트
-- @agent-docs/review-workflow.md - CI/CD 통합, 커스텀 규칙
+| 문서 | 설명 |
+|------|------|
+| `agent-docs/security-analysis.md` | OWASP Top 10 상세, 취약점 패턴 |
+| `agent-docs/testing-strategies.md` | Suites 3.x API, 테스트 패턴 |
+| `agent-docs/test-container.md` | Testcontainers Integration/E2E 테스트 |
+| `agent-docs/review-workflow.md` | CI/CD 통합, 커스텀 규칙 |
 
-@../CLAUDE.md
+[parent](../CLAUDE.md)

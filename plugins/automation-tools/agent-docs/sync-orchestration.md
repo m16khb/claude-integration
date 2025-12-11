@@ -379,4 +379,4 @@ module.exports = {
 
 ---
 
-@../CLAUDE.md | @factory-system.md | @optimization-guide.md
+**관련 문서**: [CLAUDE.md](../CLAUDE.md) | [factory-system.md](factory-system.md) | [optimization-guide.md](optimization-guide.md)

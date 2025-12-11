@@ -317,4 +317,4 @@ custom_stages:
 
 ---
 
-@../CLAUDE.md | @pipeline-architecture.md | @ci-cd-integration.md
+**관련 문서**: [CLAUDE.md](../CLAUDE.md) | [pipeline-architecture.md](pipeline-architecture.md) | [ci-cd-integration.md](ci-cd-integration.md)

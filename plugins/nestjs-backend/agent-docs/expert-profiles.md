@@ -508,4 +508,4 @@ describe('UserService', () => {
 
 ---
 
-@../CLAUDE.md | @routing-algorithm.md | @integration-patterns.md
+**관련 문서**: [CLAUDE.md](../CLAUDE.md) | [routing-algorithm.md](routing-algorithm.md) | [integration-patterns.md](integration-patterns.md)

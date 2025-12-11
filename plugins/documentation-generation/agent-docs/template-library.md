@@ -918,4 +918,4 @@ rules:
 
 ---
 
-@../CLAUDE.md | @code-analysis.md | @progressive-disclosure.md
+**관련 문서**: [CLAUDE.md](../CLAUDE.md) | [code-analysis.md](code-analysis.md) | [progressive-disclosure.md](progressive-disclosure.md)

@@ -347,4 +347,4 @@ parallel:
 
 ---
 
-@../CLAUDE.md | @context-analysis.md | @recovery-patterns.md
+**관련 문서**: [CLAUDE.md](../CLAUDE.md) | [context-analysis.md](context-analysis.md) | [recovery-patterns.md](recovery-patterns.md)

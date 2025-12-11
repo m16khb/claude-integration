@@ -323,4 +323,4 @@ plugins/my-plugin/commands/
 
 ---
 
-@../CLAUDE.md | @sync-orchestration.md | @optimization-guide.md
+**관련 문서**: [CLAUDE.md](../CLAUDE.md) | [sync-orchestration.md](sync-orchestration.md) | [optimization-guide.md](optimization-guide.md)

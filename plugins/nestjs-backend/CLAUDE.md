@@ -174,10 +174,12 @@ DON'T ❌:
 └─ 명확하지 않은 요청
 ```
 
-## Documentation
+## Documentation (필요 시 Read 도구로 로드)
 
-- @agent-docs/routing-algorithm.md - 키워드 매칭 상세, 점수 계산, 실행 전략 결정
-- @agent-docs/expert-profiles.md - 7명 전문가 상세 프로필, 코드 예시
-- @agent-docs/integration-patterns.md - 전문가 간 협업, 오케스트레이션 시나리오
+| 문서 | 설명 |
+|------|------|
+| `agent-docs/routing-algorithm.md` | 키워드 매칭 상세, 점수 계산, 실행 전략 결정 |
+| `agent-docs/expert-profiles.md` | 7명 전문가 상세 프로필, 코드 예시 |
+| `agent-docs/integration-patterns.md` | 전문가 간 협업, 오케스트레이션 시나리오 |
 
-@../CLAUDE.md
+[parent](../CLAUDE.md)

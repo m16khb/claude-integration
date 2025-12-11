@@ -102,11 +102,13 @@ DON'T ❌:
 └─ 검증 없이 에이전트 배포
 ```
 
-## Documentation
+## Documentation (필요 시 Read 도구로 로드)
 
-- @agent-docs/factory-system.md - Agent/Skill/Command 자동 생성, 템플릿 시스템
-- @agent-docs/sync-orchestration.md - CLAUDE.md 동기화, routing-table 관리
-- @agent-docs/optimization-guide.md - 프롬프트/에이전트/커맨드 최적화 원칙
-- @agent-docs/statusline-config.md - Status Line 설정, 커스텀 템플릿
+| 문서 | 설명 |
+|------|------|
+| `agent-docs/factory-system.md` | Agent/Skill/Command 자동 생성, 템플릿 시스템 |
+| `agent-docs/sync-orchestration.md` | CLAUDE.md 동기화, routing-table 관리 |
+| `agent-docs/optimization-guide.md` | 프롬프트/에이전트/커맨드 최적화 원칙 |
+| `agent-docs/statusline-config.md` | Status Line 설정, 커스텀 템플릿 |
 
-@../CLAUDE.md
+[parent](../CLAUDE.md)

@@ -778,4 +778,4 @@ async function analyzeFileHistory(filePath: string): Promise<FileHistory> {
 
 ---
 
-@../CLAUDE.md | @template-library.md | @progressive-disclosure.md
+**관련 문서**: [CLAUDE.md](../CLAUDE.md) | [template-library.md](template-library.md) | [progressive-disclosure.md](progressive-disclosure.md)

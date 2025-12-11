@@ -453,4 +453,4 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 ---
 
-@../CLAUDE.md | @branch-strategies.md | @automation-patterns.md
+**관련 문서**: [CLAUDE.md](../CLAUDE.md) | [branch-strategies.md](branch-strategies.md) | [automation-patterns.md](automation-patterns.md)

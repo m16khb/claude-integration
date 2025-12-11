@@ -425,4 +425,4 @@ ignore:
 
 ---
 
-@../CLAUDE.md | @security-analysis.md | @testing-strategies.md
+**관련 문서**: [CLAUDE.md](../CLAUDE.md) | [security-analysis.md](security-analysis.md) | [testing-strategies.md](testing-strategies.md)

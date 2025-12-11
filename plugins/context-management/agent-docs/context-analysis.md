@@ -279,4 +279,4 @@ recommendations:
 
 ---
 
-@../CLAUDE.md | @chunking-algorithm.md | @recovery-patterns.md
+**관련 문서**: [CLAUDE.md](../CLAUDE.md) | [chunking-algorithm.md](chunking-algorithm.md) | [recovery-patterns.md](recovery-patterns.md)

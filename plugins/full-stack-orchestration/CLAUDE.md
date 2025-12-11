@@ -23,9 +23,9 @@ Request → Analysis → Review Gate → Test Gate → Commit Gate → Report
 
 | 컴포넌트 | 타입 | 설명 |
 |---------|------|------|
-| @agents/full-stack-orchestrator.md | Agent | 워크플로우 조율자 (Opus) |
-| @commands/dev-flow.md | Command | 파이프라인 실행 |
-| @skills/ci-cd-patterns/SKILL.md | Skill | CI/CD 템플릿 |
+| `agents/full-stack-orchestrator.md` | Agent | 워크플로우 조율자 (Opus) |
+| `commands/dev-flow.md` | Command | 파이프라인 실행 |
+| `skills/ci-cd-patterns/SKILL.md` | Skill | CI/CD 템플릿 |
 
 ## /dev-flow Command
 
@@ -117,11 +117,13 @@ DON'T ❌:
 └─ --skip-hooks 남용
 ```
 
-## Documentation
+## Documentation (필요 시 Read 도구로 로드)
 
-- @agent-docs/pipeline-architecture.md - 파이프라인 아키텍처, Quality Gates 상세
-- @agent-docs/workflow-patterns.md - /dev-flow 사용법, 시나리오별 패턴
-- @agent-docs/ci-cd-integration.md - GitHub Actions, GitLab CI, Jenkins 템플릿
-- @agent-docs/troubleshooting.md - 문제 해결, 디버깅
+| 문서 | 설명 |
+|------|------|
+| `agent-docs/pipeline-architecture.md` | 파이프라인 아키텍처, Quality Gates 상세 |
+| `agent-docs/workflow-patterns.md` | /dev-flow 사용법, 시나리오별 패턴 |
+| `agent-docs/ci-cd-integration.md` | GitHub Actions, GitLab CI, Jenkins 템플릿 |
+| `agent-docs/troubleshooting.md` | 문제 해결, 디버깅 |
 
-@../CLAUDE.md
+[parent](../CLAUDE.md)

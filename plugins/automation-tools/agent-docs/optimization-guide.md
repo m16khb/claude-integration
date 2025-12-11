@@ -301,4 +301,4 @@ MAINTAINABILITY PRINCIPLES:
 
 ---
 
-@../CLAUDE.md | @factory-system.md | @sync-orchestration.md
+**관련 문서**: [CLAUDE.md](../CLAUDE.md) | [factory-system.md](factory-system.md) | [sync-orchestration.md](sync-orchestration.md)

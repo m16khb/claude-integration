@@ -280,4 +280,4 @@ module.exports = {
 
 ---
 
-@../CLAUDE.md | @testing-strategies.md
+**관련 문서**: [CLAUDE.md](../CLAUDE.md) | [testing-strategies.md](testing-strategies.md)

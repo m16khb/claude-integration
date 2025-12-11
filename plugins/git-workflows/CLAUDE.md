@@ -165,10 +165,12 @@ DON'T ❌:
 └─ main 브랜치 직접 푸시
 ```
 
-## Documentation
+## Documentation (필요 시 Read 도구로 로드)
 
-- @agent-docs/commit-conventions.md - Conventional Commits 1.0.0 전체 규격
-- @agent-docs/branch-strategies.md - Git Flow 상세, 브랜치 명명
-- @agent-docs/automation-patterns.md - 다중 커밋, 스마트 그룹화
+| 문서 | 설명 |
+|------|------|
+| `agent-docs/commit-conventions.md` | Conventional Commits 1.0.0 전체 규격 |
+| `agent-docs/branch-strategies.md` | Git Flow 상세, 브랜치 명명 |
+| `agent-docs/automation-patterns.md` | 다중 커밋, 스마트 그룹화 |
 
-@../CLAUDE.md
+[parent](../CLAUDE.md)

@@ -446,4 +446,4 @@ git merge --continue
 
 ---
 
-@../CLAUDE.md | @chunking-algorithm.md | @context-analysis.md
+**관련 문서**: [CLAUDE.md](../CLAUDE.md) | [chunking-algorithm.md](chunking-algorithm.md) | [context-analysis.md](context-analysis.md)

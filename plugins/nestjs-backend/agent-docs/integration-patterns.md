@@ -349,4 +349,4 @@ ERROR HANDLING:
 
 ---
 
-@../CLAUDE.md | @routing-algorithm.md | @expert-profiles.md
+**관련 문서**: [CLAUDE.md](../CLAUDE.md) | [routing-algorithm.md](routing-algorithm.md) | [expert-profiles.md](expert-profiles.md)

@@ -277,4 +277,4 @@ const insecureConfigs = {
 
 ---
 
-@../CLAUDE.md | @testing-strategies.md | @review-workflow.md
+**관련 문서**: [CLAUDE.md](../CLAUDE.md) | [testing-strategies.md](testing-strategies.md) | [review-workflow.md](review-workflow.md)

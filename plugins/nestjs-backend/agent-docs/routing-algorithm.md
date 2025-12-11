@@ -353,4 +353,4 @@ FALSE POSITIVE ANALYSIS:
 
 ---
 
-@../CLAUDE.md | @expert-profiles.md | @integration-patterns.md
+**관련 문서**: [CLAUDE.md](../CLAUDE.md) | [expert-profiles.md](expert-profiles.md) | [integration-patterns.md](integration-patterns.md)

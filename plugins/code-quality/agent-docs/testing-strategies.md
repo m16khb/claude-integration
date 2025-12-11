@@ -414,4 +414,4 @@ it('error case')
 
 ---
 
-@../CLAUDE.md | @security-analysis.md | @review-workflow.md
+**관련 문서**: [CLAUDE.md](../CLAUDE.md) | [security-analysis.md](security-analysis.md) | [review-workflow.md](review-workflow.md)

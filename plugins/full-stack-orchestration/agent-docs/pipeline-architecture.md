@@ -246,4 +246,4 @@ parallel:
 
 ---
 
-@../CLAUDE.md | @workflow-patterns.md | @ci-cd-integration.md
+**관련 문서**: [CLAUDE.md](../CLAUDE.md) | [workflow-patterns.md](workflow-patterns.md) | [ci-cd-integration.md](ci-cd-integration.md)
