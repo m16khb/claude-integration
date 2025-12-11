@@ -1,6 +1,7 @@
 ---
 name: automation-tools:claude-sync
 description: '코드베이스 변경 감지 및 CLAUDE.md 자동 동기화'
+argument-hint: [task_instruction]
 allowed-tools:
   - Read
   - Write

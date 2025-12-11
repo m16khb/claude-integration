@@ -1,6 +1,7 @@
 ---
 name: git-workflows:git-worktree
 description: 'Git worktree 안전 관리 (인자: <action> [branch] [name])'
+argument-hint: <action> [branch] [name]
 allowed-tools:
   - Bash(git *)
   - Bash(ls *)
