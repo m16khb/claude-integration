@@ -118,10 +118,12 @@ DON'T ❌:
 └─ Unstaged 변경사항 과다 누적
 ```
 
-## Documentation
+## Documentation (필요 시 Read 도구로 로드)
 
-- @agent-docs/chunking-algorithm.md - 구조 인식 청킹, 언어별 AST 파싱
-- @agent-docs/context-analysis.md - Git/파일/히스토리 분석, 작업 추천
-- @agent-docs/recovery-patterns.md - 세션 복구, MCP Memory 연동
+| 문서 | 설명 |
+|------|------|
+| `agent-docs/chunking-algorithm.md` | 구조 인식 청킹, 언어별 AST 파싱 |
+| `agent-docs/context-analysis.md` | Git/파일/히스토리 분석, 작업 추천 |
+| `agent-docs/recovery-patterns.md` | 세션 복구, MCP Memory 연동 |
 
-@../CLAUDE.md
+[parent](../CLAUDE.md)

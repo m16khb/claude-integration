@@ -1,6 +1,7 @@
 ---
 name: git-workflows:git-commit
 description: 'Conventional Commits 1.0.0 규격 스마트 커밋 (인자: push - 커밋 후 푸시)'
+argument-hint: [push] [custom-message]
 allowed-tools:
   - Bash(git *)
   - mcp__st__sequentialthinking

@@ -48,8 +48,8 @@ LEVEL 3: agent-docs/ (Unlimited)
 
 | 타입 | 이름 | 설명 |
 |------|------|------|
-| Agent | @agents/document-builder.md | 코드 분석 기반 문서 생성 전문가 |
-| Skill | @skills/document-templates/SKILL.md | CLAUDE.md, README, API 문서 템플릿 |
+| Agent | `agents/document-builder.md` | 코드 분석 기반 문서 생성 전문가 |
+| Skill | `skills/document-templates/SKILL.md` | CLAUDE.md, README, API 문서 템플릿 |
 
 ## document-builder Agent
 
@@ -168,21 +168,25 @@ plugins/documentation-generation/
 ```
 DO ✅:
 ├─ 계층 구조 준수 (Root → Module → agent-docs)
-├─ @ 문법으로 파일 참조
+├─ 소스코드 참조 시 @ 문법 사용
+├─ agent-docs 참조 시 테이블/코드 스팬 사용
 ├─ 테이블과 압축 기법 활용
 └─ 라인 제한 내 필수 내용 우선
 
 DON'T ❌:
+├─ CLAUDE.md에서 agent-docs @ 참조 (토큰 낭비)
 ├─ Hard Limit 초과
 ├─ 중복 정보 (Root와 Module에 동일 내용)
 ├─ 깨진 링크
 └─ 절대 경로 사용
 ```
 
-## Documentation
+## Documentation (필요 시 Read 도구로 로드)
 
-- @agent-docs/template-library.md - 문서 템플릿 카탈로그, 변수 시스템, Mermaid 패턴
-- @agent-docs/code-analysis.md - AST 파싱 상세, 의존성 분석, 자동 추출 알고리즘
-- @agent-docs/progressive-disclosure.md - 계층 구조 상세, 라인 제한, 네비게이션 패턴
+| 문서 | 설명 |
+|------|------|
+| `agent-docs/template-library.md` | 문서 템플릿 카탈로그, 변수 시스템, Mermaid 패턴 |
+| `agent-docs/code-analysis.md` | AST 파싱 상세, 의존성 분석, 자동 추출 알고리즘 |
+| `agent-docs/progressive-disclosure.md` | 계층 구조 상세, 라인 제한, 네비게이션 패턴 |
 
-@../CLAUDE.md
+[parent](../CLAUDE.md)

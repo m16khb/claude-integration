@@ -19,10 +19,11 @@
 | 규칙 | 설명 |
 |------|------|
 | **플러그인 버전 관리** | Semantic Versioning (MAJOR.MINOR.PATCH) 준수 |
-| **파일 레퍼런싱 @ 문법** | 모든 파일 참조 시 `@경로` 형식 필수 |
-| **CLAUDE.md 라인 제한** | Soft: 300/200/150, Hard: 500/350/250 (Hard 초과 시 agent-docs 필수) |
+| **파일 레퍼런싱 @ 문법** | 소스코드 참조 시 `@경로` 형식 사용 |
+| **CLAUDE.md 라인 제한** | Soft: 300/200/150, Hard: 500/350/250 |
+| **agent-docs 동적 로딩** | agent-docs는 @ 참조 금지, 필요 시 Read 도구로 로드 |
 
-> 상세 내용: @agent-docs/constitution.md
+> 상세 내용: [constitution.md](agent-docs/constitution.md)
 
 ## 아키텍처
 
@@ -66,13 +67,13 @@ MARKETPLACE ARCHITECTURE:
 
 | 플러그인 | 카테고리 | 주요 기능 |
 |---------|---------|----------|
-| @plugins/nestjs-backend/CLAUDE.md | development | NestJS 생태계 전문가 7명 |
-| @plugins/code-quality/CLAUDE.md | quality | 코드 리뷰, 테스트 자동화 |
-| @plugins/full-stack-orchestration/CLAUDE.md | workflows | 개발 워크플로우 오케스트레이션 |
-| @plugins/documentation-generation/CLAUDE.md | documentation | 계층적 문서 자동 생성 |
-| @plugins/git-workflows/CLAUDE.md | development | Git Flow 기반 스마트 커밋 |
-| @plugins/context-management/CLAUDE.md | productivity | 컨텍스트 분석, 대용량 처리 |
-| @plugins/automation-tools/CLAUDE.md | productivity | 컴포넌트 자동 생성, 동기화 |
+| [nestjs-backend](plugins/nestjs-backend/CLAUDE.md) | development | NestJS 생태계 전문가 7명 |
+| [code-quality](plugins/code-quality/CLAUDE.md) | quality | 코드 리뷰, 테스트 자동화 |
+| [full-stack-orchestration](plugins/full-stack-orchestration/CLAUDE.md) | workflows | 개발 워크플로우 오케스트레이션 |
+| [documentation-generation](plugins/documentation-generation/CLAUDE.md) | documentation | 계층적 문서 자동 생성 |
+| [git-workflows](plugins/git-workflows/CLAUDE.md) | development | Git Flow 기반 스마트 커밋 |
+| [context-management](plugins/context-management/CLAUDE.md) | productivity | 컨텍스트 분석, 대용량 처리 |
+| [automation-tools](plugins/automation-tools/CLAUDE.md) | productivity | 컴포넌트 자동 생성, 동기화 |
 
 ## 주요 커맨드
 
@@ -192,21 +193,29 @@ routing-table.json에서 키워드-에이전트 매핑 관리
 "playwright로 example.com 열고 스크린샷 찍어줘"
 ```
 
-## 상세 문서
+## 상세 문서 (필요 시 Read 도구로 로드)
 
 ### 문서화 가이드
-- @plugins/documentation-generation/agent-docs/template-library.md - 문서 템플릿 카탈로그
-- @plugins/documentation-generation/agent-docs/code-analysis.md - 코드 분석 및 AST 파싱
-- @plugins/documentation-generation/agent-docs/progressive-disclosure.md - 계층적 문서 구조
+| 문서 | 설명 |
+|------|------|
+| `plugins/documentation-generation/agent-docs/template-library.md` | 문서 템플릿 카탈로그 |
+| `plugins/documentation-generation/agent-docs/code-analysis.md` | 코드 분석 및 AST 파싱 |
+| `plugins/documentation-generation/agent-docs/progressive-disclosure.md` | 계층적 문서 구조 |
 
-### 상세 문서 (agent-docs/)
-- @agent-docs/constitution.md - 프로젝트 헌법 (필수 규칙)
-- @agent-docs/architecture.md - 아키텍처 설계 원칙
-- @agent-docs/guides/usage.md - 사용 가이드
-- @agent-docs/guides/claude-md-guide.md - CLAUDE.md 사용 가이드 (공식 블로그 기반)
-- @agent-docs/references/agents.md - 에이전트 레퍼런스
-- @agent-docs/references/plugins.md - 플러그인 레퍼런스
-- @agent-docs/references/agent-skills.md - 에이전트 스킬 레퍼런스
+### 프로젝트 가이드
+| 문서 | 설명 |
+|------|------|
+| `agent-docs/constitution.md` | 프로젝트 헌법 (필수 규칙) |
+| `agent-docs/architecture.md` | 아키텍처 설계 원칙 |
+| `agent-docs/guides/usage.md` | 사용 가이드 |
+| `agent-docs/guides/claude-md-guide.md` | CLAUDE.md 사용 가이드 (공식 블로그 기반) |
+
+### 레퍼런스
+| 문서 | 설명 |
+|------|------|
+| `agent-docs/references/agents.md` | 에이전트 레퍼런스 |
+| `agent-docs/references/plugins.md` | 플러그인 레퍼런스 |
+| `agent-docs/references/agent-skills.md` | 에이전트 스킬 레퍼런스 |
 
 ## 빠른 시작
 
@@ -286,10 +295,12 @@ DO ✅:
 ├─ 자연어로 에이전트 호출 (자동 라우팅)
 ├─ /dev-flow로 전체 파이프라인 실행
 ├─ /claude-sync로 문서 최신 상태 유지
-├─ @ 문법으로 파일 참조
+├─ 소스코드 참조 시 @ 문법 사용
+├─ agent-docs 참조 시 일반 링크/코드 스팬 사용
 └─ 헌법 규칙 준수
 
 DON'T ❌:
+├─ CLAUDE.md에서 agent-docs @ 참조 (토큰 낭비)
 ├─ 수동으로 routing-table.json 편집
 ├─ Hard Limit 초과 문서 작성
 ├─ 검증 없이 main 직접 푸시

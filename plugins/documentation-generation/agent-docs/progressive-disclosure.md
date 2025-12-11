@@ -58,7 +58,7 @@ Hard Limit: 강제 분할 필수, agent-docs 생성 필수
 규칙:
 - Frontmatter, 공백, 코드블록 모두 포함
 - Hard Limit 초과 시 agent-docs/로 내용 분리 필수
-- @ 문법으로 상세 문서 연결
+- agent-docs는 일반 링크/테이블로 참조 (@ 참조 금지)
 ```
 
 ### 제한 준수 전략
@@ -679,4 +679,47 @@ Root (150) → Module (80) → Detailed (Unlimited)
 
 ---
 
-@../CLAUDE.md | @template-library.md | @code-analysis.md
+## 동적 로딩 원칙 (헌법 규칙)
+
+### @ 참조 vs 일반 링크
+
+```
+⚠️ CRITICAL: CLAUDE.md에서 agent-docs 참조 시 @ 사용 금지
+
+@ 참조 = 파일 내용 자동 IMPORT (컨텍스트에 포함)
+일반 링크 = 참조만 (필요 시 Read 도구로 수동 로드)
+```
+
+### 올바른 참조 방식
+
+```markdown
+# ❌ 잘못된 예 (자동 로드되어 토큰 낭비)
+- @agent-docs/guide.md
+
+# ✅ 올바른 예 (필요 시 Read 도구로 로드)
+| 문서 | 설명 |
+|------|------|
+| `agent-docs/guide.md` | 상세 가이드 |
+
+# ✅ 대안 (마크다운 링크)
+- [guide](agent-docs/guide.md) - 상세 가이드
+```
+
+### 토큰 효율성
+
+```
+Before (@ 참조):
+├─ CLAUDE.md 로드 시 모든 agent-docs 자동 포함
+├─ 토큰 사용: ~5000+ 토큰
+└─ 불필요한 정보 과다
+
+After (일반 링크):
+├─ CLAUDE.md만 로드
+├─ 토큰 사용: ~500 토큰
+├─ 필요 시 Read 도구로 선택적 로드
+└─ 절감율: 50-70%
+```
+
+---
+
+[parent](../CLAUDE.md) | [template-library](template-library.md) | [code-analysis](code-analysis.md)

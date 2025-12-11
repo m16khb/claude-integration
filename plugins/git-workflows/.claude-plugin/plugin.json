@@ -1,6 +1,6 @@
 {
   "name": "git-workflows",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Conventional Commits 1.0.0 규격 준수 스마트 커밋, Git Flow 브랜치 관리, Worktree 지원",
   "author": {
     "name": "m16khb",

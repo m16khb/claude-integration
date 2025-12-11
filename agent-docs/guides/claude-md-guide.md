@@ -242,10 +242,41 @@ CLAUDE.md는 매번 컨텍스트에 추가되므로 **간결하게 유지**해�
 ```markdown
 # CLAUDE.md (간결하게)
 
-## 상세 문서
-- @agent-docs/detailed-guide.md - 상세 가이드
-- @agent-docs/examples.md - 예제 모음
+## 상세 문서 (필요 시 Read 도구로 로드)
+| 문서 | 설명 |
+|------|------|
+| `agent-docs/detailed-guide.md` | 상세 가이드 |
+| `agent-docs/examples.md` | 예제 모음 |
 ```
+
+### agent-docs 동적 로딩 (프로젝트 헌법)
+
+**⚠️ 중요**: CLAUDE.md에서 agent-docs 파일을 `@` 참조하면 해당 파일 전체가 컨텍스트에 자동 로드되어 토큰을 낭비합니다.
+
+```
+@ 참조 = 파일 내용 자동 IMPORT (토큰 소비)
+일반 링크 = 참조만 (필요 시 Read 도구로 수동 로드)
+```
+
+**올바른 참조 방식:**
+
+```markdown
+# ❌ 잘못된 예 (자동 로드됨)
+- @agent-docs/guide.md - 상세 가이드
+
+# ✅ 올바른 예 (로드 안됨)
+| 문서 | 설명 |
+|------|------|
+| `agent-docs/guide.md` | 상세 가이드 |
+
+# ✅ 대안 (마크다운 링크)
+- [guide](agent-docs/guide.md) - 상세 가이드
+```
+
+**예상 효과:**
+- 토큰 50-70% 절감
+- 필요한 문서만 선택적 로드
+- 컨텍스트 윈도우 효율적 사용
 
 ## 핵심 요약
 
@@ -260,8 +291,10 @@ CLAUDE.md는 매번 컨텍스트에 추가되므로 **간결하게 유지**해�
 
 ## 관련 문서
 
-- @../usage.md - 사용 가이드
-- @../../CLAUDE.md - 루트 CLAUDE.md
+| 문서 | 설명 |
+|------|------|
+| `agent-docs/guides/usage.md` | 사용 가이드 |
+| `CLAUDE.md` | 프로젝트 루트 CLAUDE.md |
 
 ---
 

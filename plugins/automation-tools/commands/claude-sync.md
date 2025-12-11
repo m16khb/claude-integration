@@ -25,7 +25,8 @@ model: claude-opus-4-5-20251101
 **핵심 원칙:**
 - 모듈마다 CLAUDE.md 작성
 - LOC 초과 시 agent-docs로 분할
-- 모든 CLAUDE.md는 상위에서 @ 참조
+- 플러그인 CLAUDE.md는 상위에서 일반 링크로 참조
+- agent-docs는 @ 참조 금지 (테이블/일반 링크 사용)
 - 고아 파일 0개 보장
 
 ---
@@ -34,9 +35,13 @@ model: claude-opus-4-5-20251101
 
 ```
 Root CLAUDE.md
-├── @plugins/*/CLAUDE.md (MODULE)
-│   └── @agent-docs/*.md (상세)
-└── @agent-docs/*.md (상세)
+├── [plugins/*/CLAUDE.md](링크) (MODULE)
+│   └── `agent-docs/*.md` (테이블로 참조, 동적 로딩)
+└── `agent-docs/*.md` (테이블로 참조, 동적 로딩)
+
+⚠️ CRITICAL (헌법 규칙 4):
+- CLAUDE.md → agent-docs: @ 참조 금지 (자동 로드되어 토큰 낭비)
+- 테이블 또는 일반 링크로 참조, 필요 시 Read 도구로 로드
 ```
 
 ---
@@ -103,19 +108,22 @@ Task(subagent_type="document-builder"):
 
 ```
 ORPHAN TYPES:
-├─ CLAUDE.md → 상위에서 참조 안됨 → 참조 추가
-├─ agent-docs → CLAUDE.md에서 링크 안됨 → 링크 추가
-└─ parent 링크 누락 → @../CLAUDE.md 추가
+├─ CLAUDE.md → 상위에서 참조 안됨 → 일반 링크로 참조 추가
+├─ agent-docs → CLAUDE.md에서 링크 안됨 → 테이블에 추가
+└─ parent 링크 누락 → [parent](../CLAUDE.md) 추가
+
+⚠️ agent-docs 참조 시 @ 사용 금지 (헌법 규칙 4)
 ```
 
 ### Phase 6: Validation
 
 ```
 FINAL CHECK:
-├─ 모든 @ 참조 경로 유효
+├─ 모든 링크 경로 유효 (일반 링크 + 테이블)
 ├─ 라인 수 제한 준수
 ├─ 고아 파일 0개
-└─ 계층 무결성 유지
+├─ 계층 무결성 유지
+└─ agent-docs에 @ 참조 없음 (헌법 규칙 4)
 ```
 
 ---
@@ -137,14 +145,20 @@ FINAL CHECK:
 ## 빠른 시작
 {필수 명령어만}
 
-## 상세 문서
-- @agent-docs/{topic}.md - {설명}
+## 상세 문서 (필요 시 Read 도구로 로드)
+| 문서 | 설명 |
+|------|------|
+| `agent-docs/{topic}.md` | {설명} |
 
 ## 하위 모듈 (있을 경우)
-- @submodule/CLAUDE.md - 설명
+- [submodule](submodule/CLAUDE.md) - 설명
 
-@../CLAUDE.md  ← parent 참조 (root 제외)
+[parent](../CLAUDE.md)  ← parent 참조 (root 제외)
 ```
+
+**⚠️ 동적 로딩 원칙:**
+- agent-docs는 `코드 스팬` 또는 `[링크](경로)` 형태로 참조
+- @ 참조 사용 금지 (토큰 낭비 방지)
 
 ---
 
