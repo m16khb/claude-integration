@@ -1,6 +1,6 @@
 {
   "name": "code-quality",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "코드 리뷰, 테스트 자동화, 품질 검증 도구 (Suites 3.x 기반)",
   "author": {
     "name": "m16khb",

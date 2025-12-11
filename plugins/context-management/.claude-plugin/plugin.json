@@ -1,6 +1,6 @@
 {
   "name": "context-management",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "대용량 파일 청킹, 컨텍스트 주입 및 작업 추천 도구",
   "author": {
     "name": "m16khb",
