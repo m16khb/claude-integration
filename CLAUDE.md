@@ -22,15 +22,36 @@
 | **파일 레퍼런싱 @ 문법** | 모든 파일 참조 시 `@경로` 형식 필수 |
 | **CLAUDE.md 라인 제한** | Soft: 300/200/150, Hard: 500/350/250 (Hard 초과 시 agent-docs 필수) |
 
-> 상세 내용: @docs/constitution.md
+> 상세 내용: @agent-docs/constitution.md
 
 ## 아키텍처
 
+```
+MARKETPLACE ARCHITECTURE:
+┌─────────────────────────────────────────────────────────┐
+│                   claude-integration                     │
+│              (Claude Code 생산성 마켓플레이스)           │
+└───────────────────────────┬─────────────────────────────┘
+                            │
+        ┌───────────────────┼───────────────────┐
+        │                   │                   │
+        ▼                   ▼                   ▼
+  ┌───────────┐      ┌───────────┐      ┌───────────┐
+  │Development│      │  Quality  │      │Productivity│
+  │ Plugins   │      │  Plugins  │      │  Plugins   │
+  └─────┬─────┘      └─────┬─────┘      └─────┬─────┘
+        │                  │                   │
+        ▼                  ▼                   ▼
+   nestjs-backend    code-quality       context-management
+   git-workflows     full-stack-orch    automation-tools
+                     doc-generation
+```
+
 이 마켓플레이스는 **단일 책임 원칙**을 따릅니다:
 
-- **7개 전문화된 플러그인**
+- **7개 전문화된 플러그인** (카테고리별 분리)
 - **11개 전문 에이전트** (2개 오케스트레이터 + 9개 전문가)
-- **11개 슬래시 커맨드**
+- **11개 슬래시 커맨드** (플러그인별 네임스페이스)
 - **9개 에이전트 스킬** (라우팅 시스템 포함)
 
 ## 기술 스택
@@ -40,18 +61,6 @@
 - **스키마**: Anthropic 2025 Skills/Commands/Agents Schema
 - **패턴**: Orchestrator-Worker, Progressive Disclosure, Agent Routing
 - **테스트**: Suites 3.x (구 Automock)
-
-## 프로젝트 구조
-
-```
-claude-integration/
-├── .claude-plugin/          # 플러그인 레지스트리
-├── plugins/                  # 7개 전문화된 플러그인
-│   └── documentation-generation/
-│       └── agent-docs/      # 상세 문서
-├── docs/                    # 종합 문서
-└── CLAUDE.md               # 본문 (150라인 제한)
-```
 
 ## 플러그인 목록
 
@@ -83,31 +92,85 @@ claude-integration/
 
 ## 에이전트 계층
 
-- **full-stack-orchestrator**: 최상위 워크플로우 조율
-- **nestjs-fastify-expert**: 백엔드 7명 전문가 조율
-- **Experts**: typeorm, redis, bullmq, cqrs, microservices, testing
-- **Quality**: code-reviewer, test-automator
-- **Docs**: document-builder
+```
+AGENT HIERARCHY:
+┌─────────────────────────────────────────────────────────┐
+│            ORCHESTRATORS (2개)                          │
+│  full-stack-orchestrator ← 최상위 워크플로우           │
+│  nestjs-fastify-expert   ← 백엔드 전문가 조율          │
+└───────────────────────────┬─────────────────────────────┘
+                            │
+        ┌───────────────────┼───────────────────┐
+        │                   │                   │
+        ▼                   ▼                   ▼
+  ┌───────────┐      ┌───────────┐      ┌───────────┐
+  │ Backend   │      │  Quality  │      │   Docs    │
+  │ Experts   │      │  Experts  │      │  Expert   │
+  │  (6개)    │      │   (2개)   │      │   (1개)   │
+  └───────────┘      └───────────┘      └───────────┘
+       │                  │                   │
+       ▼                  ▼                   ▼
+  typeorm-expert    code-reviewer      document-builder
+  redis-cache       test-automator
+  bullmq-queue
+  cqrs-expert
+  microservices
+  suites-testing
+```
+
+| 에이전트 | 역할 | 모델 |
+|---------|------|------|
+| full-stack-orchestrator | 워크플로우 조율 | Opus |
+| nestjs-fastify-expert | 백엔드 조율 | Opus |
+| typeorm-expert | DB/Entity | Opus |
+| redis-cache-expert | 캐싱 | Opus |
+| bullmq-queue-expert | Job Queue | Opus |
+| cqrs-expert | CQRS 패턴 | Opus |
+| microservices-expert | MSA | Opus |
+| suites-testing-expert | 테스트 | Opus |
+| code-reviewer | 코드 리뷰 | Sonnet |
+| test-automator | 테스트 자동화 | Sonnet |
+| document-builder | 문서 생성 | Sonnet |
 
 ## Agent Routing System
 
-자동 키워드 분석으로 전문가 선택:
-- "Redis 캐시" → redis-cache-expert
-- "엔티티 + 테스트" → typeorm → suites-testing (SEQUENTIAL)
-- "캐시 + 큐" → [redis, bullmq] (PARALLEL)
+```
+ROUTING WORKFLOW:
+User Request → Keyword Extraction → Score Calculation → Expert Selection
+     │                │                    │                 │
+     └─ "Redis 캐시"  └─ [redis, 캐시]    └─ redis=3+2     └─ redis-cache-expert
+```
 
-routing-table.json에서 키워드 점수 관리 (primary 3점)
+자동 키워드 분석으로 전문가 선택:
+
+| 요청 | 키워드 | 결과 |
+|------|--------|------|
+| "Redis 캐시" | redis, 캐시 | SINGLE: redis-cache-expert |
+| "엔티티 + 테스트" | typeorm, 테스트 | SEQUENTIAL: typeorm → testing |
+| "캐시 + 큐" | redis, bullmq | PARALLEL: [redis, bullmq] |
+
+**점수 계산**: Primary(3점) + Secondary(2점) + Context(1점)
+
+routing-table.json에서 키워드-에이전트 매핑 관리
 
 ## 설치
 
 ```bash
+# 마켓플레이스 등록
 /plugin marketplace add m16khb/claude-integration
+
+# 전체 플러그인 설치
 /plugin install claude-integration
+
+# 또는 개별 플러그인 설치
+/plugin install nestjs-backend
+/plugin install code-quality
+/plugin install automation-tools
 ```
 
 ## MCP 서버 (별도 설치 필요)
 
-이 프로젝트는 다음 MCP 서버들과 연동됩니다. 각 사용자가 직접 설치해야 합니다:
+이 프로젝트는 다음 MCP 서버들과 연동됩니다:
 
 | MCP 서버 | 설명 | 설치 명령어 |
 |----------|------|-----------|
@@ -116,6 +179,19 @@ routing-table.json에서 키워드 점수 관리 (primary 3점)
 | `sequential-thinking` | 단계별 사고 | `npx -y @modelcontextprotocol/server-sequential-thinking` |
 | `chrome-devtools` | 크롬 개발자 도구 | `npx -y chrome-devtools-mcp@latest` |
 
+### MCP 서버 활용 예시
+
+```bash
+# Context7로 최신 문서 주입
+"use context7 TypeORM migrations 사용법"
+
+# Sequential Thinking으로 복잡한 분석
+→ 자동 활성화 (복잡한 요청 감지 시)
+
+# Playwright로 브라우저 자동화
+"playwright로 example.com 열고 스크린샷 찍어줘"
+```
+
 ## 상세 문서
 
 ### 문서화 가이드
@@ -123,21 +199,99 @@ routing-table.json에서 키워드 점수 관리 (primary 3점)
 - @plugins/documentation-generation/agent-docs/code-analysis.md - 코드 분석 및 AST 파싱
 - @plugins/documentation-generation/agent-docs/progressive-disclosure.md - 계층적 문서 구조
 
-### 공식 문서
-- @docs/architecture.md - 아키텍처 설계 원칙
-- @docs/guides/usage.md - 사용 가이드
-- @docs/references/agents.md - 에이전트 레퍼런스
-- @docs/references/plugins.md - 플러그인 레퍼런스
-- @docs/references/agent-skills.md - 에이전트 스킬 레퍼런스
+### 상세 문서 (agent-docs/)
+- @agent-docs/constitution.md - 프로젝트 헌법 (필수 규칙)
+- @agent-docs/architecture.md - 아키텍처 설계 원칙
+- @agent-docs/guides/usage.md - 사용 가이드
+- @agent-docs/guides/claude-md-guide.md - CLAUDE.md 사용 가이드 (공식 블로그 기반)
+- @agent-docs/references/agents.md - 에이전트 레퍼런스
+- @agent-docs/references/plugins.md - 플러그인 레퍼런스
+- @agent-docs/references/agent-skills.md - 에이전트 스킬 레퍼런스
 
 ## 빠른 시작
 
-```bash
-/code-quality:review          # 코드 리뷰
-/full-stack-orchestration:dev-flow        # 전체 워크플로우
-/git-workflows:git-commit push # 커밋
+### 기본 워크플로우
 
-"Redis 캐시 설정" # 자동 에이전트 선택
-/context-management:inject-context file.ts # 대용량 파일
-/automation-tools:claude-sync     # 동기화
+```bash
+# 1. 코드 리뷰 → 테스트 → 커밋 (전체 파이프라인)
+/full-stack-orchestration:dev-flow
+
+# 2. 개별 단계 실행
+/code-quality:review                    # 코드 리뷰만
+/git-workflows:git-commit push          # 커밋 + 푸시
+```
+
+### 에이전트 자동 선택
+
+```bash
+# 자연어로 요청하면 자동으로 적절한 에이전트 선택
+"Redis 캐시 설정해줘"                    # → redis-cache-expert
+"TypeORM으로 User 엔티티 만들어줘"      # → typeorm-expert
+"BullMQ로 이메일 큐 설정하고 테스트"    # → bullmq → suites-testing
+```
+
+### 컨텍스트 관리
+
+```bash
+# 대용량 파일 로딩
+/context-management:inject-context large-file.ts
+
+# 이전 작업 이어서 진행
+/context-management:continue-context
+
+# 문서 자동 동기화
+/automation-tools:claude-sync
+```
+
+### 컴포넌트 생성
+
+```bash
+# 새 에이전트 생성
+/automation-tools:factory agent "GraphQL 전문가"
+
+# 에이전트 최적화
+/automation-tools:optimize agent my-agent.md
+```
+
+## 프로젝트 구조 상세
+
+```
+claude-integration/
+├─ CLAUDE.md                      # 본 문서 (Root)
+├─ .claude-plugin/
+│   ├─ marketplace.json           # 플러그인 레지스트리
+│   └─ routing-table.json         # 에이전트 라우팅
+├─ plugins/                       # 7개 플러그인
+│   ├─ nestjs-backend/            # NestJS 백엔드 전문가
+│   │   ├─ CLAUDE.md
+│   │   ├─ agents/                # 7개 에이전트
+│   │   └─ agent-docs/
+│   ├─ code-quality/              # 코드 품질
+│   ├─ full-stack-orchestration/  # 워크플로우
+│   ├─ documentation-generation/  # 문서 생성
+│   ├─ git-workflows/             # Git 워크플로우
+│   ├─ context-management/        # 컨텍스트 관리
+│   └─ automation-tools/          # 자동화 도구
+└─ agent-docs/                    # 상세 문서
+    ├─ constitution.md            # 프로젝트 헌법
+    ├─ architecture.md
+    ├─ guides/
+    └─ references/
+```
+
+## Best Practices
+
+```
+DO ✅:
+├─ 자연어로 에이전트 호출 (자동 라우팅)
+├─ /dev-flow로 전체 파이프라인 실행
+├─ /claude-sync로 문서 최신 상태 유지
+├─ @ 문법으로 파일 참조
+└─ 헌법 규칙 준수
+
+DON'T ❌:
+├─ 수동으로 routing-table.json 편집
+├─ Hard Limit 초과 문서 작성
+├─ 검증 없이 main 직접 푸시
+└─ 테스트 없이 배포
 ```

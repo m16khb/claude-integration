@@ -88,12 +88,15 @@ claude-integration/
 │   ├── git-workflows/
 │   ├── context-management/
 │   └── automation-tools/
-├── docs/                      # 종합 문서
+├── agent-docs/                # 상세 문서
+│   ├── constitution.md        # 프로젝트 헌법
 │   ├── architecture.md        # 아키텍처 설계 원칙
-│   ├── agents.md              # 에이전트 레퍼런스
-│   ├── plugins.md             # 플러그인 레퍼런스
-│   ├── usage.md               # 사용 가이드
-│   └── agent-skills.md        # 스킬 개발 가이드
+│   ├── references/            # 레퍼런스
+│   │   ├── agents.md
+│   │   ├── plugins.md
+│   │   └── agent-skills.md
+│   └── guides/
+│       └── usage.md           # 사용 가이드
 ├── CLAUDE.md                  # 프로젝트 루트 설정
 └── README.md
 ```
@@ -116,11 +119,12 @@ claude mcp list
 
 ## 상세 문서
 
-- [Architecture](docs/architecture.md) - 아키텍처 설계 원칙
-- [Agents](docs/agents.md) - 에이전트 레퍼런스
-- [Plugins](docs/plugins.md) - 플러그인 레퍼런스
-- [Usage](docs/usage.md) - 사용 가이드
-- [Agent Skills](docs/agent-skills.md) - 스킬 개발 가이드
+- [Constitution](agent-docs/constitution.md) - 프로젝트 헌법 (필수 규칙)
+- [Architecture](agent-docs/architecture.md) - 아키텍처 설계 원칙
+- [Agents](agent-docs/references/agents.md) - 에이전트 레퍼런스
+- [Plugins](agent-docs/references/plugins.md) - 플러그인 레퍼런스
+- [Usage](agent-docs/guides/usage.md) - 사용 가이드
+- [Agent Skills](agent-docs/references/agent-skills.md) - 스킬 개발 가이드
 
 ## 빠른 시작
 
