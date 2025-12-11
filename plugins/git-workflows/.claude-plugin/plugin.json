@@ -1,7 +1,7 @@
 {
   "name": "git-workflows",
-  "version": "1.0.7",
-  "description": "Git Flow 기반 스마트 커밋 및 브랜치 관리",
+  "version": "1.1.0",
+  "description": "Conventional Commits 1.0.0 규격 준수 스마트 커밋, Git Flow 브랜치 관리, Worktree 지원",
   "author": {
     "name": "m16khb",
     "email": "m16khb@gmail.com",
@@ -9,6 +9,9 @@
   },
   "repository": "https://github.com/m16khb/claude-integration",
   "license": "MIT",
-  "keywords": ["git", "commit", "conventional-commits", "git-flow"],
-  "commands": ["./commands/git-commit.md"]
+  "keywords": ["git", "commit", "conventional-commits", "git-flow", "semver", "breaking-change", "worktree"],
+  "commands": [
+    "./commands/git-commit.md",
+    "./commands/git-worktree.md"
+  ]
 }
