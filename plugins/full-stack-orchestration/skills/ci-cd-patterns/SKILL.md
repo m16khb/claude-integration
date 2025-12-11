@@ -35,111 +35,59 @@ SKILL ACTIVATION:
 ### Basic NestJS CI
 
 ```yaml
-# .github/workflows/ci.yml
 name: CI
-
-on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main, develop]
+on: [push, pull_request]
 
 jobs:
   test:
     runs-on: ubuntu-latest
-
     services:
       postgres:
         image: postgres:15
-        env:
-          POSTGRES_USER: test
-          POSTGRES_PASSWORD: test
-          POSTGRES_DB: test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
+        env: { POSTGRES_USER: test, POSTGRES_PASSWORD: test, POSTGRES_DB: test }
+        ports: ['5432:5432']
+        options: --health-cmd pg_isready
       redis:
         image: redis:7
-        ports:
-          - 6379:6379
+        ports: ['6379:6379']
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run linter
-        run: npm run lint
-
-      - name: Run tests
-        run: npm run test:cov
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: 'npm' }
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run test:cov
         env:
           DATABASE_URL: postgres://test:test@localhost:5432/test
           REDIS_URL: redis://localhost:6379
-
-      - name: Upload coverage
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+      - uses: codecov/codecov-action@v4
 ```
 
-### Build and Push Docker Image
+### Docker Build
 
 ```yaml
-# .github/workflows/docker.yml
-name: Build and Push Docker
-
+name: Build Docker
 on:
   push:
-    tags:
-      - 'v*'
+    tags: ['v*']
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to Container Registry
-        uses: docker/login-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/${{ github.repository }}
-          tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha
-
-      - name: Build and push
-        uses: docker/build-push-action@v5
+      - uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ghcr.io/${{ github.repository }}:${{ github.ref_name }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 ```
@@ -148,40 +96,26 @@ jobs:
 
 ## Dockerfile Patterns
 
-### Multi-stage NestJS Dockerfile
+### Multi-stage NestJS
 
 ```dockerfile
 # Build stage
 FROM node:20-alpine AS builder
-
 WORKDIR /app
-
-# 의존성 파일만 먼저 복사 (캐시 활용)
 COPY package*.json ./
-RUN npm ci --only=production && npm cache clean --force
-
-# 소스 복사 및 빌드
+RUN npm ci --only=production
 COPY . .
 RUN npm run build
 
 # Production stage
-FROM node:20-alpine AS production
-
+FROM node:20-alpine
 WORKDIR /app
-
-# 보안: non-root 사용자
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nestjs -u 1001
-
-# 필요한 파일만 복사
+RUN addgroup -g 1001 -S nodejs && adduser -S nestjs -u 1001
 COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
 COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nestjs:nodejs /app/package.json ./
-
 USER nestjs
-
 EXPOSE 3000
-
 CMD ["node", "dist/main.js"]
 ```
 
@@ -189,52 +123,15 @@ CMD ["node", "dist/main.js"]
 
 ## Deployment Strategies
 
-### Blue-Green Deployment
+| 전략 | 설명 | 장점 | 단점 |
+|------|------|------|------|
+| **Blue-Green** | 두 환경 전환 | 빠른 롤백 | 리소스 2배 |
+| **Canary** | 트래픽 점진 증가 | 안전한 배포 | 복잡한 구성 |
+| **Rolling Update** | 순차적 업데이트 | 다운타임 없음 | 느린 롤백 |
+
+### Kubernetes Rolling Update
 
 ```yaml
-# k8s/blue-green/service.yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: api-service
-spec:
-  selector:
-    app: api
-    version: blue  # blue 또는 green으로 전환
-  ports:
-    - port: 80
-      targetPort: 3000
-```
-
-### Canary Deployment (Istio)
-
-```yaml
-# istio/virtual-service.yaml
-apiVersion: networking.istio.io/v1beta1
-kind: VirtualService
-metadata:
-  name: api-canary
-spec:
-  hosts:
-    - api.example.com
-  http:
-    - route:
-        - destination:
-            host: api-stable
-            port:
-              number: 80
-          weight: 90
-        - destination:
-            host: api-canary
-            port:
-              number: 80
-          weight: 10
-```
-
-### Rolling Update (Kubernetes)
-
-```yaml
-# k8s/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -252,32 +149,22 @@ spec:
         - name: api
           image: ghcr.io/org/api:latest
           readinessProbe:
-            httpGet:
-              path: /health
-              port: 3000
+            httpGet: { path: /health, port: 3000 }
             initialDelaySeconds: 5
-            periodSeconds: 10
           livenessProbe:
-            httpGet:
-              path: /health
-              port: 3000
+            httpGet: { path: /health, port: 3000 }
             initialDelaySeconds: 15
-            periodSeconds: 20
 ```
 
 ---
 
 ## GitOps with ArgoCD
 
-### Application Manifest
-
 ```yaml
-# argocd/application.yaml
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: api-production
-  namespace: argocd
 spec:
   project: default
   source:
@@ -291,8 +178,6 @@ spec:
     automated:
       prune: true
       selfHeal: true
-    syncOptions:
-      - CreateNamespace=true
 ```
 
 ---
@@ -302,7 +187,7 @@ spec:
 ### Secrets Management
 
 ```yaml
-# GitHub Actions에서 secrets 사용
+# GitHub Actions Secrets
 env:
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
   JWT_SECRET: ${{ secrets.JWT_SECRET }}
@@ -313,43 +198,13 @@ kubectl create secret generic api-secrets \
   --from-literal=JWT_SECRET='...'
 ```
 
-### Environment Variables Pattern
-
-```yaml
-# k8s/configmap.yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: api-config
-data:
-  NODE_ENV: production
-  LOG_LEVEL: info
-  PORT: "3000"
-
-# deployment에서 사용
-envFrom:
-  - configMapRef:
-      name: api-config
-  - secretRef:
-      name: api-secrets
-```
-
 ---
 
-## Health Checks
-
-### NestJS Health Module
+## Health Checks (NestJS)
 
 ```typescript
-// health.controller.ts
 @Controller('health')
 export class HealthController {
-  constructor(
-    private health: HealthCheckService,
-    private db: TypeOrmHealthIndicator,
-    private redis: RedisHealthIndicator,
-  ) {}
-
   @Get()
   @HealthCheck()
   check() {
@@ -360,16 +215,12 @@ export class HealthController {
   }
 
   @Get('liveness')
-  liveness() {
-    return { status: 'ok' };
-  }
+  liveness() { return { status: 'ok' }; }
 
   @Get('readiness')
   @HealthCheck()
   readiness() {
-    return this.health.check([
-      () => this.db.pingCheck('database'),
-    ]);
+    return this.health.check([() => this.db.pingCheck('database')]);
   }
 }
 ```

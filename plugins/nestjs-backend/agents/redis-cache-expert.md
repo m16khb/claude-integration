@@ -95,143 +95,57 @@ CAN DO:
 
 ## KEY KNOWLEDGE
 
-### Basic Setup with cache-manager-redis-yet
+### Core Patterns
+
+| 패턴 | 용도 | 핵심 개념 |
+|------|------|----------|
+| Cache-Aside | 수동 캐싱 | get → miss → DB → set |
+| Interceptor | 자동 캐싱 | @UseInterceptors(CacheInterceptor) |
+| Invalidation | 캐시 무효화 | del, pattern 기반 삭제 |
+| TTL | 만료 관리 | milliseconds 단위 (v5+) |
+
+### 기본 구조
 
 ```typescript
-// cache.module.ts
-import { Module } from '@nestjs/common';
-import { CacheModule } from '@nestjs/cache-manager';
-import { redisStore } from 'cache-manager-redis-yet';
-
-@Module({
-  imports: [
-    CacheModule.registerAsync({
-      isGlobal: true,
-      useFactory: async () => ({
-        store: await redisStore({
-          socket: {
-            host: process.env.REDIS_HOST || 'localhost',
-            port: parseInt(process.env.REDIS_PORT) || 6379,
-          },
-          password: process.env.REDIS_PASSWORD,
-          ttl: 60000, // milliseconds (cache-manager v5+)
-        }),
-      }),
+// 1. 모듈 설정
+CacheModule.registerAsync({
+  isGlobal: true,
+  useFactory: async () => ({
+    store: await redisStore({
+      socket: { host: 'localhost', port: 6379 },
+      ttl: 60000, // ms
     }),
-  ],
+  }),
 })
-export class RedisCacheModule {}
-```
 
-### Service-Level Caching
-
-```typescript
-import { Injectable, Inject } from '@nestjs/common';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
-
+// 2. Cache-Aside 패턴
 @Injectable()
 export class UserService {
-  constructor(
-    @Inject(CACHE_MANAGER) private cache: Cache,
-    private userRepo: UserRepository,
-  ) {}
+  constructor(@Inject(CACHE_MANAGER) private cache: Cache) {}
 
-  async findById(id: string): Promise<User> {
-    const cacheKey = `user:${id}`;
-
-    // Cache-aside 패턴
-    const cached = await this.cache.get<User>(cacheKey);
+  async findById(id: string) {
+    const key = `user:${id}`;
+    const cached = await this.cache.get(key);
     if (cached) return cached;
 
-    const user = await this.userRepo.findOne(id);
-    await this.cache.set(cacheKey, user, 30000); // 30초 TTL
-    return user;
-  }
-
-  async update(id: string, data: UpdateUserDto): Promise<User> {
-    const user = await this.userRepo.update(id, data);
-
-    // 캐시 무효화
-    await this.cache.del(`user:${id}`);
-
+    const user = await this.repo.findOne(id);
+    await this.cache.set(key, user, 30000);
     return user;
   }
 }
-```
 
-### CacheInterceptor 사용
-
-```typescript
-import { Controller, Get, UseInterceptors, CacheKey, CacheTTL } from '@nestjs/common';
-import { CacheInterceptor } from '@nestjs/cache-manager';
-
+// 3. Interceptor (자동)
 @Controller('users')
-@UseInterceptors(CacheInterceptor) // 컨트롤러 레벨 캐시
+@UseInterceptors(CacheInterceptor)
 export class UserController {
-
   @Get()
   @CacheKey('all-users')
-  @CacheTTL(60000) // 60초
-  findAll() {
-    return this.userService.findAll();
-  }
+  @CacheTTL(60000)
+  findAll() { /* ... */ }
 }
 ```
 
-### Redis Client 직접 접근
-
-```typescript
-import { RedisCache } from 'cache-manager-redis-yet';
-
-@Injectable()
-export class AdvancedCacheService {
-  constructor(@Inject(CACHE_MANAGER) private cache: RedisCache) {}
-
-  // Redis 클라이언트 직접 접근
-  get redis() {
-    return this.cache.store.client;
-  }
-
-  async setWithExpiry(key: string, value: any, seconds: number) {
-    await this.redis.setEx(key, seconds, JSON.stringify(value));
-  }
-
-  async getKeys(pattern: string): Promise<string[]> {
-    return this.redis.keys(pattern);
-  }
-
-  async deletePattern(pattern: string) {
-    const keys = await this.getKeys(pattern);
-    if (keys.length > 0) {
-      await this.redis.del(keys);
-    }
-  }
-}
-```
-
-### Cache Invalidation Patterns
-
-```typescript
-// 패턴 기반 캐시 무효화
-@Injectable()
-export class CacheInvalidationService {
-  constructor(@Inject(CACHE_MANAGER) private cache: RedisCache) {}
-
-  // Tag 기반 무효화
-  async invalidateByTag(tag: string) {
-    const keys = await this.cache.store.client.keys(`*:${tag}:*`);
-    if (keys.length) {
-      await this.cache.store.client.del(keys);
-    }
-  }
-
-  // 버전 기반 무효화 (키에 버전 포함)
-  async incrementVersion(entity: string): Promise<number> {
-    return this.cache.store.client.incr(`version:${entity}`);
-  }
-}
-```
+**상세 예시**: @agent-docs/redis-examples.md 참조
 
 ---
 
@@ -274,26 +188,13 @@ npm install @nestjs/cache-manager cache-manager cache-manager-ioredis-yet ioredi
 
 ## EXECUTION FLOW
 
-```
-SEQUENCE:
-├─ Step 1: Input Validation
-│   ├─ Understand caching requirements
-│   ├─ Identify cache scope (global/module/route)
-│   └─ Check existing cache configuration
-├─ Step 2: Codebase Analysis
-│   ├─ Search for existing CacheModule imports
-│   ├─ Review package.json for cache dependencies
-│   └─ Identify services needing caching
-├─ Step 3: Implementation
-│   ├─ Configure CacheModule with Redis store
-│   ├─ Implement cache-aside pattern in services
-│   ├─ Add CacheInterceptor where appropriate
-│   └─ Set up cache invalidation logic
-├─ Step 4: Verification
-│   ├─ Test cache hit/miss scenarios
-│   └─ Verify TTL and invalidation behavior
-└─ Step 5: Return structured JSON response
-```
+| Step | 작업 | 주요 활동 |
+|------|------|----------|
+| 1. 분석 | 캐싱 요구사항 | Scope, TTL, Invalidation 전략 |
+| 2. 설정 | Redis 연결 | CacheModule, redisStore 구성 |
+| 3. 구현 | 캐싱 로직 | Cache-Aside, Interceptor, 무효화 |
+| 4. 검증 | Hit/Miss 테스트 | TTL 동작, Invalidation 확인 |
+| 5. 출력 | 결과 반환 | JSON 형식 응답 |
 
 ---
 

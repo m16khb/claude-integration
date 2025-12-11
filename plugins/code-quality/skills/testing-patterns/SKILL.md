@@ -40,10 +40,10 @@ SKILL ACTIVATION:
 # 기본 패키지
 npm i -D @suites/unit
 
-# NestJS + Jest 조합
+# NestJS + Jest
 npm i -D @suites/doubles.jest @suites/di.nestjs
 
-# NestJS + Vitest 조합
+# NestJS + Vitest
 npm i -D @suites/doubles.vitest @suites/di.nestjs
 ```
 
@@ -100,47 +100,6 @@ describe('UserService', () => {
 });
 ```
 
-### 여러 의존성 테스트
-
-```typescript
-import { TestBed, type Mocked } from '@suites/unit';
-import { OrderService } from './order.service';
-import { OrderRepository } from './order.repository';
-import { PaymentService } from './payment.service';
-import { NotificationService } from './notification.service';
-
-describe('OrderService', () => {
-  let orderService: OrderService;
-  let orderRepository: Mocked<OrderRepository>;
-  let paymentService: Mocked<PaymentService>;
-  let notificationService: Mocked<NotificationService>;
-
-  beforeAll(async () => {
-    const { unit, unitRef } = await TestBed.solitary(OrderService).compile();
-
-    orderService = unit;
-    orderRepository = unitRef.get(OrderRepository);
-    paymentService = unitRef.get(PaymentService);
-    notificationService = unitRef.get(NotificationService);
-  });
-
-  it('should process order and send notification', async () => {
-    // Arrange
-    const order = { id: '1', total: 100 };
-    orderRepository.findOne.mockResolvedValue(order);
-    paymentService.charge.mockResolvedValue({ success: true });
-    notificationService.send.mockResolvedValue(undefined);
-
-    // Act
-    await orderService.processOrder('1');
-
-    // Assert
-    expect(paymentService.charge).toHaveBeenCalledWith(100);
-    expect(notificationService.send).toHaveBeenCalled();
-  });
-});
-```
-
 ---
 
 ## Sociable Mode (선택적 통합)
@@ -149,9 +108,6 @@ describe('OrderService', () => {
 
 ```typescript
 import { TestBed, type Mocked } from '@suites/unit';
-import { OrderService } from './order.service';
-import { OrderValidator } from './order.validator';
-import { PaymentGateway } from './payment.gateway';
 
 describe('OrderService (Sociable)', () => {
   let orderService: OrderService;
@@ -167,57 +123,11 @@ describe('OrderService (Sociable)', () => {
   });
 
   it('should validate order with real validator', async () => {
-    // Arrange
     const invalidOrder = { items: [], total: 0 };
     paymentGateway.charge.mockResolvedValue({ success: true });
 
-    // Act & Assert - OrderValidator의 실제 검증 로직 실행
-    await expect(orderService.processOrder(invalidOrder)).rejects.toThrow('Empty order');
-  });
-});
-```
-
----
-
-## Custom Mock Implementation
-
-### .impl() 메서드
-
-```typescript
-import { TestBed, type Mocked } from '@suites/unit';
-
-describe('UserService with Custom Mocks', () => {
-  let userService: UserService;
-  let userRepository: Mocked<UserRepository>;
-
-  beforeAll(async () => {
-    const { unit, unitRef } = await TestBed.solitary(UserService)
-      .mock(UserRepository)
-      .impl((stubFn) => ({
-        findOne: stubFn().mockImplementation((criteria) => {
-          if (criteria.where.id === 'admin') {
-            return Promise.resolve({ id: 'admin', role: 'admin' });
-          }
-          return Promise.resolve(null);
-        }),
-        save: stubFn().mockImplementation((entity) => {
-          return Promise.resolve({ ...entity, id: 'generated-id' });
-        }),
-      }))
-      .compile();
-
-    userService = unit;
-    userRepository = unitRef.get(UserRepository);
-  });
-
-  it('should find admin user', async () => {
-    const result = await userService.findById('admin');
-    expect(result.role).toBe('admin');
-  });
-
-  it('should return null for non-admin', async () => {
-    const result = await userService.findById('user-1');
-    expect(result).toBeNull();
+    await expect(orderService.processOrder(invalidOrder))
+      .rejects.toThrow('Empty order');
   });
 });
 ```
@@ -226,35 +136,17 @@ describe('UserService with Custom Mocks', () => {
 
 ## AAA Pattern (Arrange-Act-Assert)
 
-### 표준 구조
-
 ```typescript
 it('should calculate total with discount', async () => {
   // Arrange - 테스트 데이터 준비
-  const items = [
-    { id: 1, price: 1000, quantity: 2 },
-    { id: 2, price: 500, quantity: 1 },
-  ];
-  const discount = 0.1; // 10% 할인
+  const items = [{ id: 1, price: 1000, quantity: 2 }];
+  const discount = 0.1;
 
   // Act - 테스트 대상 실행
   const result = await orderService.calculateTotal(items, discount);
 
   // Assert - 결과 검증
-  expect(result).toBe(2250); // (1000*2 + 500) * 0.9
-});
-```
-
-### 에러 케이스
-
-```typescript
-it('should throw when user not found', async () => {
-  // Arrange
-  userRepository.findOne.mockResolvedValue(null);
-
-  // Act & Assert
-  await expect(userService.findById('nonexistent'))
-    .rejects.toThrow(NotFoundException);
+  expect(result).toBe(1800);
 });
 ```
 
@@ -268,12 +160,10 @@ it('should throw when user not found', async () => {
 // ✅ should_동작_when_조건
 it('should return user when found by id', async () => {});
 it('should throw NotFoundException when user not found', async () => {});
-it('should send email when user registered', async () => {});
 
 // ❌ 나쁜 예
 it('test1', async () => {});
 it('works', async () => {});
-it('user test', async () => {});
 ```
 
 ### describe 그룹화
@@ -283,82 +173,13 @@ describe('UserService', () => {
   describe('findById', () => {
     it('should return user when found', async () => {});
     it('should throw when not found', async () => {});
-    it('should include relations when requested', async () => {});
   });
 
   describe('create', () => {
     it('should create user with valid data', async () => {});
     it('should throw on duplicate email', async () => {});
-    it('should hash password before saving', async () => {});
-  });
-
-  describe('delete', () => {
-    it('should soft delete user', async () => {});
-    it('should throw when user not found', async () => {});
   });
 });
-```
-
----
-
-## Edge Cases 테스트
-
-```typescript
-describe('Edge Cases', () => {
-  // Null/Undefined
-  it('should throw on null input', async () => {
-    await expect(service.process(null)).rejects.toThrow(ValidationError);
-  });
-
-  // Empty collections
-  it('should return empty array when no results', async () => {
-    repository.find.mockResolvedValue([]);
-    const result = await service.findAll();
-    expect(result).toEqual([]);
-  });
-
-  // Boundary values
-  it('should accept minimum valid age', () => {
-    expect(() => service.setAge(0)).not.toThrow();
-  });
-
-  it('should reject negative age', () => {
-    expect(() => service.setAge(-1)).toThrow(ValidationError);
-  });
-
-  // Large data
-  it('should handle large dataset', async () => {
-    const largeArray = Array.from({ length: 10000 }, (_, i) => ({ id: i }));
-    repository.find.mockResolvedValue(largeArray);
-    const result = await service.findAll();
-    expect(result).toHaveLength(10000);
-  });
-});
-```
-
----
-
-## Async Testing
-
-```typescript
-// Promise 테스트
-it('should resolve with data', async () => {
-  repository.findOne.mockResolvedValue({ id: '1' });
-  const result = await service.findById('1');
-  expect(result).toBeDefined();
-});
-
-// 에러 Promise 테스트
-it('should reject with error', async () => {
-  repository.findOne.mockRejectedValue(new Error('DB Error'));
-  await expect(service.findById('1')).rejects.toThrow('DB Error');
-});
-
-// 타임아웃 테스트
-it('should complete within timeout', async () => {
-  const result = await service.slowOperation();
-  expect(result).toBeDefined();
-}, 10000); // 10초 타임아웃
 ```
 
 ---
@@ -371,7 +192,6 @@ it('should complete within timeout', async () => {
 // ❌ BAD - compile()에 await 누락
 beforeAll(() => {
   const { unit } = TestBed.solitary(UserService).compile();
-  // TypeError: Cannot destructure property 'unit' of 'undefined'
 });
 
 // ✅ GOOD
@@ -396,20 +216,6 @@ it('should return created user with id', async () => {
 });
 ```
 
-### 3. 테스트 간 상태 공유
-
-```typescript
-// ❌ BAD - 테스트 간 상태 오염
-let user: User;
-beforeAll(() => { user = new User(); });
-
-it('test 1', () => { user.name = 'Test1'; }); // 다음 테스트에 영향
-it('test 2', () => { expect(user.name).toBe(''); }); // 실패
-
-// ✅ GOOD - 각 테스트마다 새로운 상태
-beforeEach(() => { user = new User(); });
-```
-
 ---
 
 ## Quick Reference
@@ -422,9 +228,6 @@ beforeEach(() => { user = new User(); });
 | 비동기 에러 | `await expect(fn()).rejects.toThrow(Error)` |
 | 호출 검증 | `expect(mock.method).toHaveBeenCalledWith(arg)` |
 | 호출 횟수 | `expect(mock.method).toHaveBeenCalledTimes(n)` |
-| 부분 매칭 | `expect(obj).toMatchObject({ key: value })` |
-| 배열 포함 | `expect(arr).toContain(item)` |
-| 타입 확인 | `expect(val).toBeInstanceOf(Class)` |
 
 ---
 

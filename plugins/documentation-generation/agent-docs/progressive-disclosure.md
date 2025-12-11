@@ -42,7 +42,7 @@ PROGRESSIVE DISCLOSURE HIERARCHY:
 ### 레벨별 제한
 
 ```
-LINE LIMITS (헌법 규칙 - @docs/constitution.md 참조):
+LINE LIMITS (헌법 규칙 - @agent-docs/constitution.md 참조):
 ┌──────────────┬────────────┬────────────┬───────────────────────────┐
 │ 레벨          │ Soft Limit │ Hard Limit │ 내용                       │
 ├──────────────┼────────────┼────────────┼───────────────────────────┤
@@ -103,9 +103,9 @@ Root CLAUDE.md
 │   ├─ [guide-3](plugins/plugin-b/agent-docs/guide-3.md)
 │   └─ [parent](../CLAUDE.md) ← 상위로
 │
-└─ [docs/](docs/)
-    ├─ [architecture.md](docs/architecture.md)
-    ├─ [usage.md](docs/usage.md)
+└─ [agent-docs/](agent-docs/)
+    ├─ [architecture.md](agent-docs/architecture.md)
+    ├─ [usage.md](agent-docs/guides/usage.md)
     └─ [parent](CLAUDE.md) ← 루트로
 ```
 

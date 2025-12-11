@@ -105,306 +105,79 @@ CAN DO:
 
 ## KEY KNOWLEDGE
 
-### Suites Installation
+### Test Types & Strategy
 
-```bash
-# Suites (Automock 후속)
-npm install -D @suites/di.nestjs @suites/doubles.jest
+| 유형 | 비율 | 도구 | 목적 |
+|------|------|------|------|
+| Unit | 70% | Suites (Solitary) | 격리 테스트, 빠른 피드백 |
+| Integration | 20% | Suites (Sociable) | 통합 지점 검증 |
+| E2E | 10% | Supertest | 사용자 플로우 검증 |
 
-# Jest with NestJS
-npm install -D @nestjs/testing jest @types/jest ts-jest
-```
-
-### Basic Unit Test with Suites
+### 기본 패턴
 
 ```typescript
-// user.service.spec.ts
+// 1. Unit Test (Solitary - 격리 테스트)
 import { TestBed, Mocked } from '@suites/unit';
-import { UserService } from './user.service';
-import { UserRepository } from './user.repository';
-import { CacheService } from '../cache/cache.service';
 
 describe('UserService', () => {
-  let userService: UserService;
-  let userRepository: Mocked<UserRepository>;
-  let cacheService: Mocked<CacheService>;
+  let service: UserService;
+  let repo: Mocked<UserRepository>;
 
   beforeAll(async () => {
-    // 자동으로 모든 의존성 목 생성
     const { unit, unitRef } = await TestBed.solitary(UserService).compile();
-
-    userService = unit;
-    userRepository = unitRef.get(UserRepository);
-    cacheService = unitRef.get(CacheService);
+    service = unit;
+    repo = unitRef.get(UserRepository);
   });
 
-  describe('findById', () => {
-    it('should return cached user if exists', async () => {
-      const mockUser = { id: '1', name: 'John', email: 'john@example.com' };
-
-      // 캐시 히트 시나리오
-      cacheService.get.mockResolvedValue(mockUser);
-
-      const result = await userService.findById('1');
-
-      expect(result).toEqual(mockUser);
-      expect(cacheService.get).toHaveBeenCalledWith('user:1');
-      expect(userRepository.findOne).not.toHaveBeenCalled();
-    });
-
-    it('should fetch from DB and cache on cache miss', async () => {
-      const mockUser = { id: '1', name: 'John', email: 'john@example.com' };
-
-      // 캐시 미스 시나리오
-      cacheService.get.mockResolvedValue(null);
-      userRepository.findOne.mockResolvedValue(mockUser);
-
-      const result = await userService.findById('1');
-
-      expect(result).toEqual(mockUser);
-      expect(userRepository.findOne).toHaveBeenCalledWith({ where: { id: '1' } });
-      expect(cacheService.set).toHaveBeenCalledWith('user:1', mockUser, expect.any(Number));
-    });
-
-    it('should throw NotFoundException when user not found', async () => {
-      cacheService.get.mockResolvedValue(null);
-      userRepository.findOne.mockResolvedValue(null);
-
-      await expect(userService.findById('999')).rejects.toThrow('User not found');
-    });
+  it('should find user by id', async () => {
+    repo.findOne.mockResolvedValue({ id: '1', email: 'test@test.com' });
+    const result = await service.findById('1');
+    expect(result).toBeDefined();
   });
 });
-```
 
-### TypeORM Repository Mocking
-
-```typescript
-// post.service.spec.ts
-import { TestBed, Mocked } from '@suites/unit';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Post } from './post.entity';
-
-describe('PostService', () => {
-  let postService: PostService;
-  let postRepository: Mocked<Repository<Post>>;
-
-  beforeAll(async () => {
-    const { unit, unitRef } = await TestBed.solitary(PostService).compile();
-
-    postService = unit;
-    // TypeORM 리포지토리는 토큰으로 접근
-    postRepository = unitRef.get(getRepositoryToken(Post) as string);
-  });
-
-  it('should create a post', async () => {
-    const createPostDto = { title: 'Test', content: 'Content' };
-    const savedPost = { id: '1', ...createPostDto, createdAt: new Date() };
-
-    postRepository.create.mockReturnValue(savedPost as Post);
-    postRepository.save.mockResolvedValue(savedPost as Post);
-
-    const result = await postService.create(createPostDto);
-
-    expect(result).toEqual(savedPost);
-    expect(postRepository.create).toHaveBeenCalledWith(createPostDto);
-    expect(postRepository.save).toHaveBeenCalled();
-  });
-});
-```
-
-### E2E Testing with Supertest
-
-```typescript
-// app.e2e-spec.ts
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+// 2. E2E Test (Supertest)
 import * as request from 'supertest';
-import { AppModule } from '../src/app.module';
 
 describe('UserController (e2e)', () => {
   let app: INestApplication;
-  let authToken: string;
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
+    const module = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
-
-    app = moduleFixture.createNestApplication();
-
-    // 프로덕션과 동일한 설정 적용
-    app.useGlobalPipes(new ValidationPipe({
-      whitelist: true,
-      transform: true,
-    }));
-
+    app = module.createNestApplication();
     await app.init();
-
-    // 테스트용 인증 토큰 획득
-    const loginResponse = await request(app.getHttpServer())
-      .post('/auth/login')
-      .send({ email: 'test@example.com', password: 'password123' });
-
-    authToken = loginResponse.body.accessToken;
   });
 
-  afterAll(async () => {
-    await app.close();
-  });
-
-  describe('/users (GET)', () => {
-    it('should return 401 without auth token', () => {
-      return request(app.getHttpServer())
-        .get('/users')
-        .expect(401);
-    });
-
-    it('should return users list with valid token', () => {
-      return request(app.getHttpServer())
-        .get('/users')
-        .set('Authorization', `Bearer ${authToken}`)
-        .expect(200)
-        .expect((res) => {
-          expect(Array.isArray(res.body)).toBe(true);
-        });
-    });
-  });
-
-  describe('/users (POST)', () => {
-    it('should create a new user', () => {
-      const createUserDto = {
-        name: 'New User',
-        email: 'newuser@example.com',
-        password: 'securePassword123',
-      };
-
-      return request(app.getHttpServer())
-        .post('/users')
-        .set('Authorization', `Bearer ${authToken}`)
-        .send(createUserDto)
-        .expect(201)
-        .expect((res) => {
-          expect(res.body.id).toBeDefined();
-          expect(res.body.email).toBe(createUserDto.email);
-          expect(res.body.password).toBeUndefined(); // 비밀번호 노출 안됨
-        });
-    });
-
-    it('should validate required fields', () => {
-      return request(app.getHttpServer())
-        .post('/users')
-        .set('Authorization', `Bearer ${authToken}`)
-        .send({})
-        .expect(400);
-    });
+  it('/users (GET)', () => {
+    return request(app.getHttpServer())
+      .get('/users')
+      .expect(200);
   });
 });
+
+// 3. TypeORM Repository Mock
+import { getRepositoryToken } from '@nestjs/typeorm';
+
+const repo = unitRef.get(getRepositoryToken(User));
+repo.find.mockResolvedValue([...]);
 ```
 
-### Testing Guards
-
-```typescript
-// jwt-auth.guard.spec.ts
-import { TestBed, Mocked } from '@suites/unit';
-import { ExecutionContext } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { JwtAuthGuard } from './jwt-auth.guard';
-
-describe('JwtAuthGuard', () => {
-  let guard: JwtAuthGuard;
-  let jwtService: Mocked<JwtService>;
-
-  beforeAll(async () => {
-    const { unit, unitRef } = await TestBed.solitary(JwtAuthGuard).compile();
-    guard = unit;
-    jwtService = unitRef.get(JwtService);
-  });
-
-  const createMockContext = (token?: string): ExecutionContext => ({
-    switchToHttp: () => ({
-      getRequest: () => ({
-        headers: {
-          authorization: token ? `Bearer ${token}` : undefined,
-        },
-      }),
-    }),
-  }) as ExecutionContext;
-
-  it('should allow access with valid token', async () => {
-    const mockPayload = { sub: '1', email: 'test@example.com' };
-    jwtService.verifyAsync.mockResolvedValue(mockPayload);
-
-    const context = createMockContext('valid-token');
-    const result = await guard.canActivate(context);
-
-    expect(result).toBe(true);
-  });
-
-  it('should deny access without token', async () => {
-    const context = createMockContext();
-
-    await expect(guard.canActivate(context)).rejects.toThrow();
-  });
-});
-```
-
-### Jest Configuration
+### Jest 설정
 
 ```javascript
-// jest.config.js
+// jest.config.js (핵심만)
 module.exports = {
-  moduleFileExtensions: ['js', 'json', 'ts'],
-  rootDir: 'src',
   testRegex: '.*\\.spec\\.ts$',
-  transform: {
-    '^.+\\.(t|j)s$': 'ts-jest',
-  },
-  collectCoverageFrom: [
-    '**/*.(t|j)s',
-    '!**/*.module.ts',
-    '!**/main.ts',
-    '!**/*.dto.ts',
-    '!**/*.entity.ts',
-  ],
-  coverageDirectory: '../coverage',
-  testEnvironment: 'node',
   coverageThreshold: {
-    global: {
-      branches: 80,
-      functions: 80,
-      lines: 80,
-      statements: 80,
-    },
+    global: { branches: 80, functions: 80, lines: 80 }
   },
-  // Suites 설정
-  setupFilesAfterEnv: ['<rootDir>/../test/setup.ts'],
+  setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
 };
 ```
 
-### Test Factory Pattern
-
-```typescript
-// test/factories/user.factory.ts
-import { faker } from '@faker-js/faker';
-import { User } from '../../src/users/user.entity';
-
-export const createMockUser = (overrides?: Partial<User>): User => ({
-  id: faker.string.uuid(),
-  name: faker.person.fullName(),
-  email: faker.internet.email(),
-  password: faker.internet.password(),
-  role: 'user',
-  createdAt: faker.date.past(),
-  updatedAt: faker.date.recent(),
-  deletedAt: null,
-  posts: [],
-  ...overrides,
-});
-
-export const createMockUsers = (count: number): User[] =>
-  Array.from({ length: count }, () => createMockUser());
-```
+**상세 예시**: @agent-docs/testing-examples.md 참조
 
 ---
 
@@ -461,27 +234,13 @@ Suites vs NestJS TestingModule:
 
 ## EXECUTION FLOW
 
-```
-SEQUENCE:
-├─ Step 1: Input Validation
-│   ├─ Understand testing requirements (unit/e2e)
-│   ├─ Identify services/modules to test
-│   └─ Check existing test configuration
-├─ Step 2: Codebase Analysis
-│   ├─ Search for existing jest.config.js
-│   ├─ Review package.json for test dependencies
-│   └─ Identify services with complex dependencies
-├─ Step 3: Implementation
-│   ├─ Configure Jest with ts-jest
-│   ├─ Set up Suites for auto-mocking
-│   ├─ Create unit tests with TestBed.solitary()
-│   ├─ Create e2e tests with supertest
-│   └─ Implement test factories if needed
-├─ Step 4: Coverage Setup
-│   ├─ Configure coverageThreshold
-│   └─ Set up coverageDirectory
-└─ Step 5: Return structured JSON response
-```
+| Step | 작업 | 주요 활동 |
+|------|------|----------|
+| 1. 분석 | 테스트 범위 파악 | Unit/E2E 구분, 대상 식별, 기존 설정 확인 |
+| 2. 설정 | Jest + Suites 구성 | jest.config.js, 커버리지 임계값 |
+| 3. 구현 | 테스트 작성 | TestBed.solitary(), E2E supertest |
+| 4. 검증 | 실행 및 커버리지 | npm test, 80% 임계값 확인 |
+| 5. 출력 | 결과 반환 | JSON 형식 응답 |
 
 ---
 

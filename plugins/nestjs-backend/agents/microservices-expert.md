@@ -97,187 +97,69 @@ CAN DO:
 
 ---
 
-## INPUT/OUTPUT FORMAT
+## KEY KNOWLEDGE
 
-### Input Schema
+### Transport Options
 
-```json
-{
-  "request": {
-    "type": "microservice_config|pattern_implementation|troubleshooting",
-    "transport": "tcp|redis|rabbitmq|grpc|nats|kafka",
-    "pattern": "request-response|event-driven|saga|api-gateway",
-    "context": {
-      "existing_services": ["service1", "service2"],
-      "requirements": ["scalability", "reliability", "performance"],
-      "constraints": ["technology_stack", "team_size"]
-    }
+| Transport | 용도 | 특징 |
+|-----------|------|------|
+| TCP | 직접 통신 | 빠름, 간단 |
+| Redis | Pub/Sub | 경량, 메모리 기반 |
+| RabbitMQ | 메시지 브로커 | 신뢰성, 영속성 |
+| gRPC | RPC | 고성능, 스트리밍 |
+| NATS | 클라우드 | 확장성, 빠름 |
+
+### 기본 패턴
+
+```typescript
+// 1. TCP 서버 (Message Pattern)
+@Controller()
+export class MathController {
+  @MessagePattern({ cmd: 'sum' })
+  accumulate(data: number[]) {
+    return data.reduce((a, b) => a + b, 0);
   }
+}
+
+// 2. TCP 클라이언트
+@Module({
+  imports: [
+    ClientsModule.register([{
+      name: 'MATH_SERVICE',
+      transport: Transport.TCP,
+      options: { host: 'localhost', port: 3001 },
+    }]),
+  ],
+})
+
+// 3. RabbitMQ (Event Pattern)
+@EventPattern('user_created')
+handleUserCreated(data: UserCreatedEvent) {
+  // 이벤트 처리
 }
 ```
 
-### Output Schema
-
-```json
-{
-  "solution": {
-    "architecture": "microservice_design",
-    "transport_config": {
-      "type": "selected_transport",
-      "options": "configuration_details"
-    },
-    "implementation": {
-      "main_module": "app.module.ts",
-      "controller": "app.controller.ts",
-      "service": "app.service.ts",
-      "client": "client.module.ts"
-    },
-    "additional_resources": [
-      "microservices-patterns.md",
-      "microservices-examples.md",
-      "microservices-transports.md"
-    ]
-  }
-}
-```
+**상세 예시**: @agent-docs/microservices-examples.md 참조
 
 ---
 
 ## EXECUTION FLOW
 
-```
-1. ANALYZE requirements
-   ├─ Identify transport needs
-   ├─ Determine communication patterns
-   └─ Check for existing services
-
-2. SELECT transport layer
-   ├─ Evaluate options based on use case
-   ├─ Consider performance requirements
-   └─ Check team expertise
-
-3. DESIGN architecture
-   ├─ Define service boundaries
-   ├─ Plan message contracts
-   └─ Design failure handling
-
-4. IMPLEMENT core components
-   ├─ Configure transport
-   ├─ Set up message patterns
-   ├─ Implement client/server
-   └─ Add health checks
-
-5. VALIDATE deployment
-   ├─ Test service communication
-   ├─ Verify error handling
-   └─ Check performance metrics
-```
+| Step | 작업 | 주요 활동 |
+|------|------|----------|
+| 1. 분석 | Transport 선택 | TCP/Redis/RabbitMQ/gRPC 결정 |
+| 2. 설계 | 서비스 경계 | Message Contract, 실패 처리 |
+| 3. 구현 | 서버/클라이언트 | @MessagePattern, @EventPattern |
+| 4. 검증 | 통신 테스트 | 서비스 간 호출, 에러 핸들링 |
+| 5. 출력 | 결과 반환 | JSON 형식 응답 |
 
 ---
 
-## CONSTRAINTS
+## COMMON ISSUES
 
-```
-LIMITATIONS:
-├─ Cannot create fully production-ready setup in one session
-├─ Complex patterns require careful testing
-├─ Transport choice affects performance significantly
-└─ Distributed systems add operational complexity
-
-CONSIDERATIONS:
-├─ Start with TCP for learning
-├─ Use RabbitMQ for reliable messaging
-├─ Consider gRPC for high-performance needs
-└─ Always implement circuit breakers
-```
-
----
-
-## KEY KNOWLEDGE
-
-### Core Concepts
-
-1. **Transport Layers**
-   - TCP: Direct socket communication
-   - Redis: Lightweight pub/sub
-   - RabbitMQ: Reliable message broker
-   - gRPC: High-performance RPC
-   - NATS: Cloud-native messaging
-
-2. **Message Patterns**
-   - Request-Response: Synchronous communication
-   - Event-Driven: Asynchronous messaging
-   - Streaming: Continuous data flow
-   - Hybrid: Mix of HTTP and microservices
-
-3. **Architectural Patterns**
-   - API Gateway: Single entry point
-   - Service Mesh: Inter-service communication
-   - Saga Pattern: Distributed transactions
-   - CQRS: Command Query separation
-
-### Best Practices
-
-1. **Service Design**
-   - Single responsibility per service
-   - Stateless services preferred
-   - Clear API contracts
-   - Graceful degradation
-
-2. **Communication**
-   - Use circuit breakers
-   - Implement retries with backoff
-   - Log all messages
-   - Monitor latency
-
-3. **Deployment**
-   - Containerize services
-   - Use health checks
-   - Implement graceful shutdown
-   - Configure resource limits
-
----
-
-## ERROR HANDLING
-
-| Error Type | Cause | Solution |
-|------------|-------|----------|
-| Connection timeout | Service unavailable | Implement retry logic |
-| Message loss | Broker failure | Use persistent queues |
-| Serialization error | Schema mismatch | Version your contracts |
-| Memory leak | Unclosed connections | Always close clients |
-| Performance issues | Wrong transport choice | Benchmark alternatives |
-
----
-
-## EXAMPLES
-
-For detailed code examples, see:
-- `microservices-examples.md` - Complete implementation examples
-- `microservices-transports.md` - Transport-specific configurations
-- `microservices-patterns.md` - Common patterns and use cases
-
-### Quick Start Example
-
-```typescript
-// Basic TCP microservice setup
-import { Controller } from '@nestjs/common';
-import { EventPattern, Payload } from '@nestjs/microservices';
-
-@Controller()
-export class MathController {
-  @EventPattern('math_sum')
-  accumulate(data: number[]) {
-    return (data || []).reduce((a, b) => a + b, 0);
-  }
-}
-```
-
----
-
-## SOURCES
-
-- [NestJS Microservices Documentation](https://docs.nestjs.com/microservices)
-- [RabbitMQ Tutorials](https://www.rabbitmq.com/getstarted.html)
-- [gRPC Documentation](https://grpc.io/docs/)
-- [Microservices Patterns](https://microservices.io/patterns/)
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| Connection timeout | Service down | Retry logic, Circuit breaker |
+| Message loss | Broker failure | Persistent queues |
+| Serialization error | Schema mismatch | Version contracts |
+| Memory leak | Unclosed connections | Close clients properly |

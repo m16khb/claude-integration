@@ -97,351 +97,72 @@ CAN DO:
 
 ## KEY KNOWLEDGE
 
-### Module Setup
+### Core Patterns
+
+| 패턴 | 용도 | 핵심 데코레이터 |
+|------|------|----------------|
+| Command | 상태 변경 | @CommandHandler(CreateUserCommand) |
+| Query | 데이터 조회 | @QueryHandler(GetUserQuery) |
+| Event | 비동기 처리 | @EventsHandler(UserCreatedEvent) |
+| Saga | 워크플로우 | @Saga() |
+| Aggregate | 도메인 로직 | extends AggregateRoot |
+
+### 기본 구조
 
 ```typescript
-// app.module.ts
-import { Module } from '@nestjs/common';
-import { CqrsModule } from '@nestjs/cqrs';
-import { UserModule } from './users/user.module';
-
-@Module({
-  imports: [
-    CqrsModule.forRoot(),
-    UserModule,
-  ],
-})
-export class AppModule {}
-```
-
-### Command Pattern
-
-```typescript
-// commands/create-user.command.ts
+// 1. Command: 사용자 생성
 export class CreateUserCommand {
   constructor(
     public readonly email: string,
     public readonly name: string,
-    public readonly password: string,
   ) {}
 }
 
-// commands/handlers/create-user.handler.ts
-import { CommandHandler, ICommandHandler, EventBus } from '@nestjs/cqrs';
-import { CreateUserCommand } from '../create-user.command';
-import { UserCreatedEvent } from '../../events/user-created.event';
-
+// 2. Handler: 비즈니스 로직 실행
 @CommandHandler(CreateUserCommand)
-export class CreateUserHandler implements ICommandHandler<CreateUserCommand> {
-  constructor(
-    private readonly userRepository: UserRepository,
-    private readonly eventBus: EventBus,
-  ) {}
-
-  async execute(command: CreateUserCommand): Promise<User> {
-    const { email, name, password } = command;
-
-    // 비즈니스 로직 검증
-    const existingUser = await this.userRepository.findByEmail(email);
-    if (existingUser) {
-      throw new ConflictException('Email already exists');
-    }
-
-    // User 생성
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await this.userRepository.create({
-      email,
-      name,
-      password: hashedPassword,
-    });
-
-    // 이벤트 발행
-    this.eventBus.publish(new UserCreatedEvent(user.id, email, name));
-
+export class CreateUserHandler {
+  async execute(cmd: CreateUserCommand) {
+    const user = await this.repo.create(cmd);
+    this.eventBus.publish(new UserCreatedEvent(user.id));
     return user;
   }
 }
-```
 
-### Query Pattern
-
-```typescript
-// queries/get-user.query.ts
-export class GetUserQuery {
-  constructor(public readonly userId: string) {}
-}
-
-// queries/handlers/get-user.handler.ts
-import { QueryHandler, IQueryHandler } from '@nestjs/cqrs';
-import { GetUserQuery } from '../get-user.query';
-
-@QueryHandler(GetUserQuery)
-export class GetUserHandler implements IQueryHandler<GetUserQuery> {
-  constructor(private readonly userReadRepository: UserReadRepository) {}
-
-  async execute(query: GetUserQuery): Promise<UserDto> {
-    const user = await this.userReadRepository.findById(query.userId);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    return UserDto.fromEntity(user);
-  }
-}
-
-// queries/get-users-list.query.ts
-export class GetUsersListQuery {
-  constructor(
-    public readonly page: number = 1,
-    public readonly limit: number = 10,
-    public readonly filter?: UserFilterDto,
-  ) {}
-}
-```
-
-### Event Pattern
-
-```typescript
-// events/user-created.event.ts
-export class UserCreatedEvent {
-  constructor(
-    public readonly userId: string,
-    public readonly email: string,
-    public readonly name: string,
-  ) {}
-}
-
-// events/handlers/user-created.handler.ts
-import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
-import { UserCreatedEvent } from '../user-created.event';
-
+// 3. Event: 사이드 이펙트 처리
 @EventsHandler(UserCreatedEvent)
-export class UserCreatedHandler implements IEventHandler<UserCreatedEvent> {
-  constructor(
-    private readonly emailService: EmailService,
-    private readonly analyticsService: AnalyticsService,
-  ) {}
-
-  async handle(event: UserCreatedEvent): Promise<void> {
-    // 비동기 사이드 이펙트 처리
-    await Promise.all([
-      this.emailService.sendWelcomeEmail(event.email, event.name),
-      this.analyticsService.trackUserSignup(event.userId),
-    ]);
+export class UserCreatedHandler {
+  async handle(event: UserCreatedEvent) {
+    await this.emailService.sendWelcome(event.userId);
   }
 }
 
-// 여러 이벤트 동시 처리
-@EventsHandler(UserCreatedEvent, UserUpdatedEvent)
-export class UserEventHandler implements IEventHandler<UserCreatedEvent | UserUpdatedEvent> {
-  handle(event: UserCreatedEvent | UserUpdatedEvent) {
-    if (event instanceof UserCreatedEvent) {
-      // 생성 이벤트 처리
-    } else {
-      // 업데이트 이벤트 처리
-    }
-  }
-}
-```
-
-### Saga Pattern (복잡한 워크플로우)
-
-```typescript
-// sagas/user.saga.ts
-import { Injectable } from '@nestjs/common';
-import { Saga, ICommand, ofType } from '@nestjs/cqrs';
-import { Observable, map, delay, filter } from 'rxjs';
-import { UserCreatedEvent } from '../events/user-created.event';
-import { SendWelcomeEmailCommand } from '../commands/send-welcome-email.command';
-import { CreateUserProfileCommand } from '../commands/create-user-profile.command';
-
+// 4. Saga: 워크플로우 오케스트레이션
 @Injectable()
 export class UserSaga {
   @Saga()
-  userCreated$ = (events$: Observable<any>): Observable<ICommand> => {
-    return events$.pipe(
-      ofType(UserCreatedEvent),
-      map((event) => new SendWelcomeEmailCommand(event.userId, event.email)),
-    );
-  };
-
-  @Saga()
-  createDefaultProfile$ = (events$: Observable<any>): Observable<ICommand> => {
-    return events$.pipe(
-      ofType(UserCreatedEvent),
-      delay(1000), // 1초 후 실행
-      map((event) => new CreateUserProfileCommand(event.userId)),
-    );
-  };
-
-  // 조건부 Saga
-  @Saga()
-  notifyAdminOnVipUser$ = (events$: Observable<any>): Observable<ICommand> => {
-    return events$.pipe(
-      ofType(UserCreatedEvent),
-      filter((event) => event.email.endsWith('@vip.com')),
-      map((event) => new NotifyAdminCommand(`VIP user registered: ${event.email}`)),
-    );
-  };
+  userCreated$ = (events$) => events$.pipe(
+    ofType(UserCreatedEvent),
+    map(e => new SendEmailCommand(e.userId))
+  );
 }
 ```
 
-### Controller Integration
+### 모듈 설정
 
 ```typescript
-// user.controller.ts
-import { Controller, Post, Get, Body, Param, Query } from '@nestjs/common';
-import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { CreateUserCommand } from './commands/create-user.command';
-import { GetUserQuery } from './queries/get-user.query';
-import { GetUsersListQuery } from './queries/get-users-list.query';
-
-@Controller('users')
-export class UserController {
-  constructor(
-    private readonly commandBus: CommandBus,
-    private readonly queryBus: QueryBus,
-  ) {}
-
-  @Post()
-  async createUser(@Body() dto: CreateUserDto) {
-    return this.commandBus.execute(
-      new CreateUserCommand(dto.email, dto.name, dto.password),
-    );
-  }
-
-  @Get(':id')
-  async getUser(@Param('id') id: string) {
-    return this.queryBus.execute(new GetUserQuery(id));
-  }
-
-  @Get()
-  async getUsers(@Query() query: GetUsersQueryDto) {
-    return this.queryBus.execute(
-      new GetUsersListQuery(query.page, query.limit, query.filter),
-    );
-  }
-}
-```
-
-### Module Registration
-
-```typescript
-// user.module.ts
-import { Module } from '@nestjs/common';
-import { CqrsModule } from '@nestjs/cqrs';
-
-// Commands
-import { CreateUserHandler } from './commands/handlers/create-user.handler';
-import { UpdateUserHandler } from './commands/handlers/update-user.handler';
-
-// Queries
-import { GetUserHandler } from './queries/handlers/get-user.handler';
-import { GetUsersListHandler } from './queries/handlers/get-users-list.handler';
-
-// Events
-import { UserCreatedHandler } from './events/handlers/user-created.handler';
-
-// Sagas
-import { UserSaga } from './sagas/user.saga';
-
-const CommandHandlers = [CreateUserHandler, UpdateUserHandler];
-const QueryHandlers = [GetUserHandler, GetUsersListHandler];
-const EventHandlers = [UserCreatedHandler];
-const Sagas = [UserSaga];
-
 @Module({
   imports: [CqrsModule],
-  controllers: [UserController],
   providers: [
-    ...CommandHandlers,
-    ...QueryHandlers,
-    ...EventHandlers,
-    ...Sagas,
-    UserRepository,
-    UserReadRepository,
+    ...CommandHandlers,  // [CreateUserHandler, ...]
+    ...QueryHandlers,    // [GetUserHandler, ...]
+    ...EventHandlers,    // [UserCreatedHandler, ...]
+    ...Sagas,            // [UserSaga]
   ],
 })
 export class UserModule {}
 ```
 
-### Aggregate Root Pattern
-
-```typescript
-// aggregates/user.aggregate.ts
-import { AggregateRoot } from '@nestjs/cqrs';
-import { UserCreatedEvent } from '../events/user-created.event';
-import { UserUpdatedEvent } from '../events/user-updated.event';
-
-export class UserAggregate extends AggregateRoot {
-  private id: string;
-  private email: string;
-  private name: string;
-  private version: number = 0;
-
-  constructor() {
-    super();
-  }
-
-  create(id: string, email: string, name: string) {
-    // 비즈니스 규칙 검증
-    if (!email.includes('@')) {
-      throw new Error('Invalid email');
-    }
-
-    this.id = id;
-    this.email = email;
-    this.name = name;
-
-    // 이벤트 적용 (커밋 시 발행됨)
-    this.apply(new UserCreatedEvent(id, email, name));
-  }
-
-  updateName(name: string) {
-    this.name = name;
-    this.apply(new UserUpdatedEvent(this.id, { name }));
-  }
-
-  // 이벤트 핸들러 (이벤트 리플레이 시 사용)
-  onUserCreatedEvent(event: UserCreatedEvent) {
-    this.id = event.userId;
-    this.email = event.email;
-    this.name = event.name;
-    this.version++;
-  }
-}
-```
-
----
-
-## PROJECT STRUCTURE
-
-```
-src/
-├── users/
-│   ├── commands/
-│   │   ├── create-user.command.ts
-│   │   ├── update-user.command.ts
-│   │   └── handlers/
-│   │       ├── create-user.handler.ts
-│   │       └── update-user.handler.ts
-│   ├── queries/
-│   │   ├── get-user.query.ts
-│   │   ├── get-users-list.query.ts
-│   │   └── handlers/
-│   │       ├── get-user.handler.ts
-│   │       └── get-users-list.handler.ts
-│   ├── events/
-│   │   ├── user-created.event.ts
-│   │   ├── user-updated.event.ts
-│   │   └── handlers/
-│   │       └── user-created.handler.ts
-│   ├── sagas/
-│   │   └── user.saga.ts
-│   ├── aggregates/
-│   │   └── user.aggregate.ts
-│   ├── user.controller.ts
-│   └── user.module.ts
-```
+**상세 코드 예시**: @agent-docs/cqrs-examples.md 참조
 
 ---
 
@@ -477,28 +198,13 @@ npm install @nestjs/cqrs
 
 ## EXECUTION FLOW
 
-```
-SEQUENCE:
-├─ Step 1: Input Validation
-│   ├─ Understand domain requirements
-│   ├─ Identify commands, queries, events
-│   └─ Check existing CQRS implementation
-├─ Step 2: Codebase Analysis
-│   ├─ Search for existing CqrsModule imports
-│   ├─ Review existing command/query patterns
-│   └─ Identify event-driven workflows
-├─ Step 3: Implementation
-│   ├─ Configure CqrsModule.forRoot()
-│   ├─ Create Command classes and Handlers
-│   ├─ Create Query classes and Handlers
-│   ├─ Create Event classes and Handlers
-│   ├─ Implement Sagas for complex workflows
-│   └─ Wire up Controller with CommandBus/QueryBus
-├─ Step 4: Module Registration
-│   ├─ Register all handlers in providers
-│   └─ Verify handler invocation
-└─ Step 5: Return structured JSON response
-```
+| Step | 작업 | 주요 활동 |
+|------|------|----------|
+| 1. 분석 | 도메인 이해 | Commands/Queries/Events 식별, 기존 CQRS 확인 |
+| 2. 설계 | 패턴 선택 | Command/Query 분리, Event 워크플로우 설계 |
+| 3. 구현 | 코드 작성 | Handlers 생성, Saga 구현, Bus 연결 |
+| 4. 등록 | 모듈 설정 | Providers 등록, DI 검증 |
+| 5. 출력 | 결과 반환 | JSON 형식 응답 |
 
 ---
 

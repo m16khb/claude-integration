@@ -11,70 +11,102 @@ category: productivity
 ## Core Philosophy
 
 ```
-자동화 원칙:
-├─ 반복 작업 제거: 개발자가 집중해야 할 작업에만 집중
-├─ 템플릿 기반 생성: 일관된 구조와 품질 보장
-├─ 지능적 동기화: 변경 감지 -> 자동 갱신 -> 검증
-└─ 확장 가능성: 새로운 컴포넌트 타입 지원
+AUTOMATION ARCHITECTURE:
+┌─────────────────────────────────────────────────────────┐
+│  Factory → Optimize → Sync → Partner → Constitution    │
+│     │          │        │        │           │         │
+│     └──────────┴────────┴────────┴───────────┘         │
+│              Skills Layer + Status Line                 │
+└─────────────────────────────────────────────────────────┘
 ```
 
-## 파일 구조
-
-```
-automation-tools/
-├─ commands/          # 6개 커맨드
-├─ skills/            # 5개 스킬
-└─ agent-docs/        # 상세 문서
-```
+- **반복 작업 제거**: 개발자가 집중해야 할 작업에만 집중
+- **템플릿 기반 생성**: 일관된 구조와 품질 보장
+- **지능적 동기화**: 변경 감지 → 자동 갱신 → 검증
 
 ## Commands (6개)
 
 | 커맨드 | 설명 |
 |-------|------|
-| `/automation-tools:factory` | Agent/Skill/Command 자동 생성 |
-| `/automation-tools:optimize` | 에이전트/커맨드/프롬프트 최적화 |
-| `/automation-tools:partner` | AI 파트너 관리 |
-| `/automation-tools:setup-statusline` | YAML 기반 상태 라인 구성 |
-| `/automation-tools:claude-sync` | CLAUDE.md 자동 동기화 |
-| `/automation-tools:constitution` | 프로젝트 헌법 (필수 규칙) 관리 |
-
-## Skills (5개)
-
-| 스킬 | 설명 |
-|-----|------|
-| factory-generator | 컴포넌트 코드 생성 |
-| factory-orchestrator | 생성 워크플로우 조율 |
-| factory-researcher | 문서 분석 및 리서치 |
-| factory-validator | 생성물 검증 |
-| ai-partner | AI 파트너 관리 |
+| `/automation-tools:factory` | Agent, Skill, Command 자동 생성 |
+| `/automation-tools:optimize` | 프롬프트, 에이전트, 커맨드 최적화 |
+| `/automation-tools:partner` | AI 파트너 관리 (선택, 상태, 피드백) |
+| `/automation-tools:setup-statusline` | YAML 기반 Status Line 설정 |
+| `/automation-tools:claude-sync` | CLAUDE.md, routing-table 동기화 |
+| `/automation-tools:constitution` | 프로젝트 헌법(필수 규칙) 관리 |
 
 ## Quick Start
 
 ```bash
-# 에이전트 생성
-/automation-tools:factory agent "React 전문가"
+# 에이전트 생성 (URL에서 문서 분석)
+/automation-tools:factory agent https://docs.nestjs.com/controllers
 
 # 통합 최적화
-/automation-tools:optimize agent agents/my-agent.md
-
-# AI 파트너 관리
-/automation-tools:partner select
-
-# 상태 라인 설정
-/automation-tools:setup-statusline --template fullstack
+/automation-tools:optimize agent agents/code-reviewer.md --mcp
 
 # 문서 동기화
 /automation-tools:claude-sync --watch
 
 # 헌법 관리
-/automation-tools:constitution list  # add, edit, remove, check, history
+/automation-tools:constitution list
 ```
 
-## 상세 문서
+## /factory - 컴포넌트 생성기
 
-- @agent-docs/factory-system.md - Agent/Skill/Command 자동 생성 시스템
-- @agent-docs/sync-orchestration.md - CLAUDE.md 동기화 및 routing-table 관리
-- @agent-docs/optimization-guide.md - 프롬프트/에이전트/커맨드 최적화
-- @agent-docs/statusline-config.md - Status Line 설정 및 커스터마이징
+WebFetch로 공식 문서 분석 후 Best Practices 적용:
+
+```
+Request → Research → Design → Generate → Validate → Install
+```
+
+## /claude-sync - 동기화 시스템
+
+```
+SYNC WORKFLOW:
+1. Component Registry Sync → routing-table.json 갱신
+2. Hierarchical Document Sync → Root → Module → agent-docs
+3. Gap Analysis → 누락 문서, 라인 수 검사, 링크 유효성
+4. Auto Fix → 깨진 링크 수정, 참조 업데이트
+```
+
+## Skills (5개)
+
+| 스킬 | 역할 |
+|-----|------|
+| factory-orchestrator | 생성 워크플로우 조율 |
+| factory-researcher | 문서 분석 (WebFetch, Context7) |
+| factory-generator | 컴포넌트 코드 생성 |
+| factory-validator | 생성물 검증 |
+| ai-partner | AI 파트너 관리 |
+
+## Structure
+
+```
+plugins/automation-tools/
+├─ CLAUDE.md
+├─ commands/          # 6개 커맨드
+├─ skills/            # 5개 스킬
+└─ agent-docs/        # 상세 문서
+```
+
+## Best Practices
+
+```
+DO ✅:
+├─ /factory로 컴포넌트 생성 (일관된 구조)
+├─ /claude-sync로 문서 최신 상태 유지
+└─ /constitution으로 필수 규칙 관리
+
+DON'T ❌:
+├─ 수동으로 routing-table.json 편집
+└─ 검증 없이 에이전트 배포
+```
+
+## Documentation
+
+- @agent-docs/factory-system.md - Agent/Skill/Command 자동 생성, 템플릿 시스템
+- @agent-docs/sync-orchestration.md - CLAUDE.md 동기화, routing-table 관리
+- @agent-docs/optimization-guide.md - 프롬프트/에이전트/커맨드 최적화 원칙
+- @agent-docs/statusline-config.md - Status Line 설정, 커스텀 템플릿
 
 @../CLAUDE.md

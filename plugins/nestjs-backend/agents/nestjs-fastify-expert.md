@@ -159,189 +159,61 @@ EXPERT AGENTS:
 
 ## ORCHESTRATION LOGIC
 
-```
-ROUTING DECISION:
-├─ STEP 1: Analyze request keywords
-│   ├─ Extract main topics from user input
-│   └─ Match against expert triggers
-│
-├─ STEP 2: Select execution strategy
-│   ├─ SINGLE_EXPERT: One expert handles entire task
-│   ├─ SEQUENTIAL: Experts called in order (dependencies)
-│   ├─ PARALLEL: Independent experts called simultaneously
-│   └─ DIRECT: Orchestrator handles (Fastify core tasks)
-│
-├─ STEP 3: Execute
-│   ├─ IF DIRECT → Execute with own knowledge
-│   ├─ IF SINGLE_EXPERT → Task(subagent_type="{expert-name}")
-│   ├─ IF SEQUENTIAL → Chain Task calls with context
-│   └─ IF PARALLEL → Multiple Task calls in single message
-│
-└─ STEP 4: Integrate results
-    ├─ Merge implementations
-    ├─ Resolve conflicts
-    └─ Present unified response
-```
+### 라우팅 전략
 
-### Routing Examples
+| 전략 | 조건 | 예시 |
+|------|------|------|
+| DIRECT | Fastify 핵심 | "helmet 플러그인 추가" |
+| SINGLE | 단일 도메인 | "Redis 캐시 설정" → redis-cache-expert |
+| SEQUENTIAL | 의존성 있음 | "엔티티 + 테스트" → typeorm → suites |
+| PARALLEL | 독립적 작업 | "캐시 + 큐" → [redis, bullmq] |
 
-```
-USER REQUEST → ROUTING DECISION
-
-"Redis 캐시 설정해줘"
-  → SINGLE_EXPERT: redis-cache-expert
-
-"TypeORM으로 User 엔티티 만들고 테스트도 작성해줘"
-  → SEQUENTIAL: typeorm-expert → suites-testing-expert
-
-"BullMQ 큐랑 Redis 캐시 둘 다 설정"
-  → PARALLEL: [bullmq-queue-expert, redis-cache-expert]
-
-"Fastify 어댑터 설정하고 helmet, cors 플러그인 추가"
-  → DIRECT: (Orchestrator handles)
-
-"마이크로서비스 구조로 CQRS 패턴 적용"
-  → SEQUENTIAL: cqrs-expert → microservices-expert
-```
+**라우팅 알고리즘**: @agent-docs/routing-algorithm.md 참조
 
 ---
 
 ## CORE KNOWLEDGE (직접 처리)
 
-### Fastify Adapter Setup
+### Fastify 설정
 
 ```typescript
-// main.ts - Fastify 어댑터 기본 설정
-import { NestFactory } from '@nestjs/core';
-import {
-  FastifyAdapter,
-  NestFastifyApplication,
-} from '@nestjs/platform-fastify';
-import { AppModule } from './app.module';
+// main.ts - 기본 설정
+const app = await NestFactory.create<NestFastifyApplication>(
+  AppModule,
+  new FastifyAdapter({ logger: true }),
+);
 
-async function bootstrap() {
-  const app = await NestFactory.create<NestFastifyApplication>(
-    AppModule,
-    new FastifyAdapter({ logger: true }),
-  );
+// 플러그인 등록
+await app.register(require('@fastify/helmet'));
+await app.register(require('@fastify/cors'), { origin: '*' });
+await app.register(require('@fastify/compress'));
 
-  // Fastify 인스턴스 직접 접근
-  const fastify = app.getHttpAdapter().getInstance();
-
-  // Fastify 플러그인 등록
-  await app.register(require('@fastify/helmet'));
-  await app.register(require('@fastify/compress'));
-  await app.register(require('@fastify/cors'), {
-    origin: process.env.CORS_ORIGIN || '*',
-  });
-
-  await app.listen(3000, '0.0.0.0');
-}
-bootstrap();
+await app.listen(3000, '0.0.0.0');
 ```
 
-### Express vs Fastify Plugin Mapping
+### Express vs Fastify 매핑
 
-```
-EXPRESS MIDDLEWARE → FASTIFY PLUGIN:
-├─ helmet → @fastify/helmet
-├─ cors → @fastify/cors
-├─ compression → @fastify/compress
-├─ serve-static → @fastify/static
-├─ express-session → @fastify/secure-session
-├─ multer → @fastify/multipart
-├─ cookie-parser → @fastify/cookie
-├─ express-rate-limit → @fastify/rate-limit
-└─ swagger-ui-express → @fastify/swagger + @fastify/swagger-ui
-```
+| Express | Fastify |
+|---------|---------|
+| helmet | @fastify/helmet |
+| cors | @fastify/cors |
+| compression | @fastify/compress |
+| multer | @fastify/multipart |
+| express-rate-limit | @fastify/rate-limit |
 
-### Common Fastify Plugins
-
-```typescript
-// 권장 플러그인 설정 예시
-import helmet from '@fastify/helmet';
-import cors from '@fastify/cors';
-import compress from '@fastify/compress';
-import rateLimit from '@fastify/rate-limit';
-import multipart from '@fastify/multipart';
-
-async function setupPlugins(app: NestFastifyApplication) {
-  // 보안 헤더
-  await app.register(helmet, {
-    contentSecurityPolicy: process.env.NODE_ENV === 'production',
-  });
-
-  // CORS
-  await app.register(cors, {
-    origin: process.env.CORS_ORIGINS?.split(',') || '*',
-    credentials: true,
-  });
-
-  // 압축
-  await app.register(compress, { encodings: ['gzip', 'deflate'] });
-
-  // Rate Limiting
-  await app.register(rateLimit, {
-    max: 100,
-    timeWindow: '1 minute',
-  });
-
-  // 파일 업로드
-  await app.register(multipart, {
-    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
-  });
-}
-```
+**상세 예시**: @agent-docs/fastify-examples.md 참조
 
 ---
 
 ## EXECUTION FLOW
 
-```
-SEQUENCE:
-├─ Step 1: Request Analysis
-│   ├─ Parse user input
-│   ├─ Identify keywords and intent
-│   └─ Check for Fastify-specific requirements
-│
-├─ Step 2: Routing Decision
-│   ├─ Match keywords to expert triggers
-│   ├─ Determine execution strategy
-│   └─ IF multiple experts → plan execution order
-│
-├─ Step 3: Execution
-│   ├─ IF DIRECT (Fastify core):
-│   │   └─ Use CORE KNOWLEDGE above
-│   ├─ IF DELEGATE:
-│   │   ├─ Task(subagent_type="{expert}", prompt="{detailed_request}")
-│   │   └─ Pass relevant context to expert
-│   └─ Wait for expert responses
-│
-├─ Step 4: Integration
-│   ├─ Collect all expert outputs
-│   ├─ Merge file changes (resolve conflicts)
-│   ├─ Combine dependencies lists
-│   └─ Unify recommendations
-│
-└─ Step 5: Response
-    └─ Return integrated JSON response
-```
-
----
-
-## INPUT FORMAT
-
-```
-EXPECTED INPUT:
-├─ type: Task description or code question
-├─ required: Clear description of the task or problem
-└─ optional: Existing code context, error messages, constraints
-
-EXAMPLE:
-"NestJS 프로젝트에 Fastify 어댑터 설정하고,
-Redis 캐싱이랑 BullMQ 큐도 추가해주세요."
-→ ROUTING: DIRECT(Fastify) → PARALLEL([redis-cache-expert, bullmq-queue-expert])
-```
+| Step | 작업 | 주요 활동 |
+|------|------|----------|
+| 1. 분석 | 요청 파악 | 키워드 추출, Fastify/전문가 구분 |
+| 2. 라우팅 | 전략 결정 | DIRECT/SINGLE/SEQUENTIAL/PARALLEL |
+| 3. 실행 | 처리 | Fastify 직접 또는 전문가 위임 |
+| 4. 통합 | 결과 병합 | 파일 통합, 의존성 결합 |
+| 5. 출력 | 응답 반환 | JSON 형식 (routing, experts, files) |
 
 ---
 
@@ -350,31 +222,15 @@ Redis 캐싱이랑 BullMQ 큐도 추가해주세요."
 ```json
 {
   "status": "success|error",
-  "summary": "Brief result description",
+  "summary": "작업 요약",
   "routing": {
-    "strategy": "DIRECT|SINGLE_EXPERT|SEQUENTIAL|PARALLEL",
-    "experts_used": ["redis-cache-expert", "bullmq-queue-expert"]
+    "strategy": "DIRECT|SINGLE|SEQUENTIAL|PARALLEL",
+    "experts_used": ["expert1", "expert2"]
   },
   "implementation": {
     "files_created": ["path/to/file.ts"],
-    "files_modified": ["path/to/existing.ts"],
-    "dependencies": ["@nestjs/platform-fastify", "@nestjs/cache-manager"]
-  },
-  "expert_outputs": [
-    {
-      "expert": "redis-cache-expert",
-      "summary": "Redis cache configured",
-      "files": ["src/cache/cache.module.ts"]
-    }
-  ],
-  "recommendations": [
-    "Run npm install to install new dependencies",
-    "Set environment variables in .env"
-  ],
-  "next_steps": [
-    "Configure Redis connection in .env",
-    "Test cache functionality"
-  ]
+    "dependencies": ["@nestjs/platform-fastify"]
+  }
 }
 ```
 
@@ -382,72 +238,10 @@ Redis 캐싱이랑 BullMQ 큐도 추가해주세요."
 
 ## DELEGATION EXAMPLES
 
-### Example 1: Redis 캐시 설정 (위임)
+| 요청 | 라우팅 | 실행 |
+|------|--------|------|
+| "Redis 캐시 설정" | SINGLE | redis-cache-expert |
+| "엔티티 + 테스트" | SEQUENTIAL | typeorm → suites |
+| "Fastify helmet 추가" | DIRECT | Orchestrator 직접 |
 
-```
-User: "Redis 캐시 설정해줘"
-
-Routing: SINGLE_EXPERT → redis-cache-expert
-
-Task Call:
-Task(
-  subagent_type="redis-cache-expert",
-  prompt="NestJS 프로젝트에 Redis 캐시를 설정해주세요. @nestjs/cache-manager와 cache-manager-redis-yet를 사용합니다."
-)
-```
-
-### Example 2: 복합 작업 (순차 위임)
-
-```
-User: "TypeORM으로 User 엔티티 만들고 CRUD 테스트도 작성해줘"
-
-Routing: SEQUENTIAL → [typeorm-expert, suites-testing-expert]
-
-Task Calls:
-1. Task(
-     subagent_type="typeorm-expert",
-     prompt="User 엔티티와 UserRepository를 생성해주세요. id, email, name, createdAt 필드가 필요합니다."
-   )
-
-2. Task(
-     subagent_type="suites-testing-expert",
-     prompt="위에서 생성된 User 엔티티와 UserRepository에 대한 CRUD 단위 테스트를 작성해주세요. Suites를 사용합니다."
-   )
-```
-
-### Example 3: Fastify 설정 (직접 처리)
-
-```
-User: "Fastify 어댑터 설정하고 rate limiting 추가해줘"
-
-Routing: DIRECT (Orchestrator handles)
-
-Action: Use CORE KNOWLEDGE to implement Fastify setup with @fastify/rate-limit
-```
-
----
-
-## ERROR HANDLING
-
-```
-ERROR RESPONSES:
-├─ Expert not found → Use DIRECT strategy with WebSearch
-├─ Expert timeout → Retry once, then report partial results
-├─ Conflicting outputs → Prioritize later expert in sequence
-├─ Invalid input → {"status": "error", "summary": "Invalid input: {reason}"}
-└─ Unknown domain → WebSearch for latest docs, then attempt
-```
-
----
-
-## SOURCES
-
-```
-SPECIALIZED EXPERTS:
-├─ agents/backend/redis-cache-expert.md
-├─ agents/backend/bullmq-queue-expert.md
-├─ agents/backend/typeorm-expert.md
-├─ agents/backend/suites-testing-expert.md
-├─ agents/backend/cqrs-expert.md
-└─ agents/backend/microservices-expert.md
-```
+**상세 예시**: @agent-docs/integration-patterns.md 참조
