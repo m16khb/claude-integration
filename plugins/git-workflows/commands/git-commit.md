@@ -1,17 +1,18 @@
 ---
 name: git-workflows:git-commit
-description: '스마트 git 커밋 (인자: push - 커밋 후 푸시)'
+description: 'Conventional Commits 1.0.0 규격 스마트 커밋 (인자: push - 커밋 후 푸시)'
 allowed-tools:
   - Bash(git *)
   - mcp__st__sequentialthinking
 model: claude-haiku-4-5-20251001
 ---
 
-# Smart Git Commit
+# Smart Git Commit (Conventional Commits 1.0.0)
 
 ## MISSION
 
-변경사항을 분석하여 Conventional Commits 형식의 의미 있는 커밋을 생성합니다.
+변경사항을 분석하여 **Conventional Commits 1.0.0** 규격의 커밋을 생성합니다.
+SemVer와 연동: `feat`→MINOR, `fix`→PATCH, `BREAKING CHANGE`→MAJOR
 
 **Args**: $ARGUMENTS
 
@@ -40,6 +41,37 @@ CRITICAL RULES:
 
 ---
 
+## PHASE 2.5: BREAKING CHANGE Detection (NEW)
+
+```
+BREAKING CHANGE 감지 기준:
+┌─────────────────────────────────────────────────────────┐
+│ 1. API 시그니처 변경                                     │
+│    - 함수/메서드 파라미터 변경                            │
+│    - 반환 타입 변경                                      │
+│    - 기존 메서드 삭제                                    │
+│                                                         │
+│ 2. 설정 파일 변경                                        │
+│    - 환경변수 이름 변경                                   │
+│    - 설정 키 삭제/이름 변경                               │
+│                                                         │
+│ 3. 데이터 스키마 변경                                     │
+│    - DB 테이블/컬럼 삭제                                  │
+│    - API 응답 형식 변경                                   │
+│                                                         │
+│ 4. 파일 삭제/이동                                        │
+│    - public API 파일 삭제                                │
+│    - 엔트리 포인트 변경                                   │
+└─────────────────────────────────────────────────────────┘
+
+IF BREAKING CHANGE detected:
+  → AskUserQuestion: "BREAKING CHANGE로 표시하시겠습니까?"
+  → 사용자 확인 시: 타입에 ! 추가 또는 꼬리말에 BREAKING CHANGE 추가
+  → SemVer 영향: MAJOR 버전 증가 필요 알림
+```
+
+---
+
 ## PHASE 3: Analyze & Group Changes
 
 ```
@@ -49,10 +81,15 @@ GROUPING:
 └─ 패턴 기반: A(added)→feat, M(modified)→fix/refactor
 
 COMMIT TYPE 매트릭스:
-├─ 새 파일 추가    → feat/test/docs
-├─ 기존 파일 수정  → fix/refactor/perf
-├─ 파일 삭제      → refactor/chore
-└─ 설정 파일      → chore
+┌────────────────┬────────────────┬─────────┐
+│ 변경 패턴       │ 커밋 타입       │ SemVer  │
+├────────────────┼────────────────┼─────────┤
+│ 새 파일 추가    │ feat/test/docs │ MINOR   │
+│ 기존 파일 수정  │ fix/refactor   │ PATCH   │
+│ 파일 삭제      │ refactor/chore │ -       │
+│ 설정 파일      │ chore          │ -       │
+│ BREAKING 변경  │ type!          │ MAJOR   │
+└────────────────┴────────────────┴─────────┘
 ```
 
 ---
@@ -74,14 +111,51 @@ chore → refactor → feat → fix → test → docs
 
 ## PHASE 4: Create Commit
 
+### 4.1 일반 커밋
+
 ```
-MESSAGE FORMAT:
+MESSAGE FORMAT (Conventional Commits 1.0.0):
 <type>(<scope>): <Korean description>
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
 Co-Authored-By: Claude <noreply@anthropic.com>
 ```
+
+### 4.2 BREAKING CHANGE 커밋
+
+```
+방법 1: ! 문법
+<type>(<scope>)!: <description>
+
+BREAKING CHANGE: <상세 설명>
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+Co-Authored-By: Claude <noreply@anthropic.com>
+
+방법 2: 꼬리말만
+<type>(<scope>): <description>
+
+BREAKING CHANGE: <상세 설명>
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+### 4.3 revert 커밋
+
+```
+revert: <되돌리는 커밋의 subject>
+
+This reverts commit <SHA>.
+
+Refs: <SHA>
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+### 4.4 커밋 실행
 
 ```bash
 git commit -m "$(cat <<'EOF'
@@ -117,6 +191,8 @@ IF "push" in $ARGUMENTS:
 | 브랜치 | <branch> |
 | 푸시 | ✅/⏭️/❌ |
 | 변경 | +<insertions>/-<deletions> |
+| SemVer 영향 | MAJOR/MINOR/PATCH/없음 |
+| BREAKING | ⚠️/✅ |
 ```
 
 ---
@@ -145,9 +221,25 @@ AskUserQuestion:
 
 ---
 
+## SEMVER QUICK REFERENCE
+
+```
+SEMANTIC VERSIONING 연동:
+┌──────────────────┬─────────────────────────────┐
+│ 커밋             │ SemVer 영향                  │
+├──────────────────┼─────────────────────────────┤
+│ feat             │ MINOR (1.x.0)               │
+│ fix              │ PATCH (1.0.x)               │
+│ BREAKING CHANGE  │ MAJOR (x.0.0)               │
+│ docs/style/...   │ 영향 없음                    │
+└──────────────────┴─────────────────────────────┘
+```
+
+---
+
 ## Documentation
 
 상세 내용은 agent-docs/ 참조:
-- @../agent-docs/commit-conventions.md - Conventional Commits 표준
+- @../agent-docs/commit-conventions.md - Conventional Commits 1.0.0 전체 규격
 - @../agent-docs/branch-strategies.md - Git Flow 브랜치 전략
 - @../agent-docs/automation-patterns.md - 다중 커밋, 스마트 그룹화
