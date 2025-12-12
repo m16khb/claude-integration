@@ -11,7 +11,7 @@ allowed-tools:
   - mcp__st__sequentialthinking
   - mcp__mm__retrieve_memory
   - mcp__mm__search_by_tag
-model: claude-opus-4-5-20251101
+model: claude-haiku-4-5-20251001
 ---
 
 # Intelligent File Context Loader
@@ -59,6 +59,7 @@ file "{FILE_PATH}"
 ## PHASE 2.5: MCP Memory (Optional)
 
 MCP memory-service 설치 시 관련 메모리 자동 로드:
+
 - 파일 경로로 검색
 - 모듈명으로 검색
 - 없으면 조용히 스킵
@@ -83,11 +84,11 @@ esac | head -50
 
 ## PHASE 4: Chunking Strategy
 
-| 설정 | 값 | 설명 |
-|-----|---|------|
+| 설정       | 값    | 설명             |
+| ---------- | ----- | ---------------- |
 | Chunk size | 800줄 | 원문 보존 최대화 |
-| Overlap | 20줄 | 컨텍스트 연속성 |
-| Max chunks | 15 | 대용량 지원 |
+| Overlap    | 20줄  | 컨텍스트 연속성  |
+| Max chunks | 15    | 대용량 지원      |
 
 ```
 ALGORITHM:
@@ -142,18 +143,19 @@ ELSE:
 
 ## ERROR HANDLING
 
-| Error | Response |
-|-------|----------|
-| File not found | Glob으로 유사 파일 제안 |
-| Binary file | "바이너리 지원 안 함" |
+| Error          | Response                  |
+| -------------- | ------------------------- |
+| File not found | Glob으로 유사 파일 제안   |
+| Binary file    | "바이너리 지원 안 함"     |
 | Token overflow | 청크 크기 50% 감소 재시도 |
-| Empty file | "빈 파일" 알림 |
+| Empty file     | "빈 파일" 알림            |
 
 ---
 
 ## Documentation
 
 상세 알고리즘은 agent-docs/ 참조:
+
 - @../agent-docs/chunking-algorithm.md - 구조 인식 청킹, 언어별 AST 파싱
 - @../agent-docs/context-analysis.md - 컨텍스트 분석, 작업 추천
 - @../agent-docs/recovery-patterns.md - MCP Memory 연동, 세션 복구
