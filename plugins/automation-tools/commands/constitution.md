@@ -20,21 +20,71 @@ allowed-tools:
 model: claude-opus-4-5-20251101
 ---
 
-# Project Constitution Manager
+# EXECUTION
 
-## MISSION
+사용자가 `/constitution` 명령을 실행했습니다.
 
-프로젝트 헌법을 체계적으로 관리합니다.
+**입력 인자**: $ARGUMENTS
 
-**대상 파일:**
-- `agent-docs/constitution.md` - 규칙 상세
-- `CLAUDE.md` 헌법 테이블 - 요약
+## 실행 지시
 
-**Target**: $ARGUMENTS
+### 1단계: 인자 파싱
+
+`$ARGUMENTS`에서 다음을 추출하세요:
+- **action**: `list` | `add` | `edit` | `remove` | `check` | `history` (첫 번째 인자)
+- **rule-name**: 규칙명 (두 번째 인자, `edit`/`remove` 시 필요)
+
+인자가 없거나 `help`이면 사용법을 표시하세요.
+
+### 2단계: action별 분기 처리
+
+#### action = `list`
+1. Read로 `agent-docs/constitution.md` 읽기
+2. 규칙 목록을 TUI 형식으로 출력
+
+#### action = `add`
+1. AskUserQuestion으로 규칙 정보 수집 (규칙명, 설명, 우선순위 1-4)
+2. Context7로 관련 베스트 프랙티스 조회 (선택적)
+3. 중복 검사 수행
+4. Edit로 `agent-docs/constitution.md` 업데이트
+5. Edit로 `CLAUDE.md` 헌법 테이블 업데이트
+6. MCP Memory에 변경 이력 저장
+
+#### action = `edit <name>`
+1. Read로 기존 규칙 내용 조회
+2. AskUserQuestion으로 수정 사항 수집
+3. Edit로 양쪽 파일 업데이트
+4. MCP Memory에 변경 이력 저장
+
+#### action = `remove <name>`
+1. AskUserQuestion으로 삭제 확인
+2. Edit로 양쪽 파일에서 규칙 제거
+3. MCP Memory에 변경 이력 저장
+
+#### action = `check`
+1. 무결성 검사 수행:
+   - `agent-docs/constitution.md` 존재 확인
+   - CLAUDE.md 요약과 상세 동기화 확인
+   - 규칙 형식 일관성 확인
+2. 문제 발견 시 자동 수정 제안
+
+#### action = `history`
+1. MCP Memory에서 `constitution`, `changelog` 태그로 검색
+2. 변경 이력 출력
+
+### 3단계: 결과 출력
+
+수행 결과를 TUI 스타일로 표시하세요.
 
 ---
 
-## ACTIONS
+# REFERENCE
+
+## 대상 파일
+- `agent-docs/constitution.md` - 규칙 상세
+- `CLAUDE.md` 헌법 테이블 - 요약
+
+## ACTIONS 요약
 
 | 액션 | 설명 |
 |------|------|
@@ -45,18 +95,16 @@ model: claude-opus-4-5-20251101
 | `check` | 무결성 검사 |
 | `history` | 변경 이력 조회 |
 
----
+## 우선순위 레벨
 
-## PHASE 0: Action Resolution
+| 레벨 | 설명 |
+|-----|------|
+| 1 | 보안 규칙 |
+| 2 | 버전/호환성 |
+| 3 | 코드 품질 |
+| 4 | 워크플로우 |
 
-```
-IF empty OR "help" → Show usage TUI
-ELSE → Execute action
-```
-
----
-
-## PHASE 1: List Rules
+## PHASE 상세: List Rules
 
 ```
 READ agent-docs/constitution.md

@@ -7,22 +7,69 @@ allowed-tools:
   - Write
   - Edit
   - Glob
+  - Grep
   - AskUserQuestion
   - TodoWrite
+  - mcp__mm__store_memory
+  - mcp__mm__retrieve_memory
 model: claude-opus-4-5-20251101
 ---
 
-# AI Partner Management Command
+# EXECUTION
 
-## MISSION
+사용자가 `/partner` 명령을 실행했습니다.
 
-AI 파트너 시스템을 관리하고 최적의 협업 경험을 제공합니다.
+**입력 인자**: $ARGUMENTS
 
-**Usage**: `/partner <action> [options]`
+## 실행 지시
+
+### 1단계: 인자 파싱
+
+`$ARGUMENTS`에서 다음을 추출하세요:
+- **action**: `select` | `status` | `feedback` | `switch` | `team` | `memory` (첫 번째 인자)
+- **options**: `--auto`, `--detailed`, `--history` 등 (나머지 인자)
+
+인자가 없으면 AskUserQuestion으로 action을 선택받으세요.
+
+### 2단계: action별 분기 처리
+
+#### action = `select`
+1. 현재 작업 컨텍스트 분석 (Git status, 열린 파일 등)
+2. 파트너 프로필 목록 표시 (Architect, Pragmatist, Mentor, Innovator, Guardian)
+3. `--auto` 옵션: 작업 유형에 맞는 파트너 자동 추천
+4. 사용자 선택 후 파트너십 시작 메시지 출력
+
+#### action = `status`
+1. 현재 파트너 정보 조회 (MCP Memory에서)
+2. `--detailed`: 협업 시간, 완료 작업, 성과 지표 표시
+3. `--history`: 이전 협업 기록 표시
+
+#### action = `feedback`
+1. AskUserQuestion으로 피드백 수집 (만족도 1-5, 코멘트)
+2. MCP Memory에 피드백 저장
+3. 파트너 XP 업데이트 메시지 출력
+
+#### action = `switch`
+1. 현재 파트너 세션 종료
+2. 새 파트너 선택 (select 플로우)
+
+#### action = `team`
+1. 서브액션 파싱: `create`, `add`, `list`
+2. 팀 구성 관리 (Memory 저장)
+
+#### action = `memory`
+1. 서브액션 파싱: `view`, `clear`, `export`
+2. 파트너 컨텍스트 메모리 관리
+
+### 3단계: 결과 출력
+
+선택된 action에 따른 TUI 스타일 결과 표시.
 
 ---
 
-## ACTIONS
+# REFERENCE
+
+## ACTIONS 요약
 
 ### 1. select
 현재 작업에 가장 적합한 AI 파트너를 선택합니다.

@@ -7,34 +7,97 @@ allowed-tools:
   - Write
   - Edit
   - Glob
+  - Grep
   - AskUserQuestion
   - Bash
   - Task
-  - mcp__sequential-thinking__sequentialthinking
-  - mcp__context7__resolve-library-id
-  - mcp__context7__get-library-docs
+  - mcp__st__sequentialthinking
+  - mcp__c7__resolve-library-id
+  - mcp__c7__get-library-docs
   - mcp__web-reader__webReader
   - mcp__web-search-prime__webSearchPrime
 model: claude-opus-4-5-20251101
 ---
 
-# Universal Optimizer
+# EXECUTION
 
-## MISSION
+사용자가 `/optimize` 명령을 실행했습니다.
 
-Unified optimization command for agents, commands, and prompts using prompt engineering best practices and real-time documentation.
+**입력 인자**: $ARGUMENTS
 
-**Usage**: `/optimize <target> <file-path> [options]`
+## 실행 지시
 
-**Targets**:
-- `agent` - Optimize Claude Code agent
-- `command` - Optimize Claude Code command
-- `prompt` - Interactive prompt optimization (TUI)
+### 1단계: 인자 파싱
 
-**Options**:
-- `--mcp` - Enable MCP integration for latest docs
-- `--interactive` - Interactive mode for prompts
-- `--dry-run` - Show optimization suggestions only
+`$ARGUMENTS`에서 다음을 추출하세요:
+- **target**: `agent` | `command` | `prompt` (첫 번째 인자)
+- **file-path**: 최적화할 파일 경로 (두 번째 인자)
+- **options**: `--mcp`, `--interactive`, `--dry-run` 등 (나머지 인자)
+
+인자가 부족하면 AskUserQuestion으로 확인하세요.
+
+### 2단계: target별 분기 처리
+
+#### target = `agent`
+1. Read 도구로 에이전트 파일 읽기
+2. 다음 항목 분석:
+   - Role clarity (역할 명확성)
+   - Trigger effectiveness (트리거 효과)
+   - Tool utilization (도구 활용도)
+   - Prompt structure (프롬프트 구조)
+3. 개선 사항 적용 후 Edit으로 수정
+
+#### target = `command`
+1. Read 도구로 커맨드 파일 읽기
+2. 다음 항목 분석:
+   - Argument parsing (인자 파싱 로직 존재 여부)
+   - Execution logic (실행 지시 존재 여부)
+   - Help text clarity (도움말 명확성)
+3. 개선 사항 적용 후 Edit으로 수정
+
+#### target = `prompt`
+1. `--interactive` 옵션: AskUserQuestion으로 프롬프트 입력 받기
+2. 파일 경로 제공: Read로 프롬프트 파일 읽기
+3. URL 제공: webReader로 내용 가져오기
+4. 프롬프트 최적화 수행 후 결과 출력
+
+### 3단계: 옵션 처리
+
+- `--mcp`: Context7 (resolve-library-id, get-library-docs)로 최신 문서 참조
+- `--dry-run`: 수정하지 않고 제안 사항만 출력
+- `--interactive`: AskUserQuestion으로 대화형 진행
+
+### 4단계: 결과 출력
+
+최적화 전/후 비교 및 개선 사항 요약을 출력하세요.
+
+---
+
+# REFERENCE
+
+아래는 최적화 수행 시 참고할 지침입니다.
+
+## OPTIMIZATION PRINCIPLES
+
+### 1. CLARITY
+- 명확한 목표와 제약 조건
+- 모호하지 않은 지시
+- 성공 기준 정의
+
+### 2. EFFICIENCY
+- 토큰 사용량 최소화
+- 컨텍스트 윈도우 최적화
+- 불필요한 복잡성 제거
+
+### 3. EFFECTIVENESS
+- 행동 지향적 프롬프트
+- 측정 가능한 결과
+- 실용적 적용 가능성
+
+### 4. MAINTAINABILITY
+- 모듈식 구조
+- 쉬운 업데이트
+- 버전 관리 친화적
 
 ---
 

@@ -1,7 +1,7 @@
 ---
 name: automation-tools:claude-sync
 description: '코드베이스 변경 감지 및 CLAUDE.md 자동 동기화'
-argument-hint: [task_instruction]
+argument-hint: '[--target <path>] [--only routing-table] [--dry-run]'
 allowed-tools:
   - Read
   - Write
@@ -17,20 +17,86 @@ allowed-tools:
 model: claude-opus-4-5-20251101
 ---
 
-# CLAUDE.md Auto-Sync
+# EXECUTION
 
-## MISSION
+사용자가 `/claude-sync` 명령을 실행했습니다.
 
-프로젝트 계층적 문서화 시스템을 스캔, 분석, 동기화합니다.
+**입력 인자**: $ARGUMENTS
 
-**핵심 원칙:**
+## 실행 지시
+
+### 1단계: 인자 파싱
+
+`$ARGUMENTS`에서 다음을 추출하세요:
+- `--target <path>`: 특정 플러그인/디렉토리만 동기화
+- `--only routing-table`: routing-table.json만 갱신
+- `--dry-run`: 변경 없이 분석 결과만 출력
+
+인자가 없으면 전체 프로젝트 동기화를 수행하세요.
+
+### 2단계: Phase별 순차 실행
+
+아래 Phase들을 순서대로 수행하세요:
+
+#### Phase 0: Component Registry Sync
+1. `Glob("**/agents/*.md")` → 에이전트 정의 수집
+2. `Glob("**/skills/**/SKILL.md")` → 스킬 정의 수집
+3. `Glob("**/commands/*.md")` → 커맨드 정의 수집
+4. `.claude-plugin/routing-table.json` 업데이트
+
+`--only routing-table` 옵션이면 여기서 종료.
+
+#### Phase 1: Hierarchical Scan
+1. Root CLAUDE.md 읽기
+2. `Glob("plugins/*/CLAUDE.md")` → 모듈 CLAUDE.md 수집
+3. 각 모듈의 agent-docs 디렉토리 스캔
+
+#### Phase 2: Gap Analysis
+라인 수 제한 검사:
+- ROOT: Soft 300 / Hard 500
+- MODULE: Soft 200 / Hard 350
+- SUBMODULE: Soft 150 / Hard 250
+
+분류: `CREATE_CLAUDE_MD`, `NEEDS_AGENT_DOCS`, `RECOMMEND_AGENT_DOCS`, `UPDATE_LINKS`, `OK`
+
+#### Phase 3: Report & Confirm
+`--dry-run`이면 분석 결과만 출력하고 종료.
+그렇지 않으면 AskUserQuestion으로 사용자 확인:
+- 전체 적용
+- 선택 적용
+- 취소
+
+#### Phase 4: Parallel Execution
+`Task(subagent_type="documentation-generation:document-builder")`로 문서 생성/수정 위임.
+
+#### Phase 5: Orphan Detection & Fix
+1. 상위에서 참조되지 않는 CLAUDE.md → 링크 추가
+2. CLAUDE.md에서 참조되지 않는 agent-docs → 테이블에 추가
+3. parent 링크 누락 → `[parent](../CLAUDE.md)` 추가
+
+#### Phase 6: Validation
+1. 모든 링크 경로 유효성 검사
+2. 라인 수 제한 준수 확인
+3. 고아 파일 0개 확인
+4. agent-docs에 @ 참조 없음 확인
+
+### 3단계: 결과 출력
+
+동기화 결과 요약 표시:
+- 생성된 파일 수
+- 수정된 파일 수
+- 발견된 문제점
+
+---
+
+# REFERENCE
+
+## 핵심 원칙
 - 모듈마다 CLAUDE.md 작성
 - LOC 초과 시 agent-docs로 분할
 - 플러그인 CLAUDE.md는 상위에서 일반 링크로 참조
 - agent-docs는 @ 참조 금지 (테이블/일반 링크 사용)
 - 고아 파일 0개 보장
-
----
 
 ## ARCHITECTURE
 
