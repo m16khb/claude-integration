@@ -7,7 +7,7 @@ allowed-tools:
   - Bash(ls *)
   - Bash(rm -rf *)
   - AskUserQuestion
-model: claude-haiku-4-5-20251001
+model: claude-opus-4-5-20251101
 ---
 
 # Git Worktree Manager
@@ -188,16 +188,17 @@ git worktree prune --dry-run
 
 ### ADD 성공 시
 
-```markdown
+````markdown
 ## ✅ 워크트리 생성 완료
 
-| 항목 | 내용 |
-|------|------|
-| 경로 | `../worktrees/<name>` |
-| 브랜치 | `<branch>` |
-| 상태 | 새 브랜치 생성 / 기존 브랜치 체크아웃 |
+| 항목   | 내용                                  |
+| ------ | ------------------------------------- |
+| 경로   | `../worktrees/<name>`                 |
+| 브랜치 | `<branch>`                            |
+| 상태   | 새 브랜치 생성 / 기존 브랜치 체크아웃 |
 
 ### 다음 단계
+
 ```bash
 # 워크트리로 이동
 cd ../worktrees/<name>
@@ -205,7 +206,9 @@ cd ../worktrees/<name>
 # 작업 시작
 code .
 ```
-```
+````
+
+````
 
 ### LIST 출력
 
@@ -219,22 +222,25 @@ code .
 | 3 | /path/to/hotfix | hotfix/bug | ghi9012 |
 
 총 3개 워크트리
-```
+````
 
 ### REMOVE 성공 시
 
-```markdown
+````markdown
 ## ✅ 워크트리 삭제 완료
 
-| 항목 | 내용 |
-|------|------|
-| 삭제된 경로 | `../worktrees/<name>` |
-| 브랜치 | `<branch>` (브랜치는 유지됨) |
+| 항목        | 내용                         |
+| ----------- | ---------------------------- |
+| 삭제된 경로 | `../worktrees/<name>`        |
+| 브랜치      | `<branch>` (브랜치는 유지됨) |
 
 ℹ️ 브랜치를 함께 삭제하려면:
+
 ```bash
 git branch -d <branch>
 ```
+````
+
 ```
 
 ---
@@ -255,6 +261,7 @@ git branch -d <branch>
 ## INTERACTIVE MODE
 
 ```
+
 인자 없이 실행 시:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -263,21 +270,22 @@ git branch -d <branch>
 작업을 선택하세요:
 
 [1] 새 워크트리 생성 (add)
-    브랜치를 별도 디렉토리에서 작업
+브랜치를 별도 디렉토리에서 작업
 
 [2] 워크트리 목록 (list)
-    현재 워크트리 상태 확인
+현재 워크트리 상태 확인
 
 [3] 워크트리 삭제 (remove)
-    더 이상 필요 없는 워크트리 제거
+더 이상 필요 없는 워크트리 제거
 
 [4] 정리 (prune)
-    삭제된 워크트리 참조 정리
+삭제된 워크트리 참조 정리
 
 [q] 취소
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 선택:
-```
+
+````
 
 ---
 
@@ -295,7 +303,7 @@ git branch -d <branch>
 # 결과:
 # ../worktrees/hotfix 디렉토리에서 hotfix 작업
 # 기존 feature/payment 작업은 유지
-```
+````
 
 ### 2. 여러 브랜치 동시 빌드/테스트
 
