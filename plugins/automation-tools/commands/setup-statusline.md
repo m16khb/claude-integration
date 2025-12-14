@@ -286,6 +286,11 @@ EXPECTED OUTPUT:
 
 (Git 브랜치는 테스트 경로가 Git 저장소가 아니면 표시되지 않음)
 
+EXPECTED OUTPUT (context.enabled: false):
+🤖 Opus 4.5 │ 📂 /test │ 🌿 main
+
+(Context window bar가 표시되지 않음)
+
 FEATURES TO VERIFY:
 ├─ 모델명 표시 (색상: cyan)
 ├─ 경로 표시 (색상: blue, 동적 길이)
@@ -306,6 +311,7 @@ IF PowerShell execution policy error → "Set-ExecutionPolicy RemoteSigned -Scop
 | 경로 최대 길이 | 기본 150자 (짧은 경로는 전체 표시, CLAUDE_TERM_WIDTH로 오버라이드) |
 | 크로스 플랫폼 | Unix (Bash) / Windows (PowerShell) 동일 기능 |
 | 하위 호환성 | 레거시 `contextWindow` 필드도 지원 |
+| Context 표시 On/Off | `~/.claude/statusline.yaml`의 `context.enabled` 설정으로 제어 |
 
 ---
 
@@ -337,6 +343,21 @@ Claude Code를 **재시작**하면 활성화됩니다.
 
 ### 커스터마이징
 `~/.claude/statusline.yaml` 수정 → 즉시 적용 (재시작 불필요)
+
+**Context Window Bar 비활성화 방법:**
+\`\`\`yaml
+# ~/.claude/statusline.yaml
+context:
+  enabled: false  # true → false로 변경
+\`\`\`
+
+**주요 설정 옵션:**
+| 설정 | 기본값 | 설명 |
+|------|--------|------|
+| `context.enabled` | `true` | Context window bar 표시 여부 |
+| `display.path_max_length` | `30` | 경로 최대 길이 |
+| `display.bar_width` | `10` | 진행률 바 너비 |
+| `display.language` | `ko` | 언어 (ko/en) |
 
 | 플랫폼 | 스크립트 | 상태 |
 |--------|----------|------|

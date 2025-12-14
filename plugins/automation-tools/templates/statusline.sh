@@ -21,6 +21,69 @@ RESET='\033[0m'
 # 설정 파일 경로
 CONFIG_FILE="${HOME}/.claude/statusline.yaml"
 
+# YAML 설정 읽기 함수
+# 간단한 YAML 파싱 (중첩 키 지원: parent.child)
+read_yaml_config() {
+    local key="$1"
+    local default="$2"
+
+    if [ ! -f "$CONFIG_FILE" ]; then
+        echo "$default"
+        return
+    fi
+
+    # yq가 있으면 사용 (가장 정확함)
+    if command -v yq &> /dev/null; then
+        local value=$(yq -r ".$key" "$CONFIG_FILE" 2>/dev/null)
+        # yq는 존재하지 않는 키에 대해 "null" 반환
+        if [ "$value" = "null" ] || [ -z "$value" ]; then
+            echo "$default"
+        else
+            echo "$value"
+        fi
+        return
+    fi
+
+    # yq 없을 때 grep fallback
+    # 단일 필드 (예: display.language)
+    local parent="${key%%.*}"
+    local child="${key#*.}"
+
+    if [[ "$key" == "$parent" ]]; then
+        # 중첩 없는 단일 키
+        local value=$(grep -E "^${key}:" "$CONFIG_FILE" | sed 's/.*:[[:space:]]*//' | tr -d '"' | tr -d "'")
+        echo "${value:-$default}"
+    else
+        # 중첩 키 (예: context.enabled)
+        # parent 섹션 찾은 후 child 키 검색
+        local in_section=false
+        local value=""
+        while IFS= read -r line; do
+            # 빈 줄 또는 주석 무시
+            [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
+
+            # 새 섹션 시작 (들여쓰기 없는 키)
+            if [[ "$line" =~ ^[a-zA-Z] ]]; then
+                if [[ "$line" =~ ^${parent}: ]]; then
+                    in_section=true
+                else
+                    in_section=false
+                fi
+                continue
+            fi
+
+            # 섹션 내에서 child 키 검색
+            if [ "$in_section" = true ]; then
+                if [[ "$line" =~ ^[[:space:]]+${child}: ]]; then
+                    value=$(echo "$line" | sed 's/.*:[[:space:]]*//' | tr -d '"' | tr -d "'")
+                    break
+                fi
+            fi
+        done < "$CONFIG_FILE"
+        echo "${value:-$default}"
+    fi
+}
+
 # JSON 파싱 함수 - jq 우선, 없으면 grep/sed fallback
 parse_json_field() {
     local json="$1"
@@ -333,21 +396,24 @@ main() {
         fi
     fi
 
-    # 4. 컨텍스트 윈도우 사용량
-    if [ -n "$output" ]; then
-        output+=" ${DIM}│${RESET} "
-    fi
+    # 4. 컨텍스트 윈도우 사용량 (설정에 따라 표시)
+    local context_enabled=$(read_yaml_config "context.enabled" "true")
+    if [ "$context_enabled" = "true" ]; then
+        if [ -n "$output" ]; then
+            output+=" ${DIM}│${RESET} "
+        fi
 
-    local bar=$(generate_progress_bar $percent)
-    local used_k=$(format_tokens $context_used)
-    local limit_k=$(format_tokens $context_limit)
+        local bar=$(generate_progress_bar $percent)
+        local used_k=$(format_tokens $context_used)
+        local limit_k=$(format_tokens $context_limit)
 
-    if [ "$percent" -ge 100 ]; then
-        # 100% 초과 시 압축됨 표시
-        output+="${bar} ${RED}${BOLD}압축됨${RESET} (${used_k}/${limit_k})"
-    else
-        # 남은 퍼센트 표시 (터미널 기본색)
-        output+="${bar} ${remaining_percent}%남음 (${used_k}/${limit_k})"
+        if [ "$percent" -ge 100 ]; then
+            # 100% 초과 시 압축됨 표시
+            output+="${bar} ${RED}${BOLD}압축됨${RESET} (${used_k}/${limit_k})"
+        else
+            # 남은 퍼센트 표시 (터미널 기본색)
+            output+="${bar} ${remaining_percent}%남음 (${used_k}/${limit_k})"
+        fi
     fi
 
     echo -e "$output"

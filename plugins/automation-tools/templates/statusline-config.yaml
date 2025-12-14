@@ -16,51 +16,54 @@ display:
 
 # 컨텍스트 윈도우 설정
 context:
+  # 표시 여부 (true: 표시, false: 숨김)
+  enabled: false
+
   # 기본 제한 (토큰)
   default_limit: 200000
 
   # 색상 임계값 (퍼센트)
   thresholds:
-    green: 60    # 0-60%: 초록
-    yellow: 85   # 60-85%: 노랑
-    red: 100     # 85%+: 빨강
+    green: 60 # 0-60%: 초록
+    yellow: 85 # 60-85%: 노랑
+    red: 100 # 85%+: 빨강
 
   # 100% 초과 시 표시 텍스트
   compressed_text:
-    ko: "압축됨"
-    en: "Compressed"
+    ko: '압축됨'
+    en: 'Compressed'
 
   # 남은 용량 표시 형식
   remaining_format:
-    ko: "{percent}%남음"
-    en: "{percent}% left"
+    ko: '{percent}%남음'
+    en: '{percent}% left'
 
 # 아이콘 설정
 icons:
-  model: "🤖"
-  folder: "📂"
-  separator: "│"
+  model: '🤖'
+  folder: '📂'
+  separator: '│'
 
 # 모델명 축약 규칙
 models:
-  opus-4-5: "Opus 4.5"
-  opus: "Opus"
-  sonnet-4: "Sonnet 4"
-  sonnet: "Sonnet"
-  haiku: "Haiku"
+  opus-4-5: 'Opus 4.5'
+  opus: 'Opus'
+  sonnet-4: 'Sonnet 4'
+  sonnet: 'Sonnet'
+  haiku: 'Haiku'
 
 # 색상 설정 (ANSI 코드)
 colors:
-  red: "0;31"
-  green: "0;32"
-  yellow: "0;33"
-  blue: "0;34"
-  cyan: "0;36"
-  dim: "2"
-  bold: "1"
+  red: '0;31'
+  green: '0;32'
+  yellow: '0;33'
+  blue: '0;34'
+  cyan: '0;36'
+  dim: '2'
+  bold: '1'
 
 # 출력 형식
-format: "{model} {separator} {path} {separator} {context_bar} {remaining} ({used}/{limit})"
+format: '{model} {separator} {path} {separator} {context_bar} {remaining} ({used}/{limit})'
 
 # 고급 설정
 advanced:
@@ -68,7 +71,7 @@ advanced:
   cache_ttl: 5
 
   # 에러 시 표시
-  error_message: "Status Error"
+  error_message: 'Status Error'
 
   # 디버그 모드
   debug: false

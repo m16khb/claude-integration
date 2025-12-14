@@ -24,6 +24,69 @@ $DIM = "$ESC[2m"
 $BOLD = "$ESC[1m"
 $RESET = "$ESC[0m"
 
+# 설정 파일 경로
+$ConfigFile = "$env:USERPROFILE\.claude\statusline.yaml"
+
+# YAML 설정 읽기 함수
+function Read-YamlConfig {
+    param(
+        [string]$Key,
+        [string]$Default
+    )
+
+    if (-not (Test-Path $ConfigFile)) {
+        return $Default
+    }
+
+    try {
+        $content = Get-Content $ConfigFile -Raw
+
+        # 중첩 키 분리 (예: context.enabled)
+        $parts = $Key -split '\.'
+        $parent = $parts[0]
+        $child = if ($parts.Length -gt 1) { $parts[1] } else { $null }
+
+        if (-not $child) {
+            # 단일 키
+            if ($content -match "^${parent}:\s*(.+)$") {
+                $value = $matches[1].Trim().Trim('"').Trim("'")
+                return if ($value) { $value } else { $Default }
+            }
+        } else {
+            # 중첩 키: parent 섹션 내에서 child 찾기
+            $lines = $content -split "`n"
+            $inSection = $false
+
+            foreach ($line in $lines) {
+                # 빈 줄 또는 주석 무시
+                if ([string]::IsNullOrWhiteSpace($line) -or $line.Trim().StartsWith('#')) {
+                    continue
+                }
+
+                # 새 섹션 시작 (들여쓰기 없는 키)
+                if ($line -match '^[a-zA-Z]') {
+                    if ($line -match "^${parent}:") {
+                        $inSection = $true
+                    } else {
+                        $inSection = $false
+                    }
+                    continue
+                }
+
+                # 섹션 내에서 child 키 검색
+                if ($inSection -and $line -match "^\s+${child}:\s*(.+)$") {
+                    $value = $matches[1].Trim().Trim('"').Trim("'")
+                    return if ($value) { $value } else { $Default }
+                }
+            }
+        }
+
+        return $Default
+    } catch {
+        return $Default
+    }
+}
+
 # 진행률 바 생성
 function Get-ProgressBar {
     param(
@@ -354,21 +417,24 @@ try {
         }
     }
 
-    # 4. 컨텍스트 윈도우 사용량
-    if ($output) {
-        $output += " ${DIM}|${RESET} "
-    }
+    # 4. 컨텍스트 윈도우 사용량 (설정에 따라 표시)
+    $contextEnabled = Read-YamlConfig -Key "context.enabled" -Default "true"
+    if ($contextEnabled -eq "true") {
+        if ($output) {
+            $output += " ${DIM}|${RESET} "
+        }
 
-    $bar = Get-ProgressBar -Percent $percent
-    $usedK = Format-Tokens $contextUsed
-    $limitK = Format-Tokens $contextLimit
+        $bar = Get-ProgressBar -Percent $percent
+        $usedK = Format-Tokens $contextUsed
+        $limitK = Format-Tokens $contextLimit
 
-    if ($percent -ge 100) {
-        # 100% 초과 시 압축됨 표시
-        $output += "${bar} ${RED}${BOLD}압축됨${RESET} (${usedK}/${limitK})"
-    } else {
-        # 남은 퍼센트 표시
-        $output += "${bar} ${remainingPercent}%남음 (${usedK}/${limitK})"
+        if ($percent -ge 100) {
+            # 100% 초과 시 압축됨 표시
+            $output += "${bar} ${RED}${BOLD}압축됨${RESET} (${usedK}/${limitK})"
+        } else {
+            # 남은 퍼센트 표시
+            $output += "${bar} ${remainingPercent}%남음 (${usedK}/${limitK})"
+        }
     }
 
     Write-Host $output
