@@ -21,20 +21,53 @@ RESET='\033[0m'
 # 설정 파일 경로
 CONFIG_FILE="${HOME}/.claude/statusline.yaml"
 
-# JSON 파싱 함수 (jq 없이도 동작)
-parse_json() {
+# JSON 파싱 함수 - jq 우선, 없으면 grep/sed fallback
+parse_json_field() {
     local json="$1"
-    local key="$2"
-    echo "$json" | grep -o "\"$key\"[[:space:]]*:[[:space:]]*[^,}]*" | sed 's/.*:[[:space:]]*//' | tr -d '"' | tr -d ' '
+    local field="$2"  # 예: "model.display_name" 또는 "cwd"
+
+    # jq가 있으면 사용 (가장 정확함)
+    if command -v jq &> /dev/null; then
+        echo "$json" | jq -r ".$field // empty" 2>/dev/null
+        return
+    fi
+
+    # jq 없을 때 fallback
+    # 단일 필드
+    if [[ "$field" != *.* ]]; then
+        echo "$json" | grep -o "\"$field\"[[:space:]]*:[[:space:]]*\"[^\"]*\"" | sed 's/.*:[[:space:]]*"//' | tr -d '"'
+        return
+    fi
+
+    # 중첩 필드 (예: model.display_name)
+    local parent="${field%%.*}"
+    local child="${field#*.}"
+    local section=$(echo "$json" | grep -o "\"$parent\"[[:space:]]*:[[:space:]]*{[^}]*}" | head -1)
+    echo "$section" | grep -o "\"$child\"[[:space:]]*:[[:space:]]*\"[^\"]*\"" | sed 's/.*:[[:space:]]*"//' | tr -d '"'
 }
 
-# 숫자 파싱 (중첩 객체용)
-parse_nested_json() {
+# 숫자 필드 파싱
+parse_json_number() {
     local json="$1"
-    local parent="$2"
-    local key="$3"
+    local field="$2"  # 예: "context_window.total_input_tokens"
+
+    # jq가 있으면 사용
+    if command -v jq &> /dev/null; then
+        echo "$json" | jq -r ".$field // 0" 2>/dev/null
+        return
+    fi
+
+    # jq 없을 때 fallback
+    if [[ "$field" != *.* ]]; then
+        echo "$json" | grep -o "\"$field\"[[:space:]]*:[[:space:]]*[0-9]*" | sed 's/.*:[[:space:]]*//'
+        return
+    fi
+
+    # 중첩 필드
+    local parent="${field%%.*}"
+    local child="${field#*.}"
     local section=$(echo "$json" | grep -o "\"$parent\"[[:space:]]*:[[:space:]]*{[^}]*}" | head -1)
-    echo "$section" | grep -o "\"$key\"[[:space:]]*:[[:space:]]*[0-9]*" | sed 's/.*:[[:space:]]*//'
+    echo "$section" | grep -o "\"$child\"[[:space:]]*:[[:space:]]*[0-9]*" | sed 's/.*:[[:space:]]*//'
 }
 
 # 진행률 바 생성
@@ -227,16 +260,21 @@ main() {
     local input
     read -r input
 
-    # JSON 파싱
-    local model=$(parse_json "$input" "model")
-    local cwd=$(parse_json "$input" "cwd")
+    # JSON 파싱 (새 함수 사용)
+    # model은 중첩 객체이므로 model.display_name 또는 model.id 사용
+    local model_display=$(parse_json_field "$input" "model.display_name")
+    local model_id=$(parse_json_field "$input" "model.id")
+    local model="${model_display:-$model_id}"
 
-    # 컨텍스트 윈도우 정보 파싱 (공식 Claude Code 스키마)
+    # cwd는 단일 필드
+    local cwd=$(parse_json_field "$input" "cwd")
+
+    # 컨텍스트 윈도우 정보 파싱
     # context_window.total_input_tokens + context_window.total_output_tokens = 사용량
     # context_window.context_window_size = 제한
-    local input_tokens=$(parse_nested_json "$input" "context_window" "total_input_tokens")
-    local output_tokens=$(parse_nested_json "$input" "context_window" "total_output_tokens")
-    local context_limit=$(parse_nested_json "$input" "context_window" "context_window_size")
+    local input_tokens=$(parse_json_number "$input" "context_window.total_input_tokens")
+    local output_tokens=$(parse_json_number "$input" "context_window.total_output_tokens")
+    local context_limit=$(parse_json_number "$input" "context_window.context_window_size")
 
     # 사용량 계산 (input + output)
     local context_used=0
@@ -245,17 +283,6 @@ main() {
     fi
     if [ -n "$output_tokens" ] && [ "$output_tokens" -gt 0 ] 2>/dev/null; then
         context_used=$((context_used + output_tokens))
-    fi
-
-    # 대체 키 이름 시도 (하위 호환성)
-    if [ "$context_used" -eq 0 ]; then
-        local legacy_used=$(parse_nested_json "$input" "contextWindow" "used")
-        if [ -n "$legacy_used" ]; then
-            context_used=$legacy_used
-        fi
-    fi
-    if [ -z "$context_limit" ]; then
-        context_limit=$(parse_nested_json "$input" "contextWindow" "limit")
     fi
 
     # 기본값 설정 (200K 토큰)

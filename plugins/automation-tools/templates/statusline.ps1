@@ -5,6 +5,12 @@
 # 사용량: 초록(0-60%) → 노랑(60-85%) → 빨강(85%+)
 # 100% 초과 시 "압축됨" 표시
 
+# 파이프라인 입력 지원
+param(
+    [Parameter(ValueFromPipeline=$true)]
+    [string]$InputJson
+)
+
 # ANSI 색상 코드
 $ESC = [char]27
 $RED = "$ESC[0;31m"
@@ -263,16 +269,31 @@ function Get-GitStatusInfo {
 
 # 메인 로직
 try {
-    # stdin에서 JSON 읽기
-    $input = [Console]::In.ReadLine()
+    # 파이프라인 입력 또는 stdin에서 JSON 읽기
+    $jsonInput = $InputJson
+    if (-not $jsonInput) {
+        $jsonInput = [Console]::In.ReadLine()
+    }
 
     # JSON 파싱
-    $json = $input | ConvertFrom-Json
+    $json = $jsonInput | ConvertFrom-Json
 
-    $model = $json.model
+    # model은 중첩 객체 - display_name 또는 id 사용
+    $model = $null
+    if ($json.model) {
+        if ($json.model.display_name) {
+            $model = $json.model.display_name
+        } elseif ($json.model.id) {
+            $model = $json.model.id
+        } elseif ($json.model -is [string]) {
+            $model = $json.model
+        }
+    }
+
+    # cwd 필드
     $cwd = $json.cwd
 
-    # 컨텍스트 윈도우 정보 (공식 Claude Code 스키마)
+    # 컨텍스트 윈도우 정보 (실제 Claude Code JSON 스키마)
     # context_window.total_input_tokens + context_window.total_output_tokens = 사용량
     # context_window.context_window_size = 제한
     $contextUsed = 0
@@ -285,11 +306,6 @@ try {
 
         if ($inputTokens) { $contextUsed += $inputTokens }
         if ($outputTokens) { $contextUsed += $outputTokens }
-    }
-    # 하위 호환성 (레거시 필드명)
-    elseif ($json.contextWindow) {
-        $contextUsed = $json.contextWindow.used
-        $contextLimit = $json.contextWindow.limit
     }
 
     # 기본값 보장

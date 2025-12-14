@@ -12,7 +12,7 @@ model: claude-opus-4-5-20251101
 Configure Claude Code status line with YAML-based Single Source of Truth architecture.
 Platform-specific scripts (Bash for Unix, PowerShell for Windows) read shared YAML config.
 
-**Args**: $ARGUMENTS (옵션: `--user`, `--project`, `--reset`)
+**Args**: $ARGUMENTS (옵션: `--user`, `--project`, `--reset`, `--update`, `--disable`)
 
 ---
 
@@ -31,16 +31,26 @@ DETECTION LOGIC:
 
 ---
 
-## PHASE 1.5: Handle --reset Flag
+## PHASE 1.5: Handle --reset or --disable Flag
 
 ```
+IF $ARGUMENTS contains "--disable":
+  ⚠️ statusLine 설정만 제거 (스크립트 파일은 유지)
+  1. Remove statusLine key from ~/.claude/settings.json (if exists)
+  2. Remove statusLine key from ./.claude/settings.local.json (if exists)
+  3. REPORT "Status line이 비활성화되었습니다. 스크립트 파일은 유지됩니다."
+  4. EXIT
+
 IF $ARGUMENTS contains "--reset":
-  1. Remove statusLine from ~/.claude/settings.json (if exists)
-  2. Remove statusLine from ./.claude/settings.local.json (if exists)
+  ⚠️ 모든 설정과 파일 완전 삭제
+  1. Remove statusLine key from ~/.claude/settings.json (if exists)
+  2. Remove statusLine key from ./.claude/settings.local.json (if exists)
   3. Delete ~/.claude/statusline.sh (or .ps1)
   4. Delete ~/.claude/statusline.yaml
-  5. REPORT "Status line 설정이 초기화되었습니다."
-  6. EXIT
+  5. Delete ~/.claude/statusline-debug.sh (if exists)
+  6. Delete ~/.claude/statusline-input.log (if exists)
+  7. REPORT "Status line 설정이 완전히 초기화되었습니다."
+  8. EXIT
 ```
 
 ---
@@ -85,7 +95,30 @@ EXPECTED PATHS:
 CHECK EXISTING:
 ├─ ~/.claude/settings.json → HAS_USER_STATUSLINE = statusLine exists?
 ├─ ./.claude/settings.local.json → HAS_PROJECT_STATUSLINE = statusLine exists?
-└─ ~/.claude/statusline.sh → SCRIPT_EXISTS?
+├─ Unix: ~/.claude/statusline.sh → SCRIPT_EXISTS?
+└─ Windows: ~/.claude/statusline.ps1 → SCRIPT_EXISTS?
+
+⚠️ CRITICAL: 기존 스크립트 버전 비교
+IF SCRIPT_EXISTS:
+  1. READ template file (from plugin)
+  2. READ installed file (from ~/.claude/)
+  3. COMPARE contents:
+     ├─ IF different → NEEDS_UPDATE = true
+     └─ IF same → NEEDS_UPDATE = false
+  4. IF NEEDS_UPDATE:
+     SHOW "기존 설치된 스크립트가 템플릿과 다릅니다."
+     AskUserQuestion:
+       question: "설치된 스크립트를 최신 템플릿으로 업데이트하시겠습니까?"
+       header: "업데이트"
+       options:
+         - label: "업데이트 (Recommended)"
+           description: "최신 기능(Context Window 표시 등)을 사용합니다"
+         - label: "현재 버전 유지"
+           description: "기존 설치된 스크립트를 그대로 사용합니다"
+         - label: "취소"
+           description: "설치를 취소합니다"
+     IF "취소" selected → EXIT
+     IF "현재 버전 유지" selected → SKIP_SCRIPT_COPY = true
 
 IF HAS_USER_STATUSLINE OR HAS_PROJECT_STATUSLINE:
   SHOW current configuration summary
@@ -93,6 +126,7 @@ IF HAS_USER_STATUSLINE OR HAS_PROJECT_STATUSLINE:
 DETERMINE SCOPE from $ARGUMENTS or ASK:
 ├─ IF "--user" in $ARGUMENTS → SCOPE = "user"
 ├─ IF "--project" in $ARGUMENTS → SCOPE = "project"
+├─ IF "--update" in $ARGUMENTS → FORCE_UPDATE = true (기존 스크립트 무조건 덮어쓰기)
 └─ ELSE → AskUserQuestion
 
 AskUserQuestion:
@@ -115,28 +149,32 @@ IF "취소" selected → EXIT with message "설치가 취소되었습니다."
 
 스크립트 파일은 항상 `~/.claude/`에 저장 (scope와 무관)
 
+⚠️ IF SKIP_SCRIPT_COPY == true → SKIP script copy, only copy YAML if missing
+
 ### Unix (macOS/Linux/WSL):
 ```
-FILES:
-├─ statusline.sh → ~/.claude/statusline.sh
-└─ statusline-config.yaml → ~/.claude/statusline.yaml
+IF NOT SKIP_SCRIPT_COPY:
+  FILES:
+  ├─ statusline.sh → ~/.claude/statusline.sh
+  └─ statusline-config.yaml → ~/.claude/statusline.yaml
 
-COMMANDS:
-  mkdir -p ~/.claude
-  cp {plugin_dir}/templates/statusline.sh ~/.claude/statusline.sh
-  chmod +x ~/.claude/statusline.sh
-  cp {plugin_dir}/templates/statusline-config.yaml ~/.claude/statusline.yaml
+  COMMANDS:
+    mkdir -p ~/.claude
+    cp {plugin_dir}/templates/statusline.sh ~/.claude/statusline.sh
+    chmod +x ~/.claude/statusline.sh
+    cp {plugin_dir}/templates/statusline-config.yaml ~/.claude/statusline.yaml
 
 ⚠️ Copy templates AS-IS without modifications!
 ```
 
 ### Windows:
 ```
-FILES:
-├─ statusline.ps1 → ~/.claude/statusline.ps1
-└─ statusline-config.yaml → ~/.claude/statusline.yaml
+IF NOT SKIP_SCRIPT_COPY:
+  FILES:
+  ├─ statusline.ps1 → ~/.claude/statusline.ps1
+  └─ statusline-config.yaml → ~/.claude/statusline.yaml
 
-NOTE: Use Write tool (not cp). No chmod needed for PowerShell.
+  NOTE: Use Write tool (not cp). No chmod needed for PowerShell.
 ```
 
 ---
@@ -178,26 +216,86 @@ PRESERVE existing settings, only update statusLine key.
 ## PHASE 5: Verify Installation
 
 ```
-TEST COMMAND:
+⚠️ CRITICAL: 테스트 방법은 플랫폼별로 다름
 
-Unix:
-  echo '{"model":"claude-opus-4-5-20251101","cwd":"/test","context_window":{"total_input_tokens":50000,"total_output_tokens":0,"context_window_size":200000}}' | ~/.claude/statusline.sh
+TEST JSON (실제 Claude Code 스키마):
+{
+  "session_id": "test-session",
+  "cwd": "/test",
+  "model": {
+    "id": "claude-opus-4-5-20251101",
+    "display_name": "Opus 4.5"
+  },
+  "workspace": {
+    "current_dir": "/test",
+    "project_dir": "/test"
+  },
+  "version": "2.0.69",
+  "context_window": {
+    "total_input_tokens": 50000,
+    "total_output_tokens": 10000,
+    "context_window_size": 200000
+  }
+}
 
-Windows:
-  '{"model":"claude-opus-4-5-20251101","cwd":"C:\\test","context_window":{"total_input_tokens":50000,"total_output_tokens":0,"context_window_size":200000}}' | powershell.exe -NoProfile -ExecutionPolicy Bypass -File $HOME\.claude\statusline.ps1
+⚠️ NOTE: context_window 값은 /context 명령어와 다를 수 있음
+  - context_window: API 호출 토큰 (total_input + total_output)
+  - /context: 전체 컨텍스트 (시스템+도구+MCP+메모리+메시지)
+
+---
+
+### Unix (macOS/Linux/WSL) 테스트:
+
+방법 1: 직접 파이프 (권장)
+  echo '{"cwd":"/test","model":{"id":"claude-opus-4-5-20251101","display_name":"Opus 4.5"},"context_window":{"total_input_tokens":50000,"total_output_tokens":10000,"context_window_size":200000}}' | ~/.claude/statusline.sh
+
+방법 2: 임시 파일 사용 (파이프 문제 시)
+  1. WRITE test JSON to /tmp/statusline-test.json
+  2. cat /tmp/statusline-test.json | ~/.claude/statusline.sh
+  3. rm /tmp/statusline-test.json
+
+---
+
+### Windows 테스트 (임시 스크립트 방식 필수):
+
+⚠️ Bash에서 PowerShell 직접 호출 시 이스케이프 충돌 발생
+   → 반드시 임시 .ps1 테스트 스크립트 생성 후 실행
+
+STEP 1: 임시 테스트 스크립트 생성
+  Write to: ~/.claude/test-statusline.ps1
+  Content:
+  ```powershell
+  # Temporary test script
+  $json = '{"cwd":"C:\\test","model":{"id":"claude-opus-4-5-20251101","display_name":"Opus 4.5"},"context_window":{"total_input_tokens":50000,"total_output_tokens":10000,"context_window_size":200000}}'
+  $json | & "$env:USERPROFILE\.claude\statusline.ps1"
+  ```
+
+STEP 2: 테스트 실행
+  powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$HOME/.claude/test-statusline.ps1"
+
+  또는 Git Bash에서:
+  powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$USERPROFILE\.claude\test-statusline.ps1"
+
+STEP 3: 임시 파일 정리
+  Remove-Item ~/.claude/test-statusline.ps1 (또는 rm 명령)
+
+---
 
 EXPECTED OUTPUT:
-🤖 Opus 4.5 │ 📂 /test │ 🌿 main │ [██░░░░░░░░] 75%남음 (50K/200K)
+🤖 Opus 4.5 │ 📂 /test │ [███░░░░░░░] 70%남음 (60K/200K)
+
+(Git 브랜치는 테스트 경로가 Git 저장소가 아니면 표시되지 않음)
 
 FEATURES TO VERIFY:
 ├─ 모델명 표시 (색상: cyan)
 ├─ 경로 표시 (색상: blue, 동적 길이)
-├─ Git 브랜치 (색상: green)
-├─ Git 상태 (색상: yellow)
-├─ 진행률 바 (색상: 사용량에 따라 변경)
+├─ Git 브랜치 (색상: green) - 해당 경로가 Git 저장소인 경우만
+├─ Git 상태 (색상: yellow) - 변경사항이 있는 경우만
+├─ 진행률 바 (색상: 사용량에 따라 green/yellow/red)
 └─ 남은 퍼센트 (터미널 기본색)
 
 IF output invalid → ERROR "test_failed"
+IF PowerShell execution policy error → "Set-ExecutionPolicy RemoteSigned -Scope CurrentUser" 안내
 ```
 
 ### 스크립트 기능
@@ -283,33 +381,44 @@ AskUserQuestion:
 
 ```
 1. DETECT platform (Windows vs Unix)
-2. IF "--reset" in $ARGUMENTS → EXECUTE PHASE 1.5 and EXIT
-3. DETECT HOME_DIR:
+2. IF "--disable" in $ARGUMENTS → REMOVE statusLine from settings, REPORT, EXIT
+3. IF "--reset" in $ARGUMENTS → EXECUTE PHASE 1.5 (full cleanup) and EXIT
+4. DETECT HOME_DIR:
    ├─ Unix: echo $HOME (또는 ~)
    └─ Windows: echo $env:USERPROFILE
-4. GLOB find plugin templates with absolute path:
+5. GLOB find plugin templates with absolute path:
    ├─ Glob(pattern: "**/statusline.*", path: "$HOME/.claude/plugins")
    └─ IF empty → Glob(pattern: "**/templates/statusline.*", path: ".")
-5. CHECK existing installation
-6. DETERMINE SCOPE:
+6. CHECK existing installation (PHASE 2.5):
+   a. CHECK script file exists (statusline.sh or statusline.ps1)
+   b. IF exists:
+      ├─ READ template content
+      ├─ READ installed content
+      ├─ COMPARE contents
+      └─ IF different → ASK "업데이트하시겠습니까?" (AskUserQuestion)
+   c. IF "--update" in $ARGUMENTS → FORCE_UPDATE (덮어쓰기)
+7. DETERMINE SCOPE:
    ├─ IF "--user" in $ARGUMENTS → SCOPE = "user"
    ├─ IF "--project" in $ARGUMENTS → SCOPE = "project"
    └─ ELSE → AskUserQuestion (PHASE 2.5) ← REQUIRED
-7. IF "취소" selected → EXIT with message
-8. READ template files
-9. IF Windows:
-   ├─ WRITE statusline.ps1 → ~/.claude/
-   └─ WRITE statusline.yaml → ~/.claude/
-10. IF Unix:
-    ├─ WRITE statusline.sh → ~/.claude/
-    ├─ BASH chmod +x ~/.claude/statusline.sh
-    └─ WRITE statusline.yaml → ~/.claude/
+8. IF "취소" selected → EXIT with message
+9. READ template files
+10. IF NOT SKIP_SCRIPT_COPY:
+    a. IF Windows:
+       ├─ WRITE statusline.ps1 → ~/.claude/
+       └─ WRITE statusline.yaml → ~/.claude/
+    b. IF Unix:
+       ├─ WRITE statusline.sh → ~/.claude/
+       ├─ BASH chmod +x ~/.claude/statusline.sh
+       └─ WRITE statusline.yaml → ~/.claude/
 11. DETERMINE TARGET:
     ├─ IF SCOPE == "user" → TARGET = ~/.claude/settings.json
     └─ IF SCOPE == "project" → TARGET = ./.claude/settings.local.json
 12. READ TARGET (or create empty {})
 13. WRITE merged TARGET with statusLine config
-14. TEST script (platform-specific)
+14. TEST script (platform-specific):
+    ├─ Unix: echo JSON | ~/.claude/statusline.sh
+    └─ Windows: CREATE test-statusline.ps1 → EXECUTE → DELETE
 15. REPORT in Korean (with SCOPE info)
 16. SHOW follow-up TUI ← REQUIRED
 ```
