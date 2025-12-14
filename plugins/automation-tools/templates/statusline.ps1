@@ -11,6 +11,10 @@ param(
     [string]$InputJson
 )
 
+# UTF-8 출력 인코딩 설정 (이모지 표시용)
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
+
 # ANSI 색상 코드
 $ESC = [char]27
 $RED = "$ESC[0;31m"
@@ -50,7 +54,7 @@ function Read-YamlConfig {
             # 단일 키
             if ($content -match "^${parent}:\s*(.+)$") {
                 $value = $matches[1].Trim().Trim('"').Trim("'")
-                return if ($value) { $value } else { $Default }
+                if ($value) { return $value } else { return $Default }
             }
         } else {
             # 중첩 키: parent 섹션 내에서 child 찾기
@@ -76,7 +80,7 @@ function Read-YamlConfig {
                 # 섹션 내에서 child 키 검색
                 if ($inSection -and $line -match "^\s+${child}:\s*(.+)$") {
                     $value = $matches[1].Trim().Trim('"').Trim("'")
-                    return if ($value) { $value } else { $Default }
+                    if ($value) { return $value } else { return $Default }
                 }
             }
         }
