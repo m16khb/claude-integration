@@ -1,7 +1,7 @@
 ---
 name: automation-tools:setup-statusline
 description: 'YAML 설정 기반 status line 환경 구성'
-allowed-tools: Read, Write, Bash(cp *), Bash(chmod *), Bash(mkdir *), Bash(uname *)
+allowed-tools: Read, Write, Bash(cp *), Bash(chmod *), Bash(mkdir *), Bash(uname *), Bash(ls *), Bash(test *), AskUserQuestion
 model: claude-opus-4-5-20251101
 ---
 
@@ -12,7 +12,7 @@ model: claude-opus-4-5-20251101
 Configure Claude Code status line with YAML-based Single Source of Truth architecture.
 Platform-specific scripts (Bash for Unix, PowerShell for Windows) read shared YAML config.
 
-**Args**: $ARGUMENTS
+**Args**: $ARGUMENTS (옵션: `--user`, `--project`, `--reset`)
 
 ---
 
@@ -31,6 +31,20 @@ DETECTION LOGIC:
 
 ---
 
+## PHASE 1.5: Handle --reset Flag
+
+```
+IF $ARGUMENTS contains "--reset":
+  1. Remove statusLine from ~/.claude/settings.json (if exists)
+  2. Remove statusLine from ./.claude/settings.local.json (if exists)
+  3. Delete ~/.claude/statusline.sh (or .ps1)
+  4. Delete ~/.claude/statusline.yaml
+  5. REPORT "Status line 설정이 초기화되었습니다."
+  6. EXIT
+```
+
+---
+
 ## PHASE 2: Find Plugin Templates
 
 ```
@@ -41,12 +55,47 @@ SEARCH ORDER:
 └─ ./templates/ (local plugin directory)
 
 ACTION: Glob ~/.claude/plugins/**/templates/statusline.sh
-IF empty → ERROR "plugin_not_found"
+IF empty → Check ./plugins/automation-tools/templates/
+IF still empty → ERROR "plugin_not_found"
 ```
 
 ---
 
-## PHASE 3: Copy Templates (Platform-Specific)
+## PHASE 2.5: Check Existing Installation & Confirm Scope
+
+```
+CHECK EXISTING:
+├─ ~/.claude/settings.json → HAS_USER_STATUSLINE = statusLine exists?
+├─ ./.claude/settings.local.json → HAS_PROJECT_STATUSLINE = statusLine exists?
+└─ ~/.claude/statusline.sh → SCRIPT_EXISTS?
+
+IF HAS_USER_STATUSLINE OR HAS_PROJECT_STATUSLINE:
+  SHOW current configuration summary
+
+DETERMINE SCOPE from $ARGUMENTS or ASK:
+├─ IF "--user" in $ARGUMENTS → SCOPE = "user"
+├─ IF "--project" in $ARGUMENTS → SCOPE = "project"
+└─ ELSE → AskUserQuestion
+
+AskUserQuestion:
+  question: "Status line을 어느 범위에 적용하시겠습니까?"
+  header: "적용 범위"
+  options:
+    - label: "사용자 레벨 (Recommended)"
+      description: "~/.claude/settings.json - 모든 프로젝트에 적용"
+    - label: "프로젝트 레벨"
+      description: "./.claude/settings.local.json - 현재 프로젝트에만 적용"
+    - label: "취소"
+      description: "설치를 취소합니다"
+
+IF "취소" selected → EXIT with message "설치가 취소되었습니다."
+```
+
+---
+
+## PHASE 3: Copy Templates (Always to ~/.claude/)
+
+스크립트 파일은 항상 `~/.claude/`에 저장 (scope와 무관)
 
 ### Unix (macOS/Linux/WSL):
 ```
@@ -74,10 +123,14 @@ NOTE: Use Write tool (not cp). No chmod needed for PowerShell.
 
 ---
 
-## PHASE 4: Update settings.json
+## PHASE 4: Update settings.json (Scope-Dependent)
 
 ```
-READ ~/.claude/settings.json (create if missing)
+DETERMINE TARGET FILE:
+├─ IF SCOPE == "user" → TARGET = ~/.claude/settings.json
+└─ IF SCOPE == "project" → TARGET = ./.claude/settings.local.json
+
+READ TARGET (create if missing with {})
 
 MERGE statusLine config:
 
@@ -98,6 +151,8 @@ Windows:
 }
 
 PRESERVE existing settings, only update statusLine key.
+
+⚠️ Project-level settings override user-level settings
 ```
 
 ---
@@ -119,19 +174,31 @@ IF output invalid → ERROR "test_failed"
 
 ---
 
-## PHASE 6: Report (Korean)
+## PHASE 6: Report (Korean, Scope-Aware)
 
 ```markdown
 ## ✅ Status Line 설정 완료
+
+### 적용 범위: {SCOPE}
 
 | 항목 | 경로 |
 |------|------|
 | 스크립트 | `~/.claude/statusline.{sh|ps1}` |
 | 설정 파일 | `~/.claude/statusline.yaml` |
-| Claude 설정 | `~/.claude/settings.json` |
+| Claude 설정 | `{TARGET}` |
 
 ### 적용 방법
 Claude Code를 **재시작**하면 활성화됩니다.
+
+### 범위별 설명
+
+**사용자 레벨** (`~/.claude/settings.json`):
+- 모든 프로젝트에 적용
+- 프로젝트 레벨 설정이 없으면 기본 적용
+
+**프로젝트 레벨** (`./.claude/settings.local.json`):
+- 현재 프로젝트에만 적용
+- 사용자 레벨 설정보다 우선
 
 ### 커스터마이징
 `~/.claude/statusline.yaml` 수정 → 즉시 적용 (재시작 불필요)
@@ -179,18 +246,28 @@ AskUserQuestion:
 
 ```
 1. DETECT platform (Windows vs Unix)
-2. GLOB find plugin templates
-3. READ template files
-4. IF Windows:
+2. IF "--reset" in $ARGUMENTS → EXECUTE PHASE 1.5 and EXIT
+3. GLOB find plugin templates
+4. CHECK existing installation
+5. DETERMINE SCOPE:
+   ├─ IF "--user" in $ARGUMENTS → SCOPE = "user"
+   ├─ IF "--project" in $ARGUMENTS → SCOPE = "project"
+   └─ ELSE → AskUserQuestion (PHASE 2.5) ← REQUIRED
+6. IF "취소" selected → EXIT with message
+7. READ template files
+8. IF Windows:
    ├─ WRITE statusline.ps1 → ~/.claude/
    └─ WRITE statusline.yaml → ~/.claude/
-5. IF Unix:
+9. IF Unix:
    ├─ WRITE statusline.sh → ~/.claude/
    ├─ BASH chmod +x ~/.claude/statusline.sh
    └─ WRITE statusline.yaml → ~/.claude/
-6. READ ~/.claude/settings.json (or create empty {})
-7. WRITE merged settings.json with statusLine config
-8. TEST script (platform-specific)
-9. REPORT in Korean
-10. SHOW follow-up TUI ← REQUIRED
+10. DETERMINE TARGET:
+    ├─ IF SCOPE == "user" → TARGET = ~/.claude/settings.json
+    └─ IF SCOPE == "project" → TARGET = ./.claude/settings.local.json
+11. READ TARGET (or create empty {})
+12. WRITE merged TARGET with statusLine config
+13. TEST script (platform-specific)
+14. REPORT in Korean (with SCOPE info)
+15. SHOW follow-up TUI ← REQUIRED
 ```

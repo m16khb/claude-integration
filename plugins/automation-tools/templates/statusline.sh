@@ -195,16 +195,31 @@ main() {
     local model=$(parse_json "$input" "model")
     local cwd=$(parse_json "$input" "cwd")
 
-    # 컨텍스트 윈도우 정보 파싱
-    local context_used=$(parse_nested_json "$input" "contextWindow" "used")
-    local context_limit=$(parse_nested_json "$input" "contextWindow" "limit")
+    # 컨텍스트 윈도우 정보 파싱 (공식 Claude Code 스키마)
+    # context_window.total_input_tokens + context_window.total_output_tokens = 사용량
+    # context_window.context_window_size = 제한
+    local input_tokens=$(parse_nested_json "$input" "context_window" "total_input_tokens")
+    local output_tokens=$(parse_nested_json "$input" "context_window" "total_output_tokens")
+    local context_limit=$(parse_nested_json "$input" "context_window" "context_window_size")
 
-    # 대체 키 이름 시도
-    if [ -z "$context_used" ]; then
-        context_used=$(parse_json "$input" "contextUsed")
+    # 사용량 계산 (input + output)
+    local context_used=0
+    if [ -n "$input_tokens" ] && [ "$input_tokens" -gt 0 ] 2>/dev/null; then
+        context_used=$((input_tokens))
+    fi
+    if [ -n "$output_tokens" ] && [ "$output_tokens" -gt 0 ] 2>/dev/null; then
+        context_used=$((context_used + output_tokens))
+    fi
+
+    # 대체 키 이름 시도 (하위 호환성)
+    if [ "$context_used" -eq 0 ]; then
+        local legacy_used=$(parse_nested_json "$input" "contextWindow" "used")
+        if [ -n "$legacy_used" ]; then
+            context_used=$legacy_used
+        fi
     fi
     if [ -z "$context_limit" ]; then
-        context_limit=$(parse_json "$input" "contextLimit")
+        context_limit=$(parse_nested_json "$input" "contextWindow" "limit")
     fi
 
     # 기본값 설정 (200K 토큰)

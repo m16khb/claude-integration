@@ -33,6 +33,50 @@ Git 상태 심볼:
 
 ---
 
+## Claude Code 공식 JSON 스키마
+
+Claude Code는 statusline 스크립트에 다음 JSON을 stdin으로 전달합니다:
+
+```json
+{
+  "hook_event_name": "Status",
+  "session_id": "abc123...",
+  "cwd": "/current/working/directory",
+  "model": {
+    "id": "claude-opus-4-5-20251101",
+    "display_name": "Opus"
+  },
+  "workspace": {
+    "current_dir": "/current/working/directory",
+    "project_dir": "/original/project/directory"
+  },
+  "version": "1.0.80",
+  "cost": {
+    "total_cost_usd": 0.01234,
+    "total_duration_ms": 45000
+  },
+  "context_window": {
+    "total_input_tokens": 97000,
+    "total_output_tokens": 3000,
+    "context_window_size": 200000
+  }
+}
+```
+
+### 컨텍스트 윈도우 필드 매핑
+
+| 공식 필드 | 설명 | 사용법 |
+|----------|------|--------|
+| `context_window.total_input_tokens` | 입력 토큰 수 | 사용량 계산에 포함 |
+| `context_window.total_output_tokens` | 출력 토큰 수 | 사용량 계산에 포함 |
+| `context_window.context_window_size` | 최대 컨텍스트 크기 | 제한값 |
+
+**사용량 계산**: `total_input_tokens + total_output_tokens`
+
+⚠️ **주의**: 필드명은 `context_window` (스네이크 케이스)입니다. `contextWindow` (카멜 케이스)가 아닙니다.
+
+---
+
 ## 컨텍스트 윈도우 사용량 표시
 
 ### 핵심 기능
@@ -46,12 +90,27 @@ Git 상태 심볼:
 ### 빠른 설치
 
 ```bash
-# 대화형 설정 (추천)
+# 대화형 설정 (추천) - 적용 범위 선택 가능
 /automation-tools:setup-statusline
 
-# 또는 직접 Claude에게 요청
-"Claude Code 터미널 상태 표시줄에 컨텍스트 윈도우 사용량을 표시하고 싶어."
+# 사용자 레벨에 직접 설치
+/automation-tools:setup-statusline --user
+
+# 프로젝트 레벨에만 설치
+/automation-tools:setup-statusline --project
+
+# 설정 초기화 (제거)
+/automation-tools:setup-statusline --reset
 ```
+
+### 적용 범위
+
+| 범위 | 설정 파일 | 설명 |
+|------|----------|------|
+| 사용자 레벨 | `~/.claude/settings.json` | 모든 프로젝트에 적용 |
+| 프로젝트 레벨 | `./.claude/settings.local.json` | 현재 프로젝트에만 적용 |
+
+프로젝트 레벨 설정이 사용자 레벨보다 우선합니다.
 
 ### 출력 예시
 
