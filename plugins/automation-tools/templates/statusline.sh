@@ -13,6 +13,7 @@ YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 MAGENTA='\033[0;35m'
 CYAN='\033[0;36m'
+WHITE='\033[0;37m'
 DIM='\033[2m'
 BOLD='\033[1m'
 RESET='\033[0m'
@@ -97,10 +98,27 @@ shorten_model() {
     esac
 }
 
-# 경로 축약
+# 터미널 너비에 따른 동적 경로 길이 계산
+calculate_path_max_length() {
+    local term_width=${COLUMNS:-$(tput cols 2>/dev/null || echo 80)}
+
+    # 다른 컴포넌트들의 대략적인 길이
+    # 🤖 Opus 4.5 (12) + │ (3) + 📂 (3) + │ (3) + 🌿 branch (15) + │ (3) + git_status (10) + │ (3) + progress_bar (30)
+    local fixed_length=82
+
+    # 남은 공간을 경로에 할당 (최소 20, 최대 무제한)
+    local available=$((term_width - fixed_length))
+    if [ "$available" -lt 20 ]; then
+        available=20
+    fi
+
+    echo "$available"
+}
+
+# 경로 축약 (동적 길이)
 shorten_path() {
     local path="$1"
-    local max_length=${2:-30}
+    local max_length=${2:-$(calculate_path_max_length)}
 
     # ~ 로 홈 디렉토리 축약
     path="${path/#$HOME/~}"
@@ -283,7 +301,7 @@ main() {
         # 100% 초과 시 압축됨 표시
         output+="${bar} ${RED}${BOLD}압축됨${RESET} (${used_k}/${limit_k})"
     else
-        # 남은 퍼센트 표시
+        # 남은 퍼센트 표시 (터미널 기본색)
         output+="${bar} ${remaining_percent}%남음 (${used_k}/${limit_k})"
     fi
 

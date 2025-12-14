@@ -13,6 +13,7 @@ $YELLOW = "$ESC[0;33m"
 $BLUE = "$ESC[0;34m"
 $MAGENTA = "$ESC[0;35m"
 $CYAN = "$ESC[0;36m"
+$WHITE = "$ESC[0;37m"
 $DIM = "$ESC[2m"
 $BOLD = "$ESC[1m"
 $RESET = "$ESC[0m"
@@ -76,12 +77,41 @@ function Get-ShortModel {
     }
 }
 
-# 경로 축약
+# 터미널 너비에 따른 동적 경로 길이 계산
+function Get-PathMaxLength {
+    try {
+        $termWidth = $Host.UI.RawUI.WindowSize.Width
+        if (-not $termWidth -or $termWidth -eq 0) {
+            $termWidth = 80
+        }
+    } catch {
+        $termWidth = 80
+    }
+
+    # 다른 컴포넌트들의 대략적인 길이
+    # 🤖 Opus 4.5 (12) + | (3) + 📂 (3) + | (3) + 🌿 branch (15) + | (3) + git_status (10) + | (3) + progress_bar (30)
+    $fixedLength = 82
+
+    # 남은 공간을 경로에 할당 (최소 20)
+    $available = $termWidth - $fixedLength
+    if ($available -lt 20) {
+        $available = 20
+    }
+
+    return $available
+}
+
+# 경로 축약 (동적 길이)
 function Get-ShortPath {
     param(
         [string]$Path,
-        [int]$MaxLength = 30
+        [int]$MaxLength = 0
     )
+
+    # 동적 길이 계산
+    if ($MaxLength -eq 0) {
+        $MaxLength = Get-PathMaxLength
+    }
 
     # 홈 디렉토리를 ~ 로 축약
     $homePath = $env:USERPROFILE
@@ -185,20 +215,28 @@ try {
     $model = $json.model
     $cwd = $json.cwd
 
-    # 컨텍스트 윈도우 정보
+    # 컨텍스트 윈도우 정보 (공식 Claude Code 스키마)
+    # context_window.total_input_tokens + context_window.total_output_tokens = 사용량
+    # context_window.context_window_size = 제한
     $contextUsed = 0
     $contextLimit = 200000
 
-    if ($json.contextWindow) {
+    if ($json.context_window) {
+        $inputTokens = $json.context_window.total_input_tokens
+        $outputTokens = $json.context_window.total_output_tokens
+        $contextLimit = $json.context_window.context_window_size
+
+        if ($inputTokens) { $contextUsed += $inputTokens }
+        if ($outputTokens) { $contextUsed += $outputTokens }
+    }
+    # 하위 호환성 (레거시 필드명)
+    elseif ($json.contextWindow) {
         $contextUsed = $json.contextWindow.used
         $contextLimit = $json.contextWindow.limit
-    } elseif ($json.contextUsed) {
-        $contextUsed = $json.contextUsed
-        $contextLimit = $json.contextLimit
     }
 
     # 기본값 보장
-    if (-not $contextLimit) { $contextLimit = 200000 }
+    if (-not $contextLimit -or $contextLimit -eq 0) { $contextLimit = 200000 }
     if (-not $contextUsed) { $contextUsed = 0 }
 
     # 퍼센트 계산

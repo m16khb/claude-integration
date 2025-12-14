@@ -163,14 +163,33 @@ PRESERVE existing settings, only update statusLine key.
 TEST COMMAND:
 
 Unix:
-  echo '{"model":"claude-opus-4-5-20251101","cwd":"/test"}' | ~/.claude/statusline.sh
+  echo '{"model":"claude-opus-4-5-20251101","cwd":"/test","context_window":{"total_input_tokens":50000,"total_output_tokens":0,"context_window_size":200000}}' | ~/.claude/statusline.sh
 
 Windows:
-  '{"model":"claude-opus-4-5-20251101","cwd":"C:\\test"}' | powershell.exe -NoProfile -ExecutionPolicy Bypass -File $HOME\.claude\statusline.ps1
+  '{"model":"claude-opus-4-5-20251101","cwd":"C:\\test","context_window":{"total_input_tokens":50000,"total_output_tokens":0,"context_window_size":200000}}' | powershell.exe -NoProfile -ExecutionPolicy Bypass -File $HOME\.claude\statusline.ps1
 
-EXPECTED: Colored output with emoji (🤖 Opus 4.5 │ 📂 /test │ ...)
+EXPECTED OUTPUT:
+🤖 Opus 4.5 │ 📂 /test │ 🌿 main │ [██░░░░░░░░] 75%남음 (50K/200K)
+
+FEATURES TO VERIFY:
+├─ 모델명 표시 (색상: cyan)
+├─ 경로 표시 (색상: blue, 동적 길이)
+├─ Git 브랜치 (색상: green)
+├─ Git 상태 (색상: yellow)
+├─ 진행률 바 (색상: 사용량에 따라 변경)
+└─ 남은 퍼센트 (터미널 기본색)
+
 IF output invalid → ERROR "test_failed"
 ```
+
+### 스크립트 기능
+
+| 기능 | 설명 |
+|------|------|
+| 공식 JSON 스키마 | `context_window.total_input_tokens` + `total_output_tokens` |
+| 동적 경로 길이 | 터미널 너비에 따라 자동 조절 (최소 20자) |
+| 크로스 플랫폼 | Unix (Bash) / Windows (PowerShell) 동일 기능 |
+| 하위 호환성 | 레거시 `contextWindow` 필드도 지원 |
 
 ---
 
