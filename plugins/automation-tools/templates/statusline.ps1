@@ -79,29 +79,64 @@ function Get-ShortModel {
 
 # 터미널 너비에 따른 동적 경로 길이 계산
 function Get-PathMaxLength {
-    try {
-        $termWidth = $Host.UI.RawUI.WindowSize.Width
-        if (-not $termWidth -or $termWidth -eq 0) {
-            $termWidth = 80
+    $termWidth = 0
+
+    # 1. 사용자 지정 환경변수 (최우선)
+    #    PowerShell 프로필에 $env:CLAUDE_TERM_WIDTH = 120 설정 가능
+    if ($env:CLAUDE_TERM_WIDTH) {
+        try {
+            $termWidth = [int]$env:CLAUDE_TERM_WIDTH
+        } catch {
+            $termWidth = 0
         }
-    } catch {
-        $termWidth = 80
     }
 
-    # 다른 컴포넌트들의 대략적인 길이
-    # 🤖 Opus 4.5 (12) + | (3) + 📂 (3) + | (3) + 🌿 branch (15) + | (3) + git_status (10) + | (3) + progress_bar (30)
-    $fixedLength = 82
+    # 2. $env:COLUMNS 환경변수
+    if ($termWidth -eq 0 -and $env:COLUMNS) {
+        try {
+            $termWidth = [int]$env:COLUMNS
+        } catch {
+            $termWidth = 0
+        }
+    }
 
-    # 남은 공간을 경로에 할당 (최소 20)
+    # 3. PowerShell 호스트에서 터미널 너비 가져오기
+    if ($termWidth -eq 0) {
+        try {
+            $termWidth = $Host.UI.RawUI.WindowSize.Width
+            if (-not $termWidth) { $termWidth = 0 }
+        } catch {
+            $termWidth = 0
+        }
+    }
+
+    # 4. 기본값 (Claude Code 터미널은 보통 넓으므로 150)
+    if ($termWidth -eq 0 -or $termWidth -lt 80) {
+        $termWidth = 150
+    }
+
+    # 다른 컴포넌트들의 실제 길이 (이모지는 2칸 차지)
+    # 🤖(2) + " Opus 4.5"(9) = 11
+    # " │ "(3)
+    # 📂(2) + " "(1) = 3  (경로는 별도)
+    # " │ "(3)
+    # 🌿(2) + " main"(5) = 7 (브랜치 ~10자 가정)
+    # " │ "(3) + git_status(~8) = 11
+    # " │ "(3)
+    # "[██░░░░░░░░]"(12) + " 87%남음"(8) + " (26K/200K)"(12) = 32
+    # 총: 11+3+3+3+10+11+3+32 = 76 (여유 포함 ~60)
+    $fixedLength = 60
+
+    # 남은 공간을 경로에 할당 (최소 25)
     $available = $termWidth - $fixedLength
-    if ($available -lt 20) {
-        $available = 20
+    if ($available -lt 25) {
+        $available = 25
     }
 
     return $available
 }
 
-# 경로 축약 (동적 길이)
+# 경로 축약 (동적 길이) - 프로젝트명 우선 보존
 function Get-ShortPath {
     param(
         [string]$Path,
@@ -119,13 +154,35 @@ function Get-ShortPath {
         $Path = "~" + $Path.Substring($homePath.Length)
     }
 
-    # 길이 초과 시 축약
-    if ($Path.Length -gt $MaxLength) {
-        $base = Split-Path $Path -Leaf
-        if ($base.Length -gt ($MaxLength - 4)) {
-            $base = $base.Substring(0, $MaxLength - 7) + "..."
-        }
-        $Path = "...\" + $base
+    # 길이가 MaxLength 이하면 그대로 반환
+    if ($Path.Length -le $MaxLength) {
+        return $Path
+    }
+
+    # 프로젝트명(마지막 디렉토리)과 나머지 분리
+    $base = Split-Path $Path -Leaf
+    $parent = Split-Path $Path -Parent
+    $baseLen = $base.Length
+
+    # 프로젝트명이 MaxLength의 70% 이상이면 프로젝트명도 축약
+    $maxBase = [math]::Floor($MaxLength * 0.7)
+    if ($baseLen -gt $maxBase) {
+        $base = $base.Substring(0, $maxBase - 3) + "..."
+        $baseLen = $base.Length
+    }
+
+    # 남은 공간으로 앞부분 표시
+    # "...\" = 4자
+    $prefixSpace = $MaxLength - $baseLen - 4
+
+    if ($prefixSpace -ge 3) {
+        # 앞부분 일부 + ... + 프로젝트명
+        # 예: ~\Wo...\claude-integration
+        $prefix = $parent.Substring(0, [Math]::Min($prefixSpace, $parent.Length))
+        $Path = "$prefix...\$base"
+    } else {
+        # 공간 부족시 ...\ + 프로젝트명만
+        $Path = "...\$base"
     }
 
     return $Path

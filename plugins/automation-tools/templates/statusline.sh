@@ -100,22 +100,63 @@ shorten_model() {
 
 # 터미널 너비에 따른 동적 경로 길이 계산
 calculate_path_max_length() {
-    local term_width=${COLUMNS:-$(tput cols 2>/dev/null || echo 80)}
+    local term_width=0
 
-    # 다른 컴포넌트들의 대략적인 길이
-    # 🤖 Opus 4.5 (12) + │ (3) + 📂 (3) + │ (3) + 🌿 branch (15) + │ (3) + git_status (10) + │ (3) + progress_bar (30)
-    local fixed_length=82
+    # 1. 사용자 지정 환경변수 (최우선)
+    #    ~/.zshrc나 ~/.bashrc에 export CLAUDE_TERM_WIDTH=120 설정 가능
+    if [ -n "$CLAUDE_TERM_WIDTH" ] && [ "$CLAUDE_TERM_WIDTH" -gt 0 ] 2>/dev/null; then
+        term_width=$CLAUDE_TERM_WIDTH
+    fi
 
-    # 남은 공간을 경로에 할당 (최소 20, 최대 무제한)
+    # 2. $COLUMNS 환경변수 (터미널이 설정)
+    if [ "$term_width" -eq 0 ] && [ -n "$COLUMNS" ] && [ "$COLUMNS" -gt 0 ] 2>/dev/null; then
+        term_width=$COLUMNS
+    fi
+
+    # 3. tput cols (터미널 직접 쿼리 - /dev/tty 통해)
+    if [ "$term_width" -eq 0 ] && [ -e /dev/tty ]; then
+        term_width=$(tput cols </dev/tty 2>/dev/null) || term_width=0
+        # 숫자인지 확인
+        if ! [ "$term_width" -gt 0 ] 2>/dev/null; then
+            term_width=0
+        fi
+    fi
+
+    # 4. stty size (터미널 직접 쿼리 - /dev/tty 통해)
+    if [ "$term_width" -eq 0 ] && [ -e /dev/tty ]; then
+        term_width=$(stty size </dev/tty 2>/dev/null | awk '{print $2}') || term_width=0
+        if ! [ "$term_width" -gt 0 ] 2>/dev/null; then
+            term_width=0
+        fi
+    fi
+
+    # 5. 기본값 (Claude Code 터미널은 보통 넓으므로 150)
+    if [ "$term_width" -eq 0 ] || [ "$term_width" -lt 80 ]; then
+        term_width=150
+    fi
+
+    # 다른 컴포넌트들의 실제 길이 (이모지는 2칸 차지)
+    # 🤖(2) + " Opus 4.5"(9) = 11
+    # " │ "(3)
+    # 📂(2) + " "(1) = 3  (경로는 별도)
+    # " │ "(3)
+    # 🌿(2) + " main"(5) = 7 (브랜치 ~10자 가정)
+    # " │ "(3) + git_status(~8) = 11
+    # " │ "(3)
+    # "[██░░░░░░░░]"(12) + " 87%남음"(8) + " (26K/200K)"(12) = 32
+    # 총: 11+3+3+3+10+11+3+32 = 76 (여유 포함 ~60)
+    local fixed_length=60
+
+    # 남은 공간을 경로에 할당 (최소 25, 최대 무제한)
     local available=$((term_width - fixed_length))
-    if [ "$available" -lt 20 ]; then
-        available=20
+    if [ "$available" -lt 25 ]; then
+        available=25
     fi
 
     echo "$available"
 }
 
-# 경로 축약 (동적 길이)
+# 경로 축약 (동적 길이) - 프로젝트명 우선 보존
 shorten_path() {
     local path="$1"
     local max_length=${2:-$(calculate_path_max_length)}
@@ -123,13 +164,37 @@ shorten_path() {
     # ~ 로 홈 디렉토리 축약
     path="${path/#$HOME/~}"
 
-    # 길이가 max_length를 초과하면 축약
-    if [ ${#path} -gt $max_length ]; then
-        local dir=$(dirname "$path")
-        local base=$(basename "$path")
-        if [ ${#base} -gt $((max_length - 4)) ]; then
-            base="${base:0:$((max_length - 7))}..."
-        fi
+    local path_len=${#path}
+
+    # 길이가 max_length 이하면 그대로 반환
+    if [ "$path_len" -le "$max_length" ]; then
+        echo "$path"
+        return
+    fi
+
+    # 프로젝트명(마지막 디렉토리)과 나머지 분리
+    local base=$(basename "$path")
+    local parent=$(dirname "$path")
+    local base_len=${#base}
+
+    # 프로젝트명이 max_length의 70% 이상이면 프로젝트명도 축약
+    local max_base=$((max_length * 70 / 100))
+    if [ "$base_len" -gt "$max_base" ]; then
+        base="${base:0:$((max_base - 3))}..."
+        base_len=${#base}
+    fi
+
+    # 남은 공간으로 앞부분 표시
+    # ".../" = 4자
+    local prefix_space=$((max_length - base_len - 4))
+
+    if [ "$prefix_space" -ge 3 ]; then
+        # 앞부분 일부 + ... + 프로젝트명
+        # 예: ~/Wo.../claude-integration
+        local prefix="${parent:0:$prefix_space}"
+        path="${prefix}.../${base}"
+    else
+        # 공간 부족시 .../ + 프로젝트명만
         path=".../${base}"
     fi
 

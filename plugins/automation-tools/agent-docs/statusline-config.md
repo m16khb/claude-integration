@@ -96,15 +96,60 @@ Claude Code는 statusline 스크립트에 다음 JSON을 stdin으로 전달합�
 ```
 DYNAMIC PATH LENGTH:
 ┌────────────────────────────────────────────────────────┐
-│ 터미널 너비 감지: $COLUMNS (Unix) / WindowSize (Win)   │
-│ 고정 컴포넌트 길이: ~82자 (모델, 브랜치, 상태바 등)    │
-│ 경로 할당 = 터미널 너비 - 고정 길이 (최소 20자)       │
+│ 고정 컴포넌트 길이: ~60자 (모델, 브랜치, 상태바 등)    │
+│ 경로 할당 = 터미널 너비 - 고정 길이 (최소 25자)       │
 └────────────────────────────────────────────────────────┘
 
-예시:
-├─ 터미널 80칸  → 경로 20자  → .../agent-docs
-├─ 터미널 120칸 → 경로 38자  → ~/Workspace/.../agent-docs
-└─ 터미널 200칸 → 경로 118자 → ~/Workspace/claude-integration/plugins/automation-tools/agent-docs
+터미널 너비 감지 순서:
+1. $CLAUDE_TERM_WIDTH (사용자 지정, 최우선)
+2. $COLUMNS (터미널이 설정)
+3. tput cols / stty size (/dev/tty 통해)
+4. 기본값 150 (Claude Code 터미널은 보통 넓음)
+
+경로 축약 전략 (프로젝트명 우선 보존):
+├─ 프로젝트명(마지막 디렉토리)을 최대한 보존
+├─ 앞부분 일부 + "..." + 프로젝트명 형태로 축약
+└─ 프로젝트명이 너무 길면 70%까지만 표시
+```
+
+### 터미널 너비 수동 설정
+
+Claude Code가 파이프로 스크립트를 실행하면 터미널 정보가 손실될 수 있습니다.
+이 경우 환경변수로 직접 설정하세요:
+
+```bash
+# ~/.zshrc 또는 ~/.bashrc에 추가
+export CLAUDE_TERM_WIDTH=120
+
+# 또는 터미널 너비를 자동으로 설정
+export CLAUDE_TERM_WIDTH=$COLUMNS
+```
+
+```powershell
+# PowerShell 프로필에 추가
+$env:CLAUDE_TERM_WIDTH = 120
+```
+
+### 동적 동작 여부
+
+| 상황 | 동작 |
+|------|------|
+| Claude Code 재시작 | 새 터미널 너비 적용 |
+| 터미널 크기 변경 | `/dev/tty` 접근 가능 시 즉시 반영 |
+| 파이프 환경 | `$CLAUDE_TERM_WIDTH` 또는 기본값 150 사용 |
+
+**참고**: 매번 statusline이 업데이트될 때마다 스크립트가 실행되어 터미널 너비를 다시 감지합니다.
+
+### 예시 출력
+
+```
+터미널 150칸 → 경로 90자 할당:
+├─ ~/Workspace/claude-integration (전체 표시)
+├─ ~/Workspace/my-very-long-project-name/src/components
+│  → ~/Workspace/my-v.../components
+
+터미널 80칸 → 경로 20자 할당:
+└─ ~/Wo.../integration
 ```
 
 ### 크로스 플랫폼 지원
@@ -130,6 +175,32 @@ DYNAMIC PATH LENGTH:
 # 설정 초기화 (제거)
 /automation-tools:setup-statusline --reset
 ```
+
+### 템플릿 검색 경로
+
+설치 시 템플릿 파일은 다음 순서로 검색됩니다:
+
+```
+TEMPLATE SEARCH ORDER (Unix & Windows 공통):
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 1. ~/.claude/plugins/ 하위 전체 검색 (절대 경로 필수!)                   │
+│    ├─ cache/claude-integration/automation-tools/{version}/templates/    │
+│    └─ marketplaces/claude-integration/plugins/automation-tools/templates/│
+├─────────────────────────────────────────────────────────────────────────┤
+│ 2. 현재 작업 디렉토리: ./plugins/automation-tools/templates/            │
+├─────────────────────────────────────────────────────────────────────────┤
+│ 3. 로컬 fallback: ./templates/                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+
+⚠️ IMPORTANT: Glob 도구로 검색 시 path 파라미터에 절대 경로를 명시해야 합니다.
+   예: Glob(pattern: "**/statusline.sh", path: "/Users/username/.claude/plugins")
+```
+
+| 플랫폼 | HOME 경로 | 템플릿 파일 |
+|--------|----------|-------------|
+| macOS/Linux | `$HOME` | `statusline.sh` |
+| Windows | `$env:USERPROFILE` | `statusline.ps1` |
+| WSL | `$HOME` | `statusline.sh` |
 
 ### 적용 범위
 

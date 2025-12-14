@@ -48,15 +48,33 @@ IF $ARGUMENTS contains "--reset":
 ## PHASE 2: Find Plugin Templates
 
 ```
-SEARCH ORDER:
-├─ ~/.claude/plugins/marketplaces/claude-integration/templates/
-├─ ~/.claude/plugins/claude-integration@claude-integration/templates/
-├─ ~/.claude/plugins/*/templates/statusline.sh
-└─ ./templates/ (local plugin directory)
+⚠️ CRITICAL: Glob 도구는 현재 작업 디렉토리 기준으로만 검색합니다.
+   ~/.claude/plugins/ 경로를 검색하려면 반드시 path 파라미터에 절대 경로를 명시해야 합니다!
 
-ACTION: Glob ~/.claude/plugins/**/templates/statusline.sh
-IF empty → Check ./plugins/automation-tools/templates/
-IF still empty → ERROR "plugin_not_found"
+SEARCH ORDER (Unix & Windows 공통):
+├─ 1. ~/.claude/plugins/ 하위 전체 검색 (path 파라미터 필수!)
+│     ├─ cache/claude-integration/automation-tools/*/templates/
+│     └─ marketplaces/claude-integration/plugins/automation-tools/templates/
+├─ 2. 현재 작업 디렉토리의 ./plugins/automation-tools/templates/
+└─ 3. ./templates/ (local fallback)
+
+ACTION SEQUENCE:
+1. DETECT HOME_DIR:
+   ├─ Unix: $HOME (예: /Users/username)
+   └─ Windows: $env:USERPROFILE (예: C:\Users\username)
+
+2. GLOB with absolute path parameter:
+   ├─ Unix:   Glob(pattern: "**/statusline.sh", path: "$HOME/.claude/plugins")
+   └─ Windows: Glob(pattern: "**/statusline.ps1", path: "$HOME/.claude/plugins")
+
+3. IF results found → SELECT latest version from cache/ or marketplaces/
+   IF empty → Glob(pattern: "**/templates/statusline.*", path: ".")
+   IF still empty → ERROR "plugin_not_found"
+
+EXPECTED PATHS:
+├─ ~/.claude/plugins/cache/claude-integration/automation-tools/{version}/templates/
+├─ ~/.claude/plugins/marketplaces/claude-integration/plugins/automation-tools/templates/
+└─ ./plugins/automation-tools/templates/ (개발 환경)
 ```
 
 ---
@@ -266,27 +284,32 @@ AskUserQuestion:
 ```
 1. DETECT platform (Windows vs Unix)
 2. IF "--reset" in $ARGUMENTS → EXECUTE PHASE 1.5 and EXIT
-3. GLOB find plugin templates
-4. CHECK existing installation
-5. DETERMINE SCOPE:
+3. DETECT HOME_DIR:
+   ├─ Unix: echo $HOME (또는 ~)
+   └─ Windows: echo $env:USERPROFILE
+4. GLOB find plugin templates with absolute path:
+   ├─ Glob(pattern: "**/statusline.*", path: "$HOME/.claude/plugins")
+   └─ IF empty → Glob(pattern: "**/templates/statusline.*", path: ".")
+5. CHECK existing installation
+6. DETERMINE SCOPE:
    ├─ IF "--user" in $ARGUMENTS → SCOPE = "user"
    ├─ IF "--project" in $ARGUMENTS → SCOPE = "project"
    └─ ELSE → AskUserQuestion (PHASE 2.5) ← REQUIRED
-6. IF "취소" selected → EXIT with message
-7. READ template files
-8. IF Windows:
+7. IF "취소" selected → EXIT with message
+8. READ template files
+9. IF Windows:
    ├─ WRITE statusline.ps1 → ~/.claude/
    └─ WRITE statusline.yaml → ~/.claude/
-9. IF Unix:
-   ├─ WRITE statusline.sh → ~/.claude/
-   ├─ BASH chmod +x ~/.claude/statusline.sh
-   └─ WRITE statusline.yaml → ~/.claude/
-10. DETERMINE TARGET:
+10. IF Unix:
+    ├─ WRITE statusline.sh → ~/.claude/
+    ├─ BASH chmod +x ~/.claude/statusline.sh
+    └─ WRITE statusline.yaml → ~/.claude/
+11. DETERMINE TARGET:
     ├─ IF SCOPE == "user" → TARGET = ~/.claude/settings.json
     └─ IF SCOPE == "project" → TARGET = ./.claude/settings.local.json
-11. READ TARGET (or create empty {})
-12. WRITE merged TARGET with statusLine config
-13. TEST script (platform-specific)
-14. REPORT in Korean (with SCOPE info)
-15. SHOW follow-up TUI ← REQUIRED
+12. READ TARGET (or create empty {})
+13. WRITE merged TARGET with statusLine config
+14. TEST script (platform-specific)
+15. REPORT in Korean (with SCOPE info)
+16. SHOW follow-up TUI ← REQUIRED
 ```
