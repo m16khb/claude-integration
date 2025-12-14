@@ -86,25 +86,19 @@ Claude Code는 statusline 스크립트에 다음 JSON을 stdin으로 전달합�
 3. **남은 퍼센트/토큰** - `67%남음 (67K/200K)` 형태 (터미널 기본색)
 4. **압축 표시** - 100% 초과 시 `압축됨` 표시
 5. **한글 출력** - 기본 한글, 영어 전환 가능
-6. **동적 경로 길이** - 터미널 너비에 따라 자동 조절
+6. **고정 경로 길이** - 기본 60자 (환경변수로 조절 가능)
 7. **크로스 플랫폼** - Unix (Bash) / Windows (PowerShell) 모두 지원
 
-### 동적 경로 길이
+### 경로 길이 설정
 
-터미널 너비에 따라 경로 표시 길이가 자동 조절됩니다:
+경로 표시 길이는 **기본 60자**로 고정됩니다. Claude Code status line은 터미널 너비 감지가 불안정하므로 고정값을 권장합니다.
 
 ```
-DYNAMIC PATH LENGTH:
+PATH LENGTH:
 ┌────────────────────────────────────────────────────────┐
-│ 고정 컴포넌트 길이: ~60자 (모델, 브랜치, 상태바 등)    │
-│ 경로 할당 = 터미널 너비 - 고정 길이 (최소 25자)       │
+│ 기본값: 60자 (대부분의 프로젝트 경로를 전체 표시)      │
+│ CLAUDE_TERM_WIDTH 환경변수로 오버라이드 가능           │
 └────────────────────────────────────────────────────────┘
-
-터미널 너비 감지 순서:
-1. $CLAUDE_TERM_WIDTH (사용자 지정, 최우선)
-2. $COLUMNS (터미널이 설정)
-3. tput cols / stty size (/dev/tty 통해)
-4. 기본값 150 (Claude Code 터미널은 보통 넓음)
 
 경로 축약 전략 (프로젝트명 우선 보존):
 ├─ 프로젝트명(마지막 디렉토리)을 최대한 보존
@@ -112,53 +106,39 @@ DYNAMIC PATH LENGTH:
 └─ 프로젝트명이 너무 길면 70%까지만 표시
 ```
 
-### 터미널 너비 수동 설정
+### 경로 길이 커스터마이징
 
-Claude Code가 파이프로 스크립트를 실행하면 터미널 정보가 손실될 수 있습니다.
-이 경우 환경변수로 직접 설정하세요:
+더 긴 경로를 표시하려면 환경변수를 설정하세요:
 
 ```bash
 # ~/.zshrc 또는 ~/.bashrc에 추가
-export CLAUDE_TERM_WIDTH=120
-
-# 또는 터미널 너비를 자동으로 설정
-export CLAUDE_TERM_WIDTH=$COLUMNS
+export CLAUDE_TERM_WIDTH=80   # 80자로 늘리기
 ```
 
 ```powershell
 # PowerShell 프로필에 추가
-$env:CLAUDE_TERM_WIDTH = 120
+$env:CLAUDE_TERM_WIDTH = 80
 ```
-
-### 동적 동작 여부
-
-| 상황 | 동작 |
-|------|------|
-| Claude Code 재시작 | 새 터미널 너비 적용 |
-| 터미널 크기 변경 | `/dev/tty` 접근 가능 시 즉시 반영 |
-| 파이프 환경 | `$CLAUDE_TERM_WIDTH` 또는 기본값 150 사용 |
-
-**참고**: 매번 statusline이 업데이트될 때마다 스크립트가 실행되어 터미널 너비를 다시 감지합니다.
 
 ### 예시 출력
 
 ```
-터미널 150칸 → 경로 90자 할당:
+기본값 60자:
 ├─ ~/Workspace/claude-integration (전체 표시)
-├─ ~/Workspace/my-very-long-project-name/src/components
-│  → ~/Workspace/my-v.../components
+├─ ~/Workspace/my-very-long-project-name
+│  → ~/Workspace/my-very-long-project-name (전체 표시)
 
-터미널 80칸 → 경로 20자 할당:
-└─ ~/Wo.../integration
+CLAUDE_TERM_WIDTH=30:
+└─ ~/Wo.../claude-integra...
 ```
 
 ### 크로스 플랫폼 지원
 
-| 플랫폼 | 스크립트 | 터미널 너비 감지 |
-|--------|----------|-----------------|
-| macOS/Linux | `statusline.sh` | `$COLUMNS` / `tput cols` |
-| Windows | `statusline.ps1` | `$Host.UI.RawUI.WindowSize.Width` |
-| WSL | `statusline.sh` | `$COLUMNS` / `tput cols` |
+| 플랫폼 | 스크립트 | 경로 길이 설정 |
+|--------|----------|---------------|
+| macOS/Linux | `statusline.sh` | `CLAUDE_TERM_WIDTH` 환경변수 |
+| Windows | `statusline.ps1` | `$env:CLAUDE_TERM_WIDTH` 환경변수 |
+| WSL | `statusline.sh` | `CLAUDE_TERM_WIDTH` 환경변수 |
 
 ### 빠른 설치
 

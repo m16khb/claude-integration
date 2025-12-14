@@ -205,7 +205,7 @@ IF output invalid → ERROR "test_failed"
 | 기능 | 설명 |
 |------|------|
 | 공식 JSON 스키마 | `context_window.total_input_tokens` + `total_output_tokens` |
-| 동적 경로 길이 | 터미널 너비에 따라 자동 조절 (최소 20자) |
+| 고정 경로 길이 | 기본 60자 (CLAUDE_TERM_WIDTH 환경변수로 오버라이드 가능) |
 | 크로스 플랫폼 | Unix (Bash) / Windows (PowerShell) 동일 기능 |
 | 하위 호환성 | 레거시 `contextWindow` 필드도 지원 |
 

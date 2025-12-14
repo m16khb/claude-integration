@@ -98,62 +98,17 @@ shorten_model() {
     esac
 }
 
-# 터미널 너비에 따른 동적 경로 길이 계산
+# 경로 최대 길이 (고정값 사용)
+# Claude Code status line은 터미널 너비 감지가 불안정하므로 고정값 권장
+# 변경하려면 아래 값을 수정하세요
 calculate_path_max_length() {
-    local term_width=0
-
-    # 1. 사용자 지정 환경변수 (최우선)
-    #    ~/.zshrc나 ~/.bashrc에 export CLAUDE_TERM_WIDTH=120 설정 가능
+    # 경로에 할당할 문자 수 (기본: 60자)
+    # CLAUDE_TERM_WIDTH 환경변수로 오버라이드 가능
     if [ -n "$CLAUDE_TERM_WIDTH" ] && [ "$CLAUDE_TERM_WIDTH" -gt 0 ] 2>/dev/null; then
-        term_width=$CLAUDE_TERM_WIDTH
+        echo "$CLAUDE_TERM_WIDTH"
+    else
+        echo "60"
     fi
-
-    # 2. $COLUMNS 환경변수 (터미널이 설정)
-    if [ "$term_width" -eq 0 ] && [ -n "$COLUMNS" ] && [ "$COLUMNS" -gt 0 ] 2>/dev/null; then
-        term_width=$COLUMNS
-    fi
-
-    # 3. tput cols (터미널 직접 쿼리 - /dev/tty 통해)
-    if [ "$term_width" -eq 0 ] && [ -e /dev/tty ]; then
-        term_width=$(tput cols </dev/tty 2>/dev/null) || term_width=0
-        # 숫자인지 확인
-        if ! [ "$term_width" -gt 0 ] 2>/dev/null; then
-            term_width=0
-        fi
-    fi
-
-    # 4. stty size (터미널 직접 쿼리 - /dev/tty 통해)
-    if [ "$term_width" -eq 0 ] && [ -e /dev/tty ]; then
-        term_width=$(stty size </dev/tty 2>/dev/null | awk '{print $2}') || term_width=0
-        if ! [ "$term_width" -gt 0 ] 2>/dev/null; then
-            term_width=0
-        fi
-    fi
-
-    # 5. 기본값 (Claude Code 터미널은 보통 넓으므로 150)
-    if [ "$term_width" -eq 0 ] || [ "$term_width" -lt 80 ]; then
-        term_width=150
-    fi
-
-    # 다른 컴포넌트들의 실제 길이 (이모지는 2칸 차지)
-    # 🤖(2) + " Opus 4.5"(9) = 11
-    # " │ "(3)
-    # 📂(2) + " "(1) = 3  (경로는 별도)
-    # " │ "(3)
-    # 🌿(2) + " main"(5) = 7 (브랜치 ~10자 가정)
-    # " │ "(3) + git_status(~8) = 11
-    # " │ "(3)
-    # "[██░░░░░░░░]"(12) + " 87%남음"(8) + " (26K/200K)"(12) = 32
-    # 총: 11+3+3+3+10+11+3+32 = 76 (여유 포함 ~60)
-    local fixed_length=60
-
-    # 남은 공간을 경로에 할당 (최소 25, 최대 무제한)
-    local available=$((term_width - fixed_length))
-    if [ "$available" -lt 25 ]; then
-        available=25
-    fi
-
-    echo "$available"
 }
 
 # 경로 축약 (동적 길이) - 프로젝트명 우선 보존
