@@ -119,21 +119,58 @@ function Get-GitBranch {
     }
 }
 
-# Git 변경사항 수 가져오기
-function Get-GitChanges {
+# Git 상태 정보 가져오기
+# + = staged, ! = modified, ? = untracked, * = stash
+function Get-GitStatusInfo {
     param([string]$Cwd)
 
     try {
+        $originalLocation = Get-Location
         if ($Cwd -and (Test-Path $Cwd)) {
-            Push-Location $Cwd
-            $changes = (git status --porcelain 2>$null | Measure-Object -Line).Lines
-            Pop-Location
-            return $changes
-        } else {
-            return (git status --porcelain 2>$null | Measure-Object -Line).Lines
+            Set-Location $Cwd
         }
+
+        $statusOutput = git status --porcelain 2>$null
+        $stashCount = (git stash list 2>$null | Measure-Object -Line).Lines
+
+        $staged = 0
+        $modified = 0
+        $untracked = 0
+
+        if ($statusOutput) {
+            foreach ($line in $statusOutput -split "`n") {
+                if ([string]::IsNullOrEmpty($line)) { continue }
+
+                $indexStatus = $line[0]
+                $worktreeStatus = if ($line.Length -gt 1) { $line[1] } else { ' ' }
+
+                # Staged (index에 변경사항)
+                if ($indexStatus -match '[MADRC]') {
+                    $staged++
+                }
+                # Modified (worktree에 변경사항)
+                if ($worktreeStatus -match '[MD]') {
+                    $modified++
+                }
+                # Untracked
+                if ($indexStatus -eq '?') {
+                    $untracked++
+                }
+            }
+        }
+
+        Set-Location $originalLocation
+
+        # 출력 구성
+        $result = @()
+        if ($staged -gt 0) { $result += "+$staged" }
+        if ($modified -gt 0) { $result += "!$modified" }
+        if ($untracked -gt 0) { $result += "?$untracked" }
+        if ($stashCount -gt 0) { $result += "*$stashCount" }
+
+        return $result -join " "
     } catch {
-        return 0
+        return ""
     }
 }
 
@@ -191,7 +228,7 @@ try {
         $output += "${BLUE}`u{1F4C2} ${shortPath}${RESET}"
     }
 
-    # 3. Git 브랜치 및 변경사항
+    # 3. Git 브랜치 및 상태
     $branch = Get-GitBranch $cwd
     if ($branch) {
         if ($output) {
@@ -199,10 +236,10 @@ try {
         }
         $output += "${GREEN}`u{1F33F} ${branch}${RESET}"
 
-        # 변경사항 수
-        $changes = Get-GitChanges $cwd
-        if ($changes -gt 0) {
-            $output += " ${DIM}|${RESET} ${YELLOW}+${changes}${RESET}"
+        # Git 상태 (+staged !modified ?untracked *stash)
+        $gitStatus = Get-GitStatusInfo $cwd
+        if ($gitStatus) {
+            $output += " ${DIM}|${RESET} ${YELLOW}${gitStatus}${RESET}"
         }
     }
 

@@ -128,16 +128,61 @@ get_git_branch() {
     fi
 }
 
-# Git 변경사항 수 가져오기
-get_git_changes() {
+# Git 상태 정보 가져오기
+# + = staged, ! = modified, ? = untracked, * = stash
+get_git_status_info() {
     local cwd="$1"
-    local count=0
+    local git_cmd="git"
     if [ -n "$cwd" ] && [ -d "$cwd" ]; then
-        count=$(git -C "$cwd" status --porcelain 2>/dev/null | wc -l | tr -d ' ')
-    else
-        count=$(git status --porcelain 2>/dev/null | wc -l | tr -d ' ')
+        git_cmd="git -C $cwd"
     fi
-    echo "${count:-0}"
+
+    local status_output=$($git_cmd status --porcelain 2>/dev/null)
+    local stash_count=$($git_cmd stash list 2>/dev/null | wc -l | tr -d ' ')
+
+    # 카운트 계산
+    local staged=0
+    local modified=0
+    local untracked=0
+
+    while IFS= read -r line; do
+        [ -z "$line" ] && continue
+        local index_status="${line:0:1}"
+        local worktree_status="${line:1:1}"
+
+        # Staged (index에 변경사항)
+        if [[ "$index_status" =~ [MADRC] ]]; then
+            ((staged++))
+        fi
+        # Modified (worktree에 변경사항)
+        if [[ "$worktree_status" =~ [MD] ]]; then
+            ((modified++))
+        fi
+        # Untracked
+        if [ "$index_status" = "?" ]; then
+            ((untracked++))
+        fi
+    done <<< "$status_output"
+
+    # 출력 구성
+    local result=""
+    if [ "$staged" -gt 0 ]; then
+        result+="+${staged}"
+    fi
+    if [ "$modified" -gt 0 ]; then
+        [ -n "$result" ] && result+=" "
+        result+="!${modified}"
+    fi
+    if [ "$untracked" -gt 0 ]; then
+        [ -n "$result" ] && result+=" "
+        result+="?${untracked}"
+    fi
+    if [ "$stash_count" -gt 0 ]; then
+        [ -n "$result" ] && result+=" "
+        result+="*${stash_count}"
+    fi
+
+    echo "$result"
 }
 
 # 메인 함수
@@ -195,7 +240,7 @@ main() {
         output+="${BLUE}📂 ${short_path}${RESET}"
     fi
 
-    # 3. Git 브랜치 및 변경사항
+    # 3. Git 브랜치 및 상태
     local branch=$(get_git_branch "$cwd")
     if [ -n "$branch" ]; then
         if [ -n "$output" ]; then
@@ -203,10 +248,10 @@ main() {
         fi
         output+="${GREEN}🌿 ${branch}${RESET}"
 
-        # 변경사항 수
-        local changes=$(get_git_changes "$cwd")
-        if [ "$changes" -gt 0 ] 2>/dev/null; then
-            output+=" ${DIM}│${RESET} ${YELLOW}+${changes}${RESET}"
+        # Git 상태 (Starship 표준: +staged !modified ?untracked $stash)
+        local git_status=$(get_git_status_info "$cwd")
+        if [ -n "$git_status" ]; then
+            output+=" ${DIM}│${RESET} ${YELLOW}${git_status}${RESET}"
         fi
     fi
 
