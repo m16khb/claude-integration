@@ -156,13 +156,13 @@ IF "취소" selected → EXIT with message "설치가 취소되었습니다."
 IF NOT SKIP_SCRIPT_COPY:
   FILES:
   ├─ statusline.sh → ~/.claude/statusline.sh
-  └─ statusline-config.yaml → ~/.claude/statusline.yaml
+  └─ statusline.yaml → ~/.claude/statusline.yaml
 
   COMMANDS:
     mkdir -p ~/.claude
     cp {plugin_dir}/templates/statusline.sh ~/.claude/statusline.sh
     chmod +x ~/.claude/statusline.sh
-    cp {plugin_dir}/templates/statusline-config.yaml ~/.claude/statusline.yaml
+    cp {plugin_dir}/templates/statusline.yaml ~/.claude/statusline.yaml
 
 ⚠️ Copy templates AS-IS without modifications!
 ```
@@ -172,7 +172,7 @@ IF NOT SKIP_SCRIPT_COPY:
 IF NOT SKIP_SCRIPT_COPY:
   FILES:
   ├─ statusline.ps1 → ~/.claude/statusline.ps1
-  └─ statusline-config.yaml → ~/.claude/statusline.yaml
+  └─ statusline.yaml → ~/.claude/statusline.yaml
 
   NOTE: Use Write tool (not cp). No chmod needed for PowerShell.
 ```
@@ -354,7 +354,7 @@ context:
 **주요 설정 옵션:**
 | 설정 | 기본값 | 설명 |
 |------|--------|------|
-| `context.enabled` | `true` | Context window bar 표시 여부 |
+| `context.enabled` | `false` | Context window bar 표시 여부 |
 | `display.path_max_length` | `30` | 경로 최대 길이 |
 | `display.bar_width` | `10` | 진행률 바 너비 |
 | `display.language` | `ko` | 언어 (ko/en) |

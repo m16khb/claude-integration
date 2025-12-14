@@ -396,8 +396,8 @@ main() {
         fi
     fi
 
-    # 4. 컨텍스트 윈도우 사용량 (설정에 따라 표시)
-    local context_enabled=$(read_yaml_config "context.enabled" "true")
+    # 4. 컨텍스트 윈도우 사용량 (설정에 따라 표시, 기본값: false)
+    local context_enabled=$(read_yaml_config "context.enabled" "false")
     if [ "$context_enabled" = "true" ]; then
         if [ -n "$output" ]; then
             output+=" ${DIM}│${RESET} "

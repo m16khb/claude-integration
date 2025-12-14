@@ -390,7 +390,8 @@ try {
     # 1. 모델명
     if ($model) {
         $shortModel = Get-ShortModel $model
-        $output += "${CYAN}`u{1F916} ${shortModel}${RESET}"
+        # PS 5.1 호환: 직접 유니코드 문자 사용 (PS 6+의 `u{} 구문은 5.1에서 오류)
+        $output += "${CYAN}🤖 ${shortModel}${RESET}"
     }
 
     # 2. 현재 디렉토리
@@ -399,7 +400,7 @@ try {
         if ($output) {
             $output += " ${DIM}|${RESET} "
         }
-        $output += "${BLUE}`u{1F4C2} ${shortPath}${RESET}"
+        $output += "${BLUE}📂 ${shortPath}${RESET}"
     }
 
     # 3. Git 브랜치 및 상태
@@ -408,7 +409,7 @@ try {
         if ($output) {
             $output += " ${DIM}|${RESET} "
         }
-        $output += "${GREEN}`u{1F33F} ${branch}${RESET}"
+        $output += "${GREEN}🌿 ${branch}${RESET}"
 
         # Git 상태 (+staged !modified ?untracked *stash)
         $gitStatus = Get-GitStatusInfo $cwd
@@ -417,8 +418,8 @@ try {
         }
     }
 
-    # 4. 컨텍스트 윈도우 사용량 (설정에 따라 표시)
-    $contextEnabled = Read-YamlConfig -Key "context.enabled" -Default "true"
+    # 4. 컨텍스트 윈도우 사용량 (설정에 따라 표시, 기본값: false)
+    $contextEnabled = Read-YamlConfig -Key "context.enabled" -Default "false"
     if ($contextEnabled -eq "true") {
         if ($output) {
             $output += " ${DIM}|${RESET} "
