@@ -182,7 +182,16 @@ try {
         $output += "${CYAN}`u{1F916} ${shortModel}${RESET}"
     }
 
-    # 2. Git 브랜치 및 변경사항
+    # 2. 현재 디렉토리
+    if ($cwd) {
+        $shortPath = Get-ShortPath $cwd
+        if ($output) {
+            $output += " ${DIM}|${RESET} "
+        }
+        $output += "${BLUE}`u{1F4C2} ${shortPath}${RESET}"
+    }
+
+    # 3. Git 브랜치 및 변경사항
     $branch = Get-GitBranch $cwd
     if ($branch) {
         if ($output) {
@@ -193,11 +202,11 @@ try {
         # 변경사항 수
         $changes = Get-GitChanges $cwd
         if ($changes -gt 0) {
-            $output += " ${DIM}|${RESET} ${YELLOW}!${changes}${RESET}"
+            $output += " ${DIM}|${RESET} ${YELLOW}+${changes}${RESET}"
         }
     }
 
-    # 3. 컨텍스트 윈도우 사용량
+    # 4. 컨텍스트 윈도우 사용량
     if ($output) {
         $output += " ${DIM}|${RESET} "
     }

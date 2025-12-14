@@ -186,7 +186,16 @@ main() {
         output+="${CYAN}🤖 ${short_model}${RESET}"
     fi
 
-    # 2. Git 브랜치 및 변경사항
+    # 2. 현재 디렉토리 (있는 경우)
+    if [ -n "$cwd" ]; then
+        local short_path=$(shorten_path "$cwd")
+        if [ -n "$output" ]; then
+            output+=" ${DIM}│${RESET} "
+        fi
+        output+="${BLUE}📂 ${short_path}${RESET}"
+    fi
+
+    # 3. Git 브랜치 및 변경사항
     local branch=$(get_git_branch "$cwd")
     if [ -n "$branch" ]; then
         if [ -n "$output" ]; then
@@ -197,11 +206,11 @@ main() {
         # 변경사항 수
         local changes=$(get_git_changes "$cwd")
         if [ "$changes" -gt 0 ] 2>/dev/null; then
-            output+=" ${DIM}│${RESET} ${YELLOW}!${changes}${RESET}"
+            output+=" ${DIM}│${RESET} ${YELLOW}+${changes}${RESET}"
         fi
     fi
 
-    # 3. 컨텍스트 윈도우 사용량
+    # 4. 컨텍스트 윈도우 사용량
     if [ -n "$output" ]; then
         output+=" ${DIM}│${RESET} "
     fi
