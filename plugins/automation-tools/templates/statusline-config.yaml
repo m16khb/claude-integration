@@ -1,0 +1,74 @@
+# Claude Code Status Line Configuration
+# https://github.com/m16khb/claude-integration
+#
+# 이 파일을 수정하면 즉시 적용됩니다 (Claude Code 재시작 불필요)
+
+# 표시 설정
+display:
+  # 언어 (ko: 한글, en: 영어)
+  language: ko
+
+  # 진행률 바 너비 (문자 수)
+  bar_width: 10
+
+  # 경로 최대 길이
+  path_max_length: 30
+
+# 컨텍스트 윈도우 설정
+context:
+  # 기본 제한 (토큰)
+  default_limit: 200000
+
+  # 색상 임계값 (퍼센트)
+  thresholds:
+    green: 60    # 0-60%: 초록
+    yellow: 85   # 60-85%: 노랑
+    red: 100     # 85%+: 빨강
+
+  # 100% 초과 시 표시 텍스트
+  compressed_text:
+    ko: "압축됨"
+    en: "Compressed"
+
+  # 남은 용량 표시 형식
+  remaining_format:
+    ko: "{percent}%남음"
+    en: "{percent}% left"
+
+# 아이콘 설정
+icons:
+  model: "🤖"
+  folder: "📂"
+  separator: "│"
+
+# 모델명 축약 규칙
+models:
+  opus-4-5: "Opus 4.5"
+  opus: "Opus"
+  sonnet-4: "Sonnet 4"
+  sonnet: "Sonnet"
+  haiku: "Haiku"
+
+# 색상 설정 (ANSI 코드)
+colors:
+  red: "0;31"
+  green: "0;32"
+  yellow: "0;33"
+  blue: "0;34"
+  cyan: "0;36"
+  dim: "2"
+  bold: "1"
+
+# 출력 형식
+format: "{model} {separator} {path} {separator} {context_bar} {remaining} ({used}/{limit})"
+
+# 고급 설정
+advanced:
+  # 캐싱 (초)
+  cache_ttl: 5
+
+  # 에러 시 표시
+  error_message: "Status Error"
+
+  # 디버그 모드
+  debug: false
