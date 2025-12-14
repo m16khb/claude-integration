@@ -5,7 +5,7 @@ argument-hint: [push] [custom-message]
 allowed-tools:
   - Bash(git *)
   - mcp__st__sequentialthinking
-model: claude-haiku-4-5-20251001
+model: claude-opus-4-5-20251101
 ---
 
 # Smart Git Commit (Conventional Commits 1.0.0)
@@ -186,14 +186,14 @@ IF "push" in $ARGUMENTS:
 ```markdown
 ## ✅ 커밋 완료
 
-| 항목 | 내용 |
-|------|------|
-| 커밋 | `<hash>` <type>: <message> |
-| 브랜치 | <branch> |
-| 푸시 | ✅/⏭️/❌ |
-| 변경 | +<insertions>/-<deletions> |
-| SemVer 영향 | MAJOR/MINOR/PATCH/없음 |
-| BREAKING | ⚠️/✅ |
+| 항목        | 내용                       |
+| ----------- | -------------------------- |
+| 커밋        | `<hash>` <type>: <message> |
+| 브랜치      | <branch>                   |
+| 푸시        | ✅/⏭️/❌                   |
+| 변경        | +<insertions>/-<deletions> |
+| SemVer 영향 | MAJOR/MINOR/PATCH/없음     |
+| BREAKING    | ⚠️/✅                      |
 ```
 
 ---
@@ -213,12 +213,12 @@ AskUserQuestion:
 
 ## ERROR HANDLING
 
-| Error | Response |
-|-------|----------|
-| Nothing to commit | "변경 사항 없음" |
-| Merge conflict | "충돌 파일 확인 후 해결" |
-| Push rejected | "git pull --rebase 후 재시도" |
-| Pre-commit hook fail | 수정 제안 표시 |
+| Error                | Response                      |
+| -------------------- | ----------------------------- |
+| Nothing to commit    | "변경 사항 없음"              |
+| Merge conflict       | "충돌 파일 확인 후 해결"      |
+| Push rejected        | "git pull --rebase 후 재시도" |
+| Pre-commit hook fail | 수정 제안 표시                |
 
 ---
 
@@ -241,6 +241,7 @@ SEMANTIC VERSIONING 연동:
 ## Documentation
 
 상세 내용은 agent-docs/ 참조:
+
 - @../agent-docs/commit-conventions.md - Conventional Commits 1.0.0 전체 규격
 - @../agent-docs/branch-strategies.md - Git Flow 브랜치 전략
 - @../agent-docs/automation-patterns.md - 다중 커밋, 스마트 그룹화
