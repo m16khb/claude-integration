@@ -101,6 +101,42 @@ function Get-ShortPath {
     return $Path
 }
 
+# Git 브랜치 가져오기
+function Get-GitBranch {
+    param([string]$Cwd)
+
+    try {
+        if ($Cwd -and (Test-Path $Cwd)) {
+            Push-Location $Cwd
+            $branch = git branch --show-current 2>$null
+            Pop-Location
+            return $branch
+        } else {
+            return git branch --show-current 2>$null
+        }
+    } catch {
+        return $null
+    }
+}
+
+# Git 변경사항 수 가져오기
+function Get-GitChanges {
+    param([string]$Cwd)
+
+    try {
+        if ($Cwd -and (Test-Path $Cwd)) {
+            Push-Location $Cwd
+            $changes = (git status --porcelain 2>$null | Measure-Object -Line).Lines
+            Pop-Location
+            return $changes
+        } else {
+            return (git status --porcelain 2>$null | Measure-Object -Line).Lines
+        }
+    } catch {
+        return 0
+    }
+}
+
 # 메인 로직
 try {
     # stdin에서 JSON 읽기
@@ -146,13 +182,19 @@ try {
         $output += "${CYAN}`u{1F916} ${shortModel}${RESET}"
     }
 
-    # 2. 현재 디렉토리
-    if ($cwd) {
-        $shortPath = Get-ShortPath $cwd
+    # 2. Git 브랜치 및 변경사항
+    $branch = Get-GitBranch $cwd
+    if ($branch) {
         if ($output) {
             $output += " ${DIM}|${RESET} "
         }
-        $output += "${BLUE}`u{1F4C2} ${shortPath}${RESET}"
+        $output += "${GREEN}`u{1F33F} ${branch}${RESET}"
+
+        # 변경사항 수
+        $changes = Get-GitChanges $cwd
+        if ($changes -gt 0) {
+            $output += " ${DIM}|${RESET} ${YELLOW}!${changes}${RESET}"
+        }
     }
 
     # 3. 컨텍스트 윈도우 사용량

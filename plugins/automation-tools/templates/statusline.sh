@@ -118,6 +118,28 @@ shorten_path() {
     echo "$path"
 }
 
+# Git 브랜치 이름 가져오기
+get_git_branch() {
+    local cwd="$1"
+    if [ -n "$cwd" ] && [ -d "$cwd" ]; then
+        git -C "$cwd" branch --show-current 2>/dev/null
+    else
+        git branch --show-current 2>/dev/null
+    fi
+}
+
+# Git 변경사항 수 가져오기
+get_git_changes() {
+    local cwd="$1"
+    local count=0
+    if [ -n "$cwd" ] && [ -d "$cwd" ]; then
+        count=$(git -C "$cwd" status --porcelain 2>/dev/null | wc -l | tr -d ' ')
+    else
+        count=$(git status --porcelain 2>/dev/null | wc -l | tr -d ' ')
+    fi
+    echo "${count:-0}"
+}
+
 # 메인 함수
 main() {
     # stdin에서 JSON 읽기
@@ -164,13 +186,19 @@ main() {
         output+="${CYAN}🤖 ${short_model}${RESET}"
     fi
 
-    # 2. 현재 디렉토리 (있는 경우)
-    if [ -n "$cwd" ]; then
-        local short_path=$(shorten_path "$cwd")
+    # 2. Git 브랜치 및 변경사항
+    local branch=$(get_git_branch "$cwd")
+    if [ -n "$branch" ]; then
         if [ -n "$output" ]; then
             output+=" ${DIM}│${RESET} "
         fi
-        output+="${BLUE}📂 ${short_path}${RESET}"
+        output+="${GREEN}🌿 ${branch}${RESET}"
+
+        # 변경사항 수
+        local changes=$(get_git_changes "$cwd")
+        if [ "$changes" -gt 0 ] 2>/dev/null; then
+            output+=" ${DIM}│${RESET} ${YELLOW}!${changes}${RESET}"
+        fi
     fi
 
     # 3. 컨텍스트 윈도우 사용량
