@@ -86,17 +86,18 @@ Claude Code는 statusline 스크립트에 다음 JSON을 stdin으로 전달합�
 3. **남은 퍼센트/토큰** - `67%남음 (67K/200K)` 형태 (터미널 기본색)
 4. **압축 표시** - 100% 초과 시 `압축됨` 표시
 5. **한글 출력** - 기본 한글, 영어 전환 가능
-6. **고정 경로 길이** - 기본 60자 (환경변수로 조절 가능)
+6. **경로 최대 길이** - 기본 150자 (짧은 경로는 전체 표시)
 7. **크로스 플랫폼** - Unix (Bash) / Windows (PowerShell) 모두 지원
 
 ### 경로 길이 설정
 
-경로 표시 길이는 **기본 60자**로 고정됩니다. Claude Code status line은 터미널 너비 감지가 불안정하므로 고정값을 권장합니다.
+경로 표시 최대 길이는 **기본 150자**입니다. 실제 경로가 이보다 짧으면 전체 표시하고, 길면 축약합니다.
 
 ```
 PATH LENGTH:
 ┌────────────────────────────────────────────────────────┐
-│ 기본값: 60자 (대부분의 프로젝트 경로를 전체 표시)      │
+│ 기본 최대값: 150자                                      │
+│ 실제 사용: min(150, 경로 길이)                         │
 │ CLAUDE_TERM_WIDTH 환경변수로 오버라이드 가능           │
 └────────────────────────────────────────────────────────┘
 
@@ -108,11 +109,11 @@ PATH LENGTH:
 
 ### 경로 길이 커스터마이징
 
-더 긴 경로를 표시하려면 환경변수를 설정하세요:
+최대 길이를 줄이려면 환경변수를 설정하세요:
 
 ```bash
 # ~/.zshrc 또는 ~/.bashrc에 추가
-export CLAUDE_TERM_WIDTH=80   # 80자로 늘리기
+export CLAUDE_TERM_WIDTH=80   # 80자로 제한
 ```
 
 ```powershell
@@ -123,13 +124,13 @@ $env:CLAUDE_TERM_WIDTH = 80
 ### 예시 출력
 
 ```
-기본값 60자:
-├─ ~/Workspace/claude-integration (전체 표시)
-├─ ~/Workspace/my-very-long-project-name
-│  → ~/Workspace/my-very-long-project-name (전체 표시)
+기본값 150자:
+├─ ~/Workspace/claude-integration (33자 → 전체 표시)
+├─ ~/Workspace/long-project/src/auth (40자 → 전체 표시)
+├─ ~/Workspace/.../very/deep/path (200자 → 150자로 축약)
 
-CLAUDE_TERM_WIDTH=30:
-└─ ~/Wo.../claude-integra...
+CLAUDE_TERM_WIDTH=50:
+└─ ~/Wo.../deep/path (50자로 축약)
 ```
 
 ### 크로스 플랫폼 지원

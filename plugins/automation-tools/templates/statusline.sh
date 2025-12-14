@@ -99,15 +99,13 @@ shorten_model() {
 }
 
 # 경로 최대 길이 (고정값 사용)
-# Claude Code status line은 터미널 너비 감지가 불안정하므로 고정값 권장
-# 변경하려면 아래 값을 수정하세요
+# 경로가 이 값보다 짧으면 전체 표시, 길면 이 값으로 축약
+# CLAUDE_TERM_WIDTH 환경변수로 오버라이드 가능
 calculate_path_max_length() {
-    # 경로에 할당할 문자 수 (기본: 60자)
-    # CLAUDE_TERM_WIDTH 환경변수로 오버라이드 가능
     if [ -n "$CLAUDE_TERM_WIDTH" ] && [ "$CLAUDE_TERM_WIDTH" -gt 0 ] 2>/dev/null; then
         echo "$CLAUDE_TERM_WIDTH"
     else
-        echo "60"
+        echo "150"
     fi
 }
 
